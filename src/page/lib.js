@@ -55,8 +55,10 @@
     return { title: m[1], detail: m[2].charAt(0).toUpperCase() + m[2].slice(1) };
   }
 
-  /** Tiles for a question: up to three scored answers sit side by side as one choice bar, more than that fill a grid. */
-  function optionLayout(scoredCount) { return scoredCount <= 3 ? 'seg' : 'grid'; }
+  /** Tiles for a question: up to three answers sit side by side as one choice bar, more than that fill a grid. */
+  /** Columns for the tile grid, chosen so the rows come out even where they can: 4 answers make a 2 x 2, 6 make 3 x 2, 8 make 4 x 2. */
+  function optionColumns(n) { return n <= 3 ? Math.max(n, 1) : n === 4 ? 2 : n <= 6 ? 3 : n <= 8 ? 4 : n === 9 ? 3 : 4; }
+  function optionLayout(optionCount) { return optionCount <= 3 ? 'seg' : 'grid'; }
 
   var TIERS = [
     { min: 3.5, key: 'strong', label: 'Strong fit' },
@@ -172,7 +174,7 @@
   }
 
   return {
-    ALPHABETICAL_QUESTIONS: ALPHABETICAL_QUESTIONS, sortNames: sortNames, listJoin: listJoin, orderOptions: orderOptions, splitLabel: splitLabel, optionLayout: optionLayout,
+    ALPHABETICAL_QUESTIONS: ALPHABETICAL_QUESTIONS, sortNames: sortNames, listJoin: listJoin, orderOptions: orderOptions, splitLabel: splitLabel, optionLayout: optionLayout, optionColumns: optionColumns,
     fitTier: fitTier, barGeometry: barGeometry, leadSentence: leadSentence, boundaryMessage: boundaryMessage,
     stateLine: stateLine, STATE_LABEL: STATE_LABEL, buildSummary: buildSummary, escapeHtml: escapeHtml
   };

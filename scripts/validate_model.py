@@ -264,11 +264,13 @@ def main():
     bad = [t for t in T if not lo <= wins[t] / N <= hi]
     check(6, f"N3 every tool wins {lo:.0%}-{hi:.0%} of such clients (ideal {1 / len(T):.1%})", "FAIL" if bad else "PASS",
           "P(#1): " + ", ".join(f"{t}={wins[t] / N:.1%}" for t in T))
-    wide = (0.06, 0.30)
-    badf = [t for t in T if not wide[0] <= wins_f[t] / N <= wide[1]]
-    check(6, f"N3b fully random clients (requirements drawn too): every tool wins {wide[0]:.0%}-{wide[1]:.0%}",
-          "WARN" if badf else "PASS", "P(#1): " + ", ".join(f"{t}={wins_f[t] / N:.1%}" for t in T)
-          + "  (differences here come from requirements the client states, not from structure)")
+    badf = [t for t in T if not lo <= wins_f[t] / N <= hi]
+    check(6, f"N3b fully random clients (requirements drawn too): every tool wins {lo:.0%}-{hi:.0%}",
+          "FAIL" if badf else "PASS", "P(#1): " + ", ".join(f"{t}={wins_f[t] / N:.1%}" for t in T))
+    mean_f = {t: st.mean(zs_f[t]) for t in T}
+    check(6, f"N3d stating requirements gives no tool a head start: mean z of fully random clients within +-{NEUTRAL_MEAN_TOL} "
+             f"(max {max(abs(v) for v in mean_f.values()):.3f}; before the requirement-premium correction Power BI averaged +0.96)",
+          "FAIL" if any(abs(v) > NEUTRAL_MEAN_TOL for v in mean_f.values()) else "PASS", ", ".join(f"{t}={v:+.3f}" for t, v in mean_f.items()))
     inert = [q["id"] for q in Q if q["weight"] > 0 and q.get("reference") != "neutral"
              and sum(1 for o in q["options"] if not o["unknown"]) < 2]
     check(6, "N3c no weighted question has an inert weight (a single informative answer cancels out under Reference=mean)",
@@ -319,7 +321,13 @@ def main():
     for name, exp, src, prof in SCENARIOS:
         r = score(m, prof)
         line = " > ".join(f"{t}:{r['z'][t]:+.2f}" for t in r["ranked"][:3])
-        if r["rank"][exp] != 1:
+        gap = r["z"][r["ranked"][0]] - r["z"][exp]
+        if r["rank"][exp] != 1 and exp in r["excluded"]:
+            status, why = "FAIL", "the expected tool was ruled out."
+        elif r["rank"][exp] != 1 and gap < MIN_MARGIN:
+            status, why = "WARN", (f"rank {r['rank'][exp]}, only {gap:.2f} z behind {r['ranked'][0]} (< {MIN_MARGIN}): "
+                                   "too close to call, the answers alone cannot separate them.")
+        elif r["rank"][exp] != 1:
             status, why = "FAIL", f"expected rank 1, got {r['rank'][exp]}."
         elif len(r["tied_leaders"]) > 1:
             status, why = "WARN", f"tied for first with {[t for t in r['tied_leaders'] if t != exp]}: the answers alone cannot separate them."

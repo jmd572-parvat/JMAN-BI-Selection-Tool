@@ -47,7 +47,15 @@
         ]
       }
     ],
-    "method": "z-score against a random client: F = sum(weight*(r-baseline)); S = sqrt(sum(weight^2*variance)); z = F/S. baseline = the tool's own mean over informative answers (reference=mean) or the neutral score 2 (reference=neutral). See scripts/bi_model.py. Tools carry no display order: order by rank, then alphabetically."
+    "method": "z-score against a random client: F = sum(weight*(r-baseline)); S = sqrt(sum(weight^2*variance)); z = F/S. baseline = the tool's own mean over informative answers (reference=mean) or the neutral score 2 plus the tool's average requirement premium (reference=neutral). See scripts/bi_model.py. Tools carry no display order: order by rank, then alphabetically.",
+    "requirementPremium": {
+      "looker": -0.059405941,
+      "powerbi": 1.188118812,
+      "qlik": 0.95049505,
+      "sigma": 0.554455446,
+      "tableau": 0.891089109,
+      "thoughtspot": -0.138613861
+    }
   },
   "tools": [
     {
@@ -1006,20 +1014,20 @@
         }
       ],
       "baseline": {
-        "looker": 2.0,
-        "powerbi": 2.0,
-        "qlik": 2.0,
-        "sigma": 2.0,
-        "tableau": 2.0,
-        "thoughtspot": 2.0
+        "looker": 1.940594059,
+        "powerbi": 3.188118812,
+        "qlik": 2.95049505,
+        "sigma": 2.554455446,
+        "tableau": 2.891089109,
+        "thoughtspot": 1.861386139
       },
       "variance": {
-        "looker": 0.0,
-        "powerbi": 0.0,
-        "qlik": 0.0,
-        "sigma": 0.666666667,
-        "tableau": 0.666666667,
-        "thoughtspot": 0.222222222
+        "looker": 0.000784237,
+        "powerbi": 0.313694736,
+        "qlik": 0.200764631,
+        "sigma": 0.365345445,
+        "tableau": 0.24906055,
+        "thoughtspot": 0.164885796
       }
     },
     {
@@ -1114,20 +1122,20 @@
         }
       ],
       "baseline": {
-        "looker": 2.0,
-        "powerbi": 2.0,
-        "qlik": 2.0,
-        "sigma": 2.0,
-        "tableau": 2.0,
-        "thoughtspot": 2.0
+        "looker": 1.940594059,
+        "powerbi": 3.188118812,
+        "qlik": 2.95049505,
+        "sigma": 2.554455446,
+        "tableau": 2.891089109,
+        "thoughtspot": 1.861386139
       },
       "variance": {
-        "looker": 0.0,
-        "powerbi": 0.666666667,
-        "qlik": 0.222222222,
-        "sigma": 0.0,
-        "tableau": 0.222222222,
-        "thoughtspot": 0.666666667
+        "looker": 0.000784237,
+        "powerbi": 0.188282195,
+        "qlik": 0.000544609,
+        "sigma": 0.068315742,
+        "tableau": 0.002635907,
+        "thoughtspot": 0.763345641
       }
     },
     {
@@ -1222,20 +1230,20 @@
         }
       ],
       "baseline": {
-        "looker": 2.0,
-        "powerbi": 2.0,
-        "qlik": 2.0,
-        "sigma": 2.0,
-        "tableau": 2.0,
-        "thoughtspot": 2.0
+        "looker": 1.940594059,
+        "powerbi": 3.188118812,
+        "qlik": 2.95049505,
+        "sigma": 2.554455446,
+        "tableau": 2.891089109,
+        "thoughtspot": 1.861386139
       },
       "variance": {
-        "looker": 0.222222222,
-        "powerbi": 0.666666667,
-        "qlik": 0.222222222,
-        "sigma": 0.222222222,
-        "tableau": 0.0,
-        "thoughtspot": 0.222222222
+        "looker": 0.209805139,
+        "powerbi": 0.188282195,
+        "qlik": 0.000544609,
+        "sigma": 0.044113322,
+        "tableau": 0.176453289,
+        "thoughtspot": 0.164885796
       }
     },
     {
@@ -1382,20 +1390,20 @@
         }
       ],
       "baseline": {
-        "looker": 2.0,
-        "powerbi": 2.0,
-        "qlik": 2.0,
-        "sigma": 2.0,
-        "tableau": 2.0,
-        "thoughtspot": 2.0
+        "looker": 1.940594059,
+        "powerbi": 3.188118812,
+        "qlik": 2.95049505,
+        "sigma": 2.554455446,
+        "tableau": 2.891089109,
+        "thoughtspot": 1.861386139
       },
       "variance": {
-        "looker": 0.64,
-        "powerbi": 0.0,
-        "qlik": 0.24,
-        "sigma": 0.24,
-        "tableau": 0.0,
-        "thoughtspot": 0.24
+        "looker": 0.683619253,
+        "powerbi": 0.338790315,
+        "qlik": 0.000588178,
+        "sigma": 0.047642388,
+        "tableau": 0.190569552,
+        "thoughtspot": 0.311145966
       }
     },
     {
@@ -1752,20 +1760,20 @@
         }
       ],
       "baseline": {
-        "looker": 2.0,
-        "powerbi": 2.0,
-        "qlik": 2.0,
-        "sigma": 2.0,
-        "tableau": 2.0,
-        "thoughtspot": 2.0
+        "looker": 1.940594059,
+        "powerbi": 3.188118812,
+        "qlik": 2.95049505,
+        "sigma": 2.554455446,
+        "tableau": 2.891089109,
+        "thoughtspot": 1.861386139
       },
       "variance": {
-        "looker": 0.0,
-        "powerbi": 0.888888889,
-        "qlik": 0.888888889,
-        "sigma": 0.0,
-        "tableau": 0.888888889,
-        "thoughtspot": 0.0
+        "looker": 0.000784237,
+        "powerbi": 0.146478014,
+        "qlik": 0.244769031,
+        "sigma": 0.068315742,
+        "tableau": 0.27326297,
+        "thoughtspot": 0.004269734
       }
     },
     {
@@ -2506,20 +2514,20 @@
         }
       ],
       "baseline": {
-        "looker": 2.0,
-        "powerbi": 2.0,
-        "qlik": 2.0,
-        "sigma": 2.0,
-        "tableau": 2.0,
-        "thoughtspot": 2.0
+        "looker": 1.940594059,
+        "powerbi": 3.188118812,
+        "qlik": 2.95049505,
+        "sigma": 2.554455446,
+        "tableau": 2.891089109,
+        "thoughtspot": 1.861386139
       },
       "variance": {
-        "looker": 0.0,
-        "powerbi": 0.666666667,
-        "qlik": 0.222222222,
-        "sigma": 0.222222222,
-        "tableau": 0.222222222,
-        "thoughtspot": 0.0
+        "looker": 0.000784237,
+        "powerbi": 0.188282195,
+        "qlik": 0.000544609,
+        "sigma": 0.536962607,
+        "tableau": 0.002635907,
+        "thoughtspot": 0.004269734
       }
     },
     {

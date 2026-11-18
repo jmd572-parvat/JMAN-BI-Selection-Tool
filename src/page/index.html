@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BI Tools Selection Playbook</title>
 <meta name="description" content="A guide for choosing and justifying the right BI tool for each client engagement.">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v={{VERSION}}">
 </head>
 <body>
 <!-- PREVIEW SHELL. The marketplace provides the hero, tab row, "On this page", helpfulness row and Q&A (docs/page-design.md, A1).
@@ -35,10 +35,11 @@
     <summary><strong>About this preview: known gaps</strong></summary>
     <ul>
       <li>Three answers listed in the Flow are not offered yet because they have no expert scores: data residency (security question), and limited upskilling capacity and no capacity for change (training question).</li>
-      <li>Two questions, &ldquo;How complex is the existing content?&rdquo; and &ldquo;What are the migration constraints?&rdquo;, are worded for migrations but asked of every client.</li>
+      <li>Two questions, &ldquo;How complex is the existing content?&rdquo; and &ldquo;What are the migration constraints?&rdquo;, are worded for migrations but asked of every client. They now come last, with the other migration questions.</li>
+      <li>Logos come from the deck (slide 26), which has none for Qlik and Sigma: those two show a neutral monogram until the files are added.</li>
       <li>Question weights are provisional. Scores for questions tagged Draft are awaiting expert review. Result confidence lines depend on the weights and will be set again after the weighting session.</li>
       <li>Only one answer rules a tool out today (a client that cannot use a vendor-hosted tool rules out Sigma). The Flow lists more categories of mandatory filter.</li>
-      <li>&ldquo;Why we ask&rdquo; help text exists for two of the questions. The one-line guide under every question is proposed wording awaiting owner review.</li>
+      <li>&ldquo;Why we ask&rdquo; help text exists for two of the questions. The one-line guide under every question is proposed wording awaiting owner review, as are the two extra &ldquo;Don&rsquo;t&rdquo; lines in the guiding principles and the migration note on the overview.</li>
       <li>Reference content comes from the deck and has not been re-verified. Corrections are marked where a vendor source contradicts it.</li>
     </ul>
     <p>See <code>docs/page-design.md</code>, sections 11 and 12.</p>
@@ -55,17 +56,18 @@
 
 <footer class="pv-foot">Answers and notes stay in this browser. Nothing is sent anywhere.</footer>
 
+<div id="pb-overlay" class="pb-overlay" hidden></div>
 <script>window.PLAYBOOK_CONFIG = {{CONFIG}};</script>
-<script src="engine.js"></script>
-<script src="session.js"></script>
-<script src="lib.js"></script>
-<script src="playbook.js"></script>
+<script src="engine.js?v={{VERSION}}"></script>
+<script src="session.js?v={{VERSION}}"></script>
+<script src="lib.js?v={{VERSION}}"></script>
+<script src="playbook.js?v={{VERSION}}"></script>
 <script>
 (function () {
   var cfg = window.PLAYBOOK_CONFIG;
   var main = document.getElementById('pb-main');
   var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
-  Promise.all([get('data/questions.json'), get('data/deck/profiles.json'), get('data/deck/matrix.json'), get('data/deck/migration.json'), get('data/deck/reference.json')])
+  Promise.all([get('data/questions.json?v={{VERSION}}'), get('data/deck/profiles.json?v={{VERSION}}'), get('data/deck/matrix.json?v={{VERSION}}'), get('data/deck/migration.json?v={{VERSION}}'), get('data/deck/reference.json?v={{VERSION}}')])
     .then(function (d) {
       var tabsEl = document.getElementById('pv-tablist');
       var buttons = {};
@@ -75,7 +77,7 @@
         var cur = buttons[id]; if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });   // keep the current tab visible on narrow screens
       }
       var ctl = Playbook.mount({
-        container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'),
+        container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'), overlay: document.getElementById('pb-overlay'),
         model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: setActive
       });
       ctl.tabs.forEach(function (t) {
@@ -84,7 +86,7 @@
         b.addEventListener('click', function () { ctl.go(t.id); });   // scrolls to the section: the playbook is one page
         li.appendChild(b); tabsEl.appendChild(li); buttons[t.id] = b;
       });
-      function route() { var id = location.hash.replace('#/', ''); if (buttons[id]) ctl.go(id); else setActive(ctl.tab); }
+      function route() { var id = location.hash.replace('#/', ''); if (buttons[id]) ctl.go(id); else setActive(ctl.tab); }   // pages only: the carousel is never a web address
       window.addEventListener('hashchange', route);
       route();
       document.getElementById('pb-toc').addEventListener('click', function (e) {

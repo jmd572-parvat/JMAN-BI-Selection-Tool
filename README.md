@@ -13,7 +13,7 @@ The recommendation comes only from the client's answers. No platform is favoured
 | `src/engine/` | Scoring engine and questionnaire session (plain JavaScript, no dependencies) |
 | `src/page/` | The page: content module, page logic, styles, preview shell |
 | `scripts/` | Converters, the Python reference engine, validation, calibration, site build, docs check |
-| `tests/` | `node --test` suite (66 tests) |
+| `tests/` | `node --test` suite (76 tests) |
 | `docs/` | Design, scoring method, engine, validation, workshop and open items |
 
 ## Commands
@@ -25,6 +25,8 @@ npm test                                     # all tests
 python scripts/validate_model.py             # model checks (neutrality, scenarios, branching)
 python scripts/check_docs.py                 # keep the docs tied to the data and code
 python scripts/calibrate_thresholds.py       # re-derive confidence thresholds after any weight change
+python scripts/platform_reach.py             # how often each platform is recommended (docs/platform-reach.md)
+python scripts/prepare_logos.py              # tool logos from the dumps folder into src/page/assets/logos
 ```
 
 After changing the workbook: `python scripts/excel_to_json.py`, then `npm run parity:update`, then the checks above.

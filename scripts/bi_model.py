@@ -58,12 +58,36 @@ def _known(q):
 NEUTRAL_SCORE = 2
 
 
+def requirement_premium(model):
+    """{tool: c} - how far above the neutral score 2 a tool scores on the requirement questions, on average.
+
+    A requirement answer ('polished dashboards are critical', 'AI-first', 'tight budget'...) scores a tool above the neutral 2
+    when the tool meets it. Measured against 2 alone, a broadly capable tool earns that premium on EVERY requirement a client
+    states, so the more requirements are stated the more the broad tools win whatever the client says (measured in
+    docs/model-validation.md). Centring each tool on its own average premium removes that, exactly as centring on its own mean
+    does for the other questions. The average is over the weighted requirement questions, each counted by the share of its
+    options that carry information (an answer that states no requirement adds nothing). Zero when there is none."""
+    tools = model["tool_ids"]
+    num, den = {t: 0.0 for t in tools}, 0.0
+    for q in model["questions"]:
+        k = _known(q)
+        if q.get("reference", "mean") != "neutral" or not q["weight"] or not k:
+            continue
+        share = len(k) / len(q["options"])
+        den += q["weight"] * share
+        for t in tools:
+            num[t] += q["weight"] * share * st.mean(o["scores"][t] - NEUTRAL_SCORE for o in k)
+    return {t: (num[t] / den if den else 0.0) for t in tools}
+
+
 def calibration(model):
     """{qid: {"mean": {tool: baseline}, "var": {tool: variance}}} - one uniformly chosen answer per question.
     reference 'mean'   : baseline = the tool's average over the question's informative (non-Unknown) options.
-    reference 'neutral': baseline = the neutral score 2 (the 'not a priority' answer); the variance is taken over the
-                         centred scores of ALL options, the null answer counting as 0."""
+    reference 'neutral': baseline = the neutral score 2 plus the tool's average requirement premium (requirement_premium);
+                         the variance is taken over the centred scores of ALL options, an answer that states no requirement
+                         counting as 0."""
     tools = model["tool_ids"]
+    prem = requirement_premium(model)
     out = {}
     for q in model["questions"]:
         k = _known(q)
@@ -71,8 +95,8 @@ def calibration(model):
             continue
         if q.get("reference", "mean") == "neutral":
             n_null = len(q["options"]) - len(k)
-            cs = {t: [o["scores"][t] - NEUTRAL_SCORE for o in k] + [0.0] * n_null for t in tools}
-            mean = {t: float(NEUTRAL_SCORE) for t in tools}
+            mean = {t: NEUTRAL_SCORE + prem[t] for t in tools}
+            cs = {t: [o["scores"][t] - mean[t] for o in k] + [0.0] * n_null for t in tools}
             var = {t: st.pvariance(cs[t]) for t in tools}
         else:
             mean = {t: st.mean(o["scores"][t] for o in k) for t in tools}

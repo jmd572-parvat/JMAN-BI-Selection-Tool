@@ -263,6 +263,17 @@ def build_output(data, source, with_rationale, exclude_draft=False):
     tool_ids = [t["id"] for t in tools]
     questions = []
     drafts = []
+    # average requirement premium per tool, over the questions that ship (mirrors bi_model.requirement_premium)
+    num, den = {t: 0.0 for t in tool_ids}, 0.0
+    for q in data["questions"]:
+        k = [o for o in q["options"] if not o["unknown"]]
+        if q["reference"] != "neutral" or not q["weight"] or not k or (exclude_draft and q["status"] == "draft"):
+            continue
+        share = len(k) / len(q["options"])
+        den += q["weight"] * share
+        for t in tool_ids:
+            num[t] += q["weight"] * share * sum(o["scores"][t] - NEUTRAL_SCORE for o in k) / len(k)
+    premium = {t: (num[t] / den if den else 0.0) for t in tool_ids}
     for q in sorted(data["questions"], key=lambda x: x["order"]):
         if q["status"] == "draft":
             drafts.append(q["id"])
@@ -283,9 +294,9 @@ def build_output(data, source, with_rationale, exclude_draft=False):
               "weight": q["weight"], "showIf": q["showIf"], "options": opts}
         if known:   # neutrality calibration (must mirror bi_model.calibration; the harness checks they agree)
             if q["reference"] == "neutral":
-                cs = {t: [o["scores"][t] - NEUTRAL_SCORE for o in known] + [0.0] * (len(q["options"]) - len(known))
+                base = {t: NEUTRAL_SCORE + premium[t] for t in tool_ids}
+                cs = {t: [o["scores"][t] - base[t] for o in known] + [0.0] * (len(q["options"]) - len(known))
                       for t in tool_ids}
-                base = {t: float(NEUTRAL_SCORE) for t in tool_ids}
             else:
                 base = {t: sum(o["scores"][t] for o in known) / len(known) for t in tool_ids}
                 cs = {t: [o["scores"][t] - base[t] for o in known] for t in tool_ids}
@@ -299,8 +310,9 @@ def build_output(data, source, with_rationale, exclude_draft=False):
                  "tieBreak": [{"name": g, "questions": ids} for g, ids in TIEBREAK_GROUPS],
                  "method": ("z-score against a random client: F = sum(weight*(r-baseline)); S = sqrt(sum(weight^2*variance)); "
                             "z = F/S. baseline = the tool's own mean over informative answers (reference=mean) or the neutral "
-                            "score 2 (reference=neutral). See scripts/bi_model.py. Tools carry no display order: order by "
-                            "rank, then alphabetically.")},
+                            "score 2 plus the tool's average requirement premium (reference=neutral). See scripts/bi_model.py. "
+                            "Tools carry no display order: order by rank, then alphabetically."),
+                 "requirementPremium": {t: round(v, 9) for t, v in premium.items()}},
         "tools": tools, "sections": data["sections"], "questions": questions,
     }
 

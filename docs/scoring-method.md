@@ -14,7 +14,15 @@ For every question, each tool has a **reference score**: what that tool scores f
 | Question kind | Reference | Why |
 |---|---|---|
 | Categorical (ecosystem, skills, scale, governance maturity ...). Column `Reference = mean` | The tool's own average over the question's informative answers | No answer means "no information", so a tool's average is the only fair baseline. Removes a tool's general strength. |
-| Requirement (cost, visuals, AI, talent, users, self-hosting). Column `Reference = neutral` | The score 2, the "not a priority" answer | A stated requirement lifts the tools that meet it. An absent one changes nothing. |
+| Requirement (cost, visuals, AI, talent, users, self-hosting). Column `Reference = neutral` | The score 2, the "not a priority" answer, plus the tool's own average requirement premium (below) | A stated requirement lifts the tools that meet it more than they usually meet requirements. An absent one changes nothing. |
+
+**The requirement premium.** A broadly capable tool scores 3 or 4 on nearly every requirement answer. Measured against the score 2 alone, it
+earned that premium on every requirement a client stated, so the more questions were answered the more Power BI, Qlik and Tableau won,
+whatever the client needed (with all six requirements stated: Power BI first for 30% of simulated clients, ThoughtSpot for 4%). So each tool's
+reference on a requirement question is 2 plus that tool's own average premium over the weighted requirement questions
+(`requirement_premium` in `scripts/bi_model.py`; it is stored in `data/questions.json` as `meta.requirementPremium`). This is the same idea as centring on
+the tool's own mean for every other question. Full evidence: `docs/platform-reach.md`. The premium depends on the question weights, so
+re-run `python scripts/excel_to_json.py` after the weighting session.
 
 For a client's answers (multi-select = average of the selected answers' scores, `r`):
 
@@ -33,15 +41,18 @@ winning more often just because it swings more.
 | N1 | Client states no requirement: every tool has the same expected score | max abs mean z 0.023 (limit 0.05) |
 | N2 | Equal volatility across tools | stdev ratio 1.12 (limit 1.25) |
 | N3 | Every tool wins a fair share of such clients (ideal 16.7%) | 12.7% to 18.9% (band 10-24%) |
+| N3b | Same, for fully random clients who also state requirements | 12.8% to 18.9% (band 10-24%; before the premium correction 4% to 33%) |
+| N3d | Stating requirements gives no tool a head start: mean z of fully random clients | max abs 0.019 (limit 0.05; before the correction Power BI averaged +0.96) |
 | N4 | Tool order never changes any rank | pass |
 | N5 | No tool outranks one that is at least as good on every answered question | pass |
 | N6 | Identical totals share a rank | pass |
 | N7 | `baseline` and `variance` in the JSON match the scores | pass |
 | N8 | Tools carry no display order; alphabetical | pass |
 
-Remaining differences when a client **does** state requirements (N3b: Power BI 31%, ThoughtSpot 4% over fully random clients) are not structural.
-They come from the SME and deck scores for those requirements: Power BI's expected advantage is +8.0 points, mostly cost (+3.0), AI (+2.0) and
-self-hosting (+2.0). That is the scores speaking, so they are what the SMEs should review (`docs/proposed-score-changes.md`).
+Reach: every tool is first for between 12 and 18 of the 89 scored single answers, and the deck's scenario for each platform is reproduced. See `docs/platform-reach.md`.
+
+One side effect of the premium correction: a single stated requirement can separate two tools that the sheet scores identically, by a small amount in
+favour of the one that is generally weaker on requirements (about 0.2 z, inside "too close to call"). The page says "too close to call" in that case.
 
 ## Rules that keep it fair
 - **Hidden questions** (branching) and **Unknown answers** count in neither `F` nor `S`.

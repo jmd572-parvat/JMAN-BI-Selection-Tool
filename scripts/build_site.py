@@ -10,6 +10,7 @@ The marketplace shell is assumed to provide the hero, tabs and feedback (docs/pa
 """
 import argparse
 import datetime
+import hashlib
 import json
 import shutil
 import subprocess
@@ -33,6 +34,11 @@ def main():
     (out / "data" / "deck").mkdir(parents=True)
     for src, dst in FILES:
         shutil.copy(src, out / dst)
+    logos = {}
+    for f in sorted(p for p in Path("src/page/assets/logos").iterdir() if p.suffix in (".png", ".jpg", ".jpeg", ".svg")):
+        (out / "assets" / "logos").mkdir(parents=True, exist_ok=True)
+        shutil.copy(f, out / "assets" / "logos" / f.name)
+        logos[f.stem] = f"assets/logos/{f.name}"
     for name in DECK:
         p = Path("data/deck") / f"{name}.json"
         if not p.exists():
@@ -45,8 +51,14 @@ def main():
             sys.exit(r.stderr)
     else:
         shutil.copy("data/questions.json", out / "data" / "questions.json")
-    cfg = {"preview": not a.production, "showDrafts": not a.production, "draftToggle": not a.production, "storageKey": "bi-playbook-v1"}
+    cfg = {"preview": not a.production, "showDrafts": not a.production, "draftToggle": not a.production, "storageKey": "bi-playbook-v1", "logos": logos}
     html = Path("src/page/index.html").read_text(encoding="utf-8")
+    # a version in every file URL, so a browser never keeps showing an older build of the scripts, styles or data
+    h = hashlib.sha256()
+    for f in sorted(out.rglob("*")):
+        if f.is_file():
+            h.update(f.read_bytes())
+    html = html.replace("{{VERSION}}", h.hexdigest()[:10])
     html = html.replace("{{CONFIG}}", json.dumps(cfg)).replace("{{BUILD_DATE}}", datetime.date.today().isoformat())
     if a.production:   # the preview strip and the gaps panel are for reviewers, not for the published page
         import re

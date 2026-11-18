@@ -14,24 +14,31 @@ function build(args) {
   return out;
 }
 const read = (dir, f) => fs.readFileSync(path.join(dir, f), 'utf8');
-const config = (html) => JSON.parse(html.match(/window\.PLAYBOOK_CONFIG = (\{.*?\});/)[1]);
+const config = (html) => JSON.parse(html.match(/window\.PLAYBOOK_CONFIG = (\{.*\});<\/script>/)[1]);
 
 test('preview build: drafts included with a toggle, reviewer notes present', () => {
   const out = build([]);
   const html = read(out, 'index.html');
-  assert.deepEqual(config(html), { preview: true, showDrafts: true, draftToggle: true, storageKey: 'bi-playbook-v1' });
+  const cfg = config(html);
+  assert.deepEqual(Object.keys(cfg.logos).sort(), ['looker', 'powerbi', 'qlik', 'sigma', 'tableau', 'thoughtspot'], 'a logo for every tool');
+  for (const f of Object.values(cfg.logos)) assert.ok(fs.existsSync(path.join(out, f)), `${f} is shipped`);
+  delete cfg.logos;
+  assert.deepEqual(cfg, { preview: true, showDrafts: true, draftToggle: true, storageKey: 'bi-playbook-v1' });
   assert.match(html, /pv-preview/);
   assert.match(html, /About this preview: known gaps/);
   const q = JSON.parse(read(out, 'data/questions.json'));
   assert.equal(q.questions.length, 26);
   assert.ok(q.meta.draftsIncluded);
   assert.ok(!html.includes('{{'), 'no unreplaced template placeholders');
+  assert.match(html, /playbook\.js\?v=[0-9a-f]{10}/, 'script URLs carry a build version');
 });
 
 test('production build: no draft questions, no reviewer strip, no preview config', () => {
   const out = build(['--production']);
   const html = read(out, 'index.html');
-  assert.deepEqual(config(html), { preview: false, showDrafts: false, draftToggle: false, storageKey: 'bi-playbook-v1' });
+  const cfg = config(html);
+  delete cfg.logos;
+  assert.deepEqual(cfg, { preview: false, showDrafts: false, draftToggle: false, storageKey: 'bi-playbook-v1' });
   assert.ok(!/pv-preview/.test(html), 'the reviewer strip is removed');
   assert.ok(!/known gaps/.test(html), 'the known-gaps panel is removed');
   assert.ok(!html.includes('{{'));
@@ -47,6 +54,6 @@ test('both builds contain every file the page loads, and nothing refers to a mis
     const html = read(out, 'index.html');
     const refs = [...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map((m) => m[1]).filter((r) => !/^https?:/.test(r));
     const fetched = [...html.matchAll(/get\('([^']+)'\)/g)].map((m) => m[1]);
-    for (const r of [...refs, ...fetched]) assert.ok(fs.existsSync(path.join(out, r)), `${args.join(' ') || 'preview'}: ${r} is missing`);
+    for (const r of [...refs, ...fetched]) assert.ok(fs.existsSync(path.join(out, r.split('?')[0])), `${args.join(' ') || 'preview'}: ${r} is missing`);
   }
 });

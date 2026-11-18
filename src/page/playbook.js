@@ -21,24 +21,31 @@
   var Session = BISessionNS.Session;
   var esc = L.escapeHtml;
 
-  var TABS = [
-    { id: 'overview', label: 'Overview' }, { id: 'purpose', label: 'Purpose' }, { id: 'principles', label: 'Guiding principles' },
-    { id: 'discovery', label: 'Client discovery' }, { id: 'shortlist', label: 'Shortlist' }, { id: 'migration', label: 'Migration analysis' },
-    { id: 'tools', label: 'Tool details' }, { id: 'final', label: 'Final recommendation' }, { id: 'reference', label: 'Reference' }
+  /** The playbook's pages: the tab row. Each is its own view; there is no long scroll. */
+  var PAGES = [
+    { id: 'home', label: 'Overview' }, { id: 'guidelines', label: 'Guidelines' }, { id: 'compare', label: 'Compare tools' },
+    { id: 'discovery', label: 'Client discovery' }, { id: 'recommendation', label: 'Recommendation' }
   ];
+  var PAGE_IDS = PAGES.map(function (p) { return p.id; });
+  /** Where each section of the playbook lives. go('shortlist') opens the Recommendation page on its Shortlist tab. */
+  var SECTION_PAGE = {
+    overview: 'home', purpose: 'guidelines', principles: 'guidelines', scoring: 'guidelines', discovery: 'discovery',
+    shortlist: 'recommendation', migration: 'recommendation', final: 'recommendation', tools: 'compare', reference: 'compare'
+  };
 
+  /** The five areas of the questionnaire, in the order they are asked. The migration-related questions come last. */
   var SECTIONS = [
     { id: '1', title: 'Business context and goals', blurb: 'What the client wants from BI, who uses it, which ecosystem they live in, and what matters most: polish, AI, cost, number of users.' },
     { id: '2', title: 'Data, security and governance', blurb: 'Compliance, security and access, whether a vendor-hosted tool is acceptable, semantic layer, governance maturity, AI governance.' },
     { id: '3', title: 'Skills and change readiness', blurb: 'Who builds the reports, their skill, how much training the client can support, talent availability.' },
-    { id: '4', title: 'Existing reporting', blurb: 'Whether the client has BI today, which tools, how much.' },
-    { id: '5', title: 'Data landscape and delivery', blurb: 'Data estate, complexity of existing content, refresh and performance, embedded or external reporting, migration constraints.' }
+    { id: '4', title: 'Data landscape and delivery', blurb: 'Where the data lives and how fast it grows, how fresh it must be, and whether reports are shared outside the team.' },
+    { id: '5', title: 'Existing reporting and migration', blurb: 'Whether the client has reporting today, which tools it uses and how much, how complex the content is, and what limits a move.' }
   ];
   function sectionOf(q) {
     if (q.section === 'S1') return '1';
     if (q.section === 'S2') return '2';
     if (q.section === 'S3') return '3';
-    return ['Q13', 'Q14', 'Q15'].indexOf(q.id) !== -1 ? '4' : '5';
+    return ['Q16', 'Q18', 'Q19'].indexOf(q.id) !== -1 ? '4' : '5';
   }
 
   /** "Why we ask" text that exists in the Flow sheet. The remaining questions have none yet (docs/page-design.md, B6): nothing is shown for them. */
@@ -101,17 +108,22 @@
     }
   };
 
+  /** Line icons (24 px grid, drawn with the text colour): used for every arrow, close and tick so they centre exactly. */
+  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>' };
+  function icon(name) {
+    return '<svg class="pb-ico pb-ico-' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICON_PATHS[name] + '</svg>';
+  }
+
   function today() { return new Date().toISOString().slice(0, 10); }
 
   /**
-   * @param {{container: Element, rail: Element, toc?: Element, model: object, deck: object, config?: object, onTab?: Function}} o
+   * @param {{container: Element, rail: Element, toc?: Element, overlay?: Element, model: object, deck: object, config?: object, onTab?: Function}} o
    */
   function mount(o) {
     var config = o.config || {};
     var D = o.deck;
     var fullModel = o.model;
     var storageKey = config.storageKey || 'bi-playbook-v1';
-    var preview = !!config.preview;
     var showDrafts = config.showDrafts !== false;
     var names = {};
     fullModel.tools.forEach(function (t) { names[t.id] = t.name; });
@@ -121,7 +133,7 @@
 
     var store = loadStore();
     var model, session;
-    var ui = { tab: 'overview', notice: null, openNotes: {}, compare: { a: null, b: '__all__' }, toolTab: null, clientName: '' };
+    var ui = { page: 'home', rec: 'shortlist', cmp: 'tools', overlay: false, step: null, popup: null, timer: null, hold: false, followShown: {}, notice: null, openNotes: {}, compare: { a: null, b: '__all__' }, toolTab: null, clientName: '' };
 
     function loadStore() {
       try { var raw = root.localStorage && root.localStorage.getItem(storageKey); if (raw) { var s = JSON.parse(raw); return { answers: s.answers || {}, notes: s.notes || {} }; } } catch (e) { /* storage unavailable: carry on without it */ }
@@ -148,154 +160,306 @@
     function answerText(qid) { return labelsOf(qid, session.answers[qid]).join(', '); }
     function listTools(ids) { return L.listJoin(L.sortNames(ids.map(function (i) { return names[i]; }))); }
     function pill(cls, text) { return '<span class="pb-pill ' + cls + '">' + esc(text) + '</span>'; }
-    function previewTag(text) { return preview ? ' <span class="pb-tag pb-tag-preview" title="Preview only">' + esc(text) + '</span>' : ''; }
 
-    // ------------------------------------------------------------------ OVERVIEW
+    // ------------------------------------------------------------------ HOME (overview)
     function renderOverview() {
-      return '<section class="pb-sec"><h2>BI Tools Selection Playbook</h2>' +
-        '<h3>Start here</h3><ol class="pb-start">' +
-        startCard(1, 'Playbook Purpose', 'A short read.', 'purpose') + startCard(2, 'General Guiding Principles', 'A short read.', 'principles') +
-        startCard(3, 'Client Requirement Discovery', 'Questions with preset answers.', 'discovery') + '</ol>' +
-        '<h3>How the recommendation flow works</h3>' +
-        '<ol class="pb-flow">' +
-        flowCard(1, 'Playbook purpose', 'Guide consistent BI tool selection. Support sales and delivery decisions.') +
-        flowCard(2, 'Guiding principles', 'Business problem first. Client-specific, evidence-led decisions.') +
-        flowCard(3, 'Client discovery', 'Apply weighted questions across business, governance and readiness.') +
-        flowCard(4, 'Top 3 shortlist', 'Rank all six tools. Deep-dive the three highest scores.') + '</ol>' +
-        '<div class="pb-decision"><div class="pb-decision-q"><strong>Existing BI tool and migration required?</strong></div>' +
-        '<div class="pb-branches"><div class="pb-card pb-branch"><span class="pb-tag">Yes</span><h4>Migration analysis</h4><p>Assess data model and dashboard rebuild, historical content and parallel run, retraining, cutover and migration risk.</p></div>' +
-        '<div class="pb-card pb-branch"><span class="pb-tag">No</span><h4>Use discovery result</h4><p>Retain the top-ranked recommendation from the weighted assessment.</p></div></div>' +
-        '<div class="pb-final-bar">BI tool finalisation: best-fit recommendation</div></div>' +
-        '<div class="pb-card"><h4>Decision inputs</h4><ul class="pb-chips"><li>Business fit</li><li>Governance fit</li><li>Technology fit</li><li>Commercial fit</li></ul></div>' +
-        '<p class="pb-note"><em>The shortlist is a starting point. Migration effort only changes the answer when the cost, risk or lost investment outweighs the incremental fit.</em> ' +
-        'In this tool, migration effort is shown next to the fit. You weigh it; it does not change the ranking on its own.' + previewTag('Proposed') + '</p>' +
-        '<p><button class="pb-btn" data-action="go" data-tab="discovery">Start client discovery</button></p></section>';
-    }
-    function startCard(n, title, sub, tab) {
-      return '<li><button class="pb-card pb-startcard" data-action="go" data-tab="' + tab + '"><span class="pb-num">' + n + '</span><span><strong>' + esc(title) + '</strong><br><small>' + esc(sub) + '</small></span></button></li>';
-    }
-    function flowCard(n, title, text) {
-      return '<li class="pb-card pb-flowcard"><span class="pb-num">' + n + '</span><h4>' + esc(title) + '</h4><p>' + esc(text) + '</p></li>';
+      var toolList = L.listJoin(L.sortNames(toolIds.map(function (i) { return names[i]; })));
+      var nQ = session.visible().length;
+      var chapter = function (n, title, text, meta, page) {
+        return '<li><button class="pb-chapter" data-action="go" data-tab="' + page + '"><span class="pb-chapter-ico" aria-hidden="true">' + n + '</span>' +
+          '<span class="pb-chapter-t"><span class="pb-chapter-meta">PAGE ' + n + (meta ? ' · ' + esc(meta) : '') + '</span><strong>' + esc(title) + '</strong><span class="pb-chapter-d">' + esc(text) + '</span></span>' +
+          '<span class="pb-chapter-go" aria-hidden="true">' + icon('right') + '</span></button></li>';
+      };
+      return '<section class="pb-sec pb-home"><h2 class="pb-sr">Overview</h2>' +
+        '<p class="pb-intro">The BI Tools Selection Playbook helps JMAN teams choose and justify the right BI tool for a client. Answer questions about the client and see how ' + esc(toolList) + ' compare, with the reasons.</p>' +
+        '<h3 id="home-who">Who is this for?</h3>' +
+        '<ul class="pb-bullets"><li><strong>Sales and pre-sales</strong> scoping or pitching a BI implementation</li>' +
+        '<li><strong>Delivery teams</strong> choosing and justifying the platform for an engagement</li>' +
+        '<li><strong>Consultants</strong> making the recommendation, who need clear reasons to show for it</li></ul>' +
+        '<p class="pb-note">Internal use only. It is written for the consultant, not for the client to read.</p>' +
+        '<h3 id="home-nav">How to navigate</h3>' +
+        '<p class="pb-intro-sm">The playbook has four pages. Use the tabs above or the cards below. Start with the guidelines, or go straight to client discovery.</p>' +
+        '<ol class="pb-chapters">' +
+        chapter(1, 'Guidelines', 'Why the playbook exists, the principles behind it, and how the recommendation is made.', '3 topics', 'guidelines') +
+        chapter(2, 'Compare tools', 'A profile of each tool and a side-by-side comparison, with deployment and integration reference.', '6 tools', 'compare') +
+        chapter(3, 'Client discovery', 'A set of questions to find the most suitable BI tool for this client. About 5 to 10 minutes.', SECTIONS.length + ' areas · ' + nQ + ' questions', 'discovery') +
+        chapter(4, 'Recommendation', 'The shortlist, the migration effort and a summary you can copy, built from your answers.', 'shortlist and summary', 'recommendation') +
+        '</ol></section>';
     }
 
-    // ------------------------------------------------------------------ PURPOSE
+    // ------------------------------------------------------------------ GUIDELINES (purpose, principles, how the recommendation is made)
     function renderPurpose() {
-      return '<section class="pb-sec"><h2>Purpose <span class="pb-badge">Internal purposes only</span></h2>' +
-        '<p class="pb-lead">A guide for BI tool selection, helping delivery teams choose and justify the right platform for each client engagement.</p>' +
+      return '<section class="pb-sec"><h2>Purpose <span class="pb-badge">Internal use only</span></h2>' +
+        '<p class="pb-lead">A guide that helps delivery teams choose and justify the right BI platform for each client engagement.</p>' +
         '<div class="pb-grid2">' +
-        card('Audience: who should use this', 'Sales, pre-sales and delivery teams scoping or pitching a BI implementation. It is written for the consultant making the recommendation, not for the client to read end to end.') +
-        card('When to use it', 'During discovery and solution design, before a tool is shortlisted and before scope or pricing is finalised. Revisit it at renewal, expansion or migration conversations.') +
-        card('What decisions it supports', 'Which BI tool or tools to shortlist or recommend for a specific client, and how to justify that recommendation with a clear, criteria-based comparison rather than a sales pitch.') +
-        card('What it does not replace', 'A hands-on technical proof of concept, a licensing or contract negotiation, or a formal RFP response. It is a starting point for judgment, not a substitute for it.') + '</div>' +
-        '<div class="pb-callout"><strong>Platform facts and pricing.</strong> Feature sets and pricing change frequently. Verify current details before quoting a client, and flag anything you find out of date.</div></section>';
+        card('Who it is for', 'Sales, pre-sales and delivery teams scoping or pitching a BI implementation. It is written for the consultant making the recommendation, not for the client to read.') +
+        card('When to use it', 'During discovery and solution design, before a tool is shortlisted and before scope or pricing is final. Use it again at renewal, expansion or migration conversations.') +
+        card('What it helps you decide', 'Which BI tool or tools to shortlist for a specific client, and how to justify that choice with a clear comparison instead of a sales pitch.') +
+        card('What it does not replace', 'A hands-on proof of concept, a licensing or contract negotiation, or a formal RFP response. It is a starting point for judgment.') + '</div>' +
+        '<p class="pb-note"><strong>Check before you quote.</strong> Platform features and pricing change often. Verify current details before quoting a client.</p></section>';
     }
     function card(title, text) { return '<div class="pb-card"><h4>' + esc(title) + '</h4><p>' + esc(text) + '</p></div>'; }
 
-    // ------------------------------------------------------------------ PRINCIPLES
     function renderPrinciples() {
       var dos = ['Start with the business problem, not the preferred technology.', 'Assess the client’s existing ecosystem before recommending change.',
-        'Separate mandatory requirements from preferences.', 'Validate vendor product claims against the client’s actual requirements.',
-        'Use a proof of concept for high-risk assumptions.', 'Document trade-offs and the rationale behind the decision.'];
+        'Separate mandatory requirements from preferences.', 'Check vendor claims against the client’s actual requirements.',
+        'Use a proof of concept for high-risk assumptions.', 'Write down the trade-offs and the reasons for the decision.'];
+      var donts = ['Do not declare a universal “best BI tool”. The right answer depends on the client.',
+        'Do not hand the questions or the result to the client. They are internal working material.',
+        'Do not quote pricing or feature claims without checking they are current.'];
       var li = function (t) { return '<li>' + esc(t) + '</li>'; };
       return '<section class="pb-sec"><h2>Guiding principles</h2>' +
-        '<p class="pb-lead">The mindset behind every recommendation in this playbook. Read this before the discovery questions.</p>' +
+        '<p class="pb-lead">The thinking behind every recommendation in this playbook.</p>' +
         '<div class="pb-grid2"><div class="pb-card pb-do"><h4><span aria-hidden="true">✓</span> Do</h4><ul>' + dos.map(li).join('') + '</ul></div>' +
-        '<div class="pb-card pb-dont"><h4><span aria-hidden="true">✗</span> Don’t</h4><ul>' +
-        li('Avoid declaring a universal “best BI tool.” The right answer is always client-specific.') +
-        '<li>Don’t hand the questions or the result to the client to read end to end. They are internal working material.' + previewTag('Proposed: owner to confirm') + '</li>' +
-        '<li>Don’t quote pricing or feature claims without checking they are current.' + previewTag('Proposed: owner to confirm') + '</li></ul></div></div>' +
-        '<div class="pb-card pb-neutral"><h4>How this tool keeps the recommendation neutral</h4>' +
-        '<p>The ranking comes only from the answers you give. Each tool is measured against a neutral starting point on every question, so a tool that scores well everywhere gains no automatic advantage. ' +
-        'Ties are broken by your answers and otherwise shared, never by list order. Tools are always listed by rank, then alphabetically. The principle above applies to the tool too: it never declares a universal best.</p>' +
-        '<p><button class="pb-link" data-action="go" data-tab="reference" data-anchor="ref-scoring">How scoring works</button></p></div></section>';
+        '<div class="pb-card pb-dont"><h4><span aria-hidden="true">✗</span> Don’t</h4><ul>' + donts.map(li).join('') + '</ul></div></div></section>';
     }
 
-    // ------------------------------------------------------------------ DISCOVERY
+    function renderScoring() {
+      return '<section class="pb-sec"><h2>How the recommendation is made</h2>' +
+        '<p class="pb-lead">The ranking comes only from the answers you give. No tool is favoured, and list order never matters.</p>' +
+        '<div class="pb-card">' + scoringHtml() + '</div></section>';
+    }
+
+    // ------------------------------------------------------------------ CLIENT DISCOVERY (the page, and the question carousel)
     function visibleBySection() {
       var by = {};
       session.visible().forEach(function (q) { (by[sectionOf(q)] = by[sectionOf(q)] || []).push(q); });
       return by;
     }
     function counts(qs) { return { done: (qs || []).filter(function (q) { return q.answered; }).length, total: (qs || []).length }; }
+    /** The question that opens this one, or null: follow-up questions are shown inside their parent's card. */
+    function parentOf(q) { var full = qOf(q.id); return full && full.showIf && full.showIf.length ? full.showIf[0].q : null; }
+    function childrenOf(pid) { return session.visible().filter(function (c) { return parentOf(c) === pid; }); }
+    function sectionById(id) { return SECTIONS.filter(function (s) { return s.id === id; })[0]; }
+
+    /** Everything the carousel moves through, in order: each top-level question, then an "area complete" card, and a final card. */
+    function steps() {
+      var by = visibleBySection(), out = [];
+      SECTIONS.forEach(function (s) {
+        var tops = (by[s.id] || []).filter(function (q) { return !parentOf(q); });
+        tops.forEach(function (q, i) { out.push({ kind: 'q', section: s.id, qid: q.id, pos: i + 1, count: tops.length }); });
+        if (tops.length) out.push({ kind: 'done', section: s.id });
+      });
+      out.push({ kind: 'end' });
+      return out;
+    }
+    function stepIndex(list, st) {
+      for (var i = 0; i < list.length; i++) if (st && list[i].kind === st.kind && list[i].section === st.section && list[i].qid === st.qid) return i;
+      return -1;
+    }
 
     function renderDiscovery() {
       var by = visibleBySection();
-      var all = session.visible();
-      var idx = {};
-      all.forEach(function (q, i) { idx[q.id] = i + 1; });
-      var jump = SECTIONS.map(function (s) {
+      var prog = session.progress();
+      var allDone = prog.visible > 0 && prog.remaining === 0;
+      var started = prog.answered > 0;
+      var areas = SECTIONS.map(function (s) {
         var c = counts(by[s.id]);
-        var done = c.total > 0 && c.done === c.total;
-        return '<li><button class="pb-chev' + (done ? ' is-done' : '') + '" data-action="section" data-section="' + s.id + '"><span class="pb-chev-n">' + (done ? '✓' : s.id) + '</span><span class="pb-chev-t">' + esc(s.title) + '</span>' +
-          (c.total ? '<span class="pb-chev-c">' + c.done + '/' + c.total + '</span>' : '') + '</button></li>';
+        var state = !c.total ? '' : c.done === c.total ? '<span class="pb-area-state is-done">Complete</span>' : c.done ? '<span class="pb-area-state">' + c.done + ' of ' + c.total + ' answered</span>' : '<span class="pb-area-state">Not started</span>';
+        return '<li><button class="pb-area' + (c.total && c.done === c.total ? ' is-done' : '') + '" data-action="openq" data-section="' + s.id + '"><span class="pb-area-n" aria-hidden="true">' + (c.total && c.done === c.total ? icon('check') : s.id) + '</span>' +
+          '<span class="pb-area-t"><strong>' + esc(s.title) + '</strong><span class="pb-area-d">' + esc(s.blurb) + '</span>' +
+          '<span class="pb-area-meta">' + c.total + ' question' + (c.total === 1 ? '' : 's') + ' ' + state + '</span></span><span class="pb-chapter-go" aria-hidden="true">' + icon('right') + '</span></button></li>';
       }).join('');
-      var sections = SECTIONS.map(function (s) {
-        var qs = by[s.id] || [];
-        var c = counts(qs);
-        var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
-        return '<section class="pb-dsec" id="disc-' + s.id + '" aria-labelledby="disc-h-' + s.id + '"><header class="pb-dhead"><span class="pb-dnum" aria-hidden="true">' + s.id + '</span>' +
-          '<div class="pb-dtitle"><h3 id="disc-h-' + s.id + '">' + esc(s.title) + '</h3><p class="pb-blurb">' + esc(s.blurb) + '</p></div>' +
-          (c.total ? '<div class="pb-dcount"><strong>' + c.done + ' of ' + c.total + '</strong> answered<span class="pb-minibar" aria-hidden="true"><span style="width:' + pct + '%"></span></span></div>' : '') + '</header>' +
-          (qs.length ? qs.map(function (q) { return questionCard(q, idx[q.id], all.length); }).join('') : '<p class="pb-empty">No questions here yet. They appear when earlier answers call for them.</p>') + '</section>';
-      }).join('');
-      var notice = '';
-      if (ui.notice) {
-        notice = '<div class="pb-notice" role="status"><span>' + esc(ui.notice.text) + '</span> ' +
-          (ui.notice.undo ? '<button class="pb-link" data-action="undo">Undo</button> ' : '') + '<button class="pb-link" data-action="dismiss">Dismiss</button></div>';
-      }
-      var step = function (n, t, x) { return '<li><span class="pb-num">' + n + '</span><div><strong>' + t + '</strong><p>' + x + '</p></div></li>'; };
-      return '<section class="pb-sec"><h2>Client discovery</h2>' +
-        '<p class="pb-lead">For internal use during discovery calls and account planning, not a document to hand to the client. Ask these to understand the client well enough to compare the tools fairly.</p>' +
-        '<ol class="pb-steps3">' + step(1, 'Ask', 'Work through the questions with the client, or from what you already know about the account.') +
-        step(2, 'Review', 'Check your answers and what is still open in the panel on the right, and see the shortlist update below.') +
-        step(3, 'Decide', 'Use the ranking, the lead strength and the reasons. Where it is close, run a proof of concept.') + '</ol>' +
-        (preview ? '<p class="pb-fine">' + previewTag('Proposed') + ' The one-line guidance under each question is proposed wording, awaiting owner review.</p>' : '') +
-        (showDrafts && model.questions.some(function (q) { return q.status === 'draft'; }) ? '<div class="pb-banner pb-banner-draft">Questions tagged <strong>Draft</strong> have scores that are awaiting review.</div>' : '') +
-        '<ol class="pb-chevs" aria-label="Jump to a question section">' + jump + '</ol>' + sections +
-        '<p class="pb-nav"><button class="pb-btn" data-action="go" data-tab="shortlist">See the shortlist</button></p>' + notice + '</section>';
+      return '<section class="pb-sec"><h2 id="disc-about">Client discovery</h2>' +
+        '<p class="pb-lead">A set of questions to find the most suitable BI tool for this client. It takes about 5 to 10 minutes.</p>' +
+        '<div class="pb-startrow"><button class="pb-btn pb-btn-lg" data-action="openq">' + (allDone ? 'Review the questions' : started ? 'Continue the questions' : 'Start the questions') + '</button>' +
+        (started ? '<span class="pb-startmeta">' + prog.answered + ' of ' + prog.visible + ' answered</span> <button class="pb-link" data-action="reset">Start over</button>' : '') + '</div>' +
+        '<h3 id="disc-areas">Areas we ask about</h3>' +
+        '<p class="pb-intro-sm">Open any area, or start from the top. You can skip a question and come back to it.</p>' +
+        '<ol class="pb-areas">' + areas + '</ol>' +
+        '<ul class="pb-tips"><li>One question at a time. After you choose, it moves on by itself after ' + QUESTION_SECONDS + ' seconds without a click.</li>' +
+        '<li>Double-click an answer to clear it.</li><li>Follow-up questions open inside the question that triggers them.</li>' +
+        '<li>The top three tools update as you answer. They stay provisional until most questions are answered.</li></ul>' +
+        (allDone ? '<p><button class="pb-btn pb-btn-ghost" data-action="go" data-tab="recommendation">See the recommendation</button></p>' : '') + '</section>';
     }
 
+    // ---- question tiles
     function optionTile(q, opt, type, checked) {
       var parts = L.splitLabel(opt.label);
-      return '<label class="pb-opt' + (opt.unknown ? ' pb-quiet' : '') + '"><input type="' + type + '" name="a-' + q.id + '" id="o-' + q.id + '-' + opt.id + '" data-qid="' + q.id + '" value="' + esc(opt.id) + '"' + (checked ? ' checked' : '') + '>' +
+      return '<label class="pb-opt' + (opt.unknown ? ' pb-quiet' : '') + '"' + (opt.unknown ? ' title="This answer is not scored: it does not help or hurt any tool."' : '') + '><input type="' + type + '" name="a-' + q.id + '" id="o-' + q.id + '-' + opt.id + '" data-qid="' + q.id + '" value="' + esc(opt.id) + '"' + (checked ? ' checked' : '') + '>' +
         '<span class="pb-tile"><span class="pb-mark" aria-hidden="true"></span><span class="pb-opt-label"><span class="pb-opt-title' + (parts.detail ? ' has-sub' : '') + '">' + esc(parts.title) + '</span>' +
         (parts.detail ? '<span class="pb-opt-sub">' + esc(parts.detail) + '</span>' : '') + (opt.unknown ? '<span class="pb-opt-flag">Not scored</span>' : '') + '</span></span></label>';
     }
 
-    function questionCard(q, n, total) {
+    /** One question as a card. `kicker` is "Question 2 of 6" for a top-level question and "Follow-up" for a nested one. */
+    function questionCard(q, kicker, nested) {
       var full = qOf(q.id);
       var opts = L.orderOptions(full);
       var multi = q.type === 'multi';
       var type = multi ? 'checkbox' : 'radio';
-      var scored = opts.filter(function (x) { return !x.unknown; }).length;
-      var layout = L.optionLayout(scored);
-      var hasUnknown = opts.some(function (x) { return x.unknown; });
+      var layout = L.optionLayout(opts.length);
       var guide = GUIDE[q.id], help = HELP[q.id];
       var note = store.notes[q.id] || '';
       var noteOpen = ui.openNotes[q.id] || !!note;
-      return '<fieldset class="pb-q' + (q.answered ? ' is-answered' : '') + '" id="q-' + q.id + '" data-qid="' + q.id + '">' +
-        '<legend><span class="pb-qkicker"><span class="pb-qno">Question ' + n + ' of ' + total + '</span>' +
+      var kids = nested ? [] : childrenOf(q.id);
+      var follow = '';
+      if (kids.length) {
+        var fresh = !ui.followShown[q.id];
+        ui.followShown[q.id] = true;
+        follow = '<div class="pb-follow' + (fresh ? ' is-new' : '') + '"><p class="pb-follow-h">Follow-up questions</p>' +
+          kids.map(function (c) { return questionCard(c, 'Follow-up', true); }).join('') + '</div>';
+      } else if (!nested) ui.followShown[q.id] = false;
+      return '<fieldset class="pb-q' + (nested ? ' pb-q-nested' : '') + (q.answered ? ' is-answered' : '') + '" id="q-' + q.id + '" data-qid="' + q.id + '">' +
+        '<legend><span class="pb-qkicker"><span class="pb-qno">' + esc(kicker) + '</span>' +
         (q.status === 'draft' ? '<span class="pb-tag pb-tag-draft" title="Scores for this question are awaiting review">Draft</span>' : '') +
         '<span class="pb-qkind">' + (multi ? 'Choose all that apply' : 'Choose one') + '</span></span>' +
         '<span class="pb-qtext">' + esc(q.text) + '</span></legend>' +
-        '<div class="pb-qbody">' + (guide ? '<p class="pb-help">' + esc(guide) + '</p>' : '') + (help ? '<p class="pb-help pb-help-note">' + esc(help) + '</p>' : '') +
-        '<div class="pb-options pb-opts-' + layout + '" style="--n:' + scored + '">' +
+        '<div class="pb-qbody">' + (guide ? '<p class="pb-help">' + esc(guide) + (help ? ' ' + esc(help) : '') + '</p>' : (help ? '<p class="pb-help">' + esc(help) + '</p>' : '')) +
+        '<div class="pb-options pb-opts-' + layout + '" style="--n:' + opts.length + ';--cols:' + L.optionColumns(opts.length) + '">' +
         opts.map(function (opt) { return optionTile(q, opt, type, q.answer.indexOf(opt.id) !== -1); }).join('') + '</div>' +
-        (hasUnknown ? '<p class="pb-fine pb-fine-tight">Answers marked “Not scored” do not help or hurt any tool.</p>' : '') +
-        '<div class="pb-qfoot">' + (q.answered ? '<button class="pb-link" data-action="clear" data-qid="' + q.id + '">Clear answer</button>' : '') +
-        '<button class="pb-link" data-action="note" data-qid="' + q.id + '" aria-expanded="' + (noteOpen ? 'true' : 'false') + '">' + (noteOpen ? 'Hide note' : '+ Add a note for this client') + '</button></div>' +
-        (noteOpen ? '<label class="pb-notelabel">Note (kept on this device, included in the summary)<textarea class="pb-note-in" data-note="' + q.id + '" rows="2">' + esc(note) + '</textarea></label>' : '') +
-        '</div></fieldset>';
+        '<div class="pb-qfoot">' + (q.answered ? '<button class="pb-link" data-action="clear" data-qid="' + q.id + '">Clear</button>' : '<span></span>') +
+        '<button class="pb-link pb-link-quiet" data-action="note" data-qid="' + q.id + '" aria-expanded="' + (noteOpen ? 'true' : 'false') + '">' + (noteOpen ? 'Hide note' : 'Add note') + '</button></div>' +
+        (noteOpen ? '<label class="pb-notelabel">Note: kept on this device and included in the summary<textarea class="pb-note-in" data-note="' + q.id + '" rows="2">' + esc(note) + '</textarea></label>' : '') +
+        follow + '</div></fieldset>';
+    }
+
+    // ---- the carousel
+    var QUESTION_SECONDS = 3.2;    // no click for this long after an answer: move to the next question
+    var WINNER_SECONDS = 7;        // how long the winner stays on screen before the recommendation opens
+    var SECTION_SECONDS = 3.2;     // how long the "area complete" card waits before moving to the next area
+
+    function logoHtml(id, cls) {
+      var src = config.logos && config.logos[id];
+      if (src) return '<img class="pb-logo ' + (cls || '') + '" src="' + esc(src) + '" alt="" draggable="false">';
+      var words = names[id].split(/\s+/);
+      var mono = (words.length > 1 ? words.map(function (w) { return w.charAt(0); }).join('') : names[id].charAt(0)).toUpperCase();
+      return '<span class="pb-logo pb-mono ' + (cls || '') + '" aria-hidden="true">' + esc(mono) + '</span>';
+    }
+
+    /** The sleek bar under the area title doubles as the countdown: a lighter fill runs ahead to the next question's position. No text. */
+    function sweepHtml(from, to) {
+      var t = ui.timer;
+      if (!t) return '';
+      var elapsed = Math.max(0, (Date.now() - t.started) / 1000);
+      return '<span class="pb-prog-sweep" style="--a:' + from + '%;--b:' + to + '%;animation-duration:' + t.secs + 's;animation-delay:-' + elapsed.toFixed(2) + 's"></span>';
+    }
+
+    /** The live top three, as a dock: no background, the leader in full colour and the others slightly greyed, each growing on hover. */
+    function top3Html() {
+      var r = session.result();
+      if (!r.informative) return '<div class="pb-foot-row"><span class="pb-foot-empty">Your top three tools will appear here after your first scored answer.</span></div>';
+      var rows = r.shortlist.slice(0, 5);
+      return '<div class="pb-foot-row"><ol class="pb-top3 pb-dock" aria-label="Current top three tools">' + rows.map(function (row) {
+        var rank = Math.min(row.rank, 3);
+        var rl = row.tied ? '=' + row.rank : String(row.rank);
+        return '<li><button class="pb-logo-btn pb-r' + rank + '" data-action="tool" data-tool="' + row.tool.id + '" aria-label="Rank ' + rl + ': ' + esc(row.tool.name) + '. Show why.">' +
+          logoHtml(row.tool.id) + '<span class="pb-tip" role="tooltip">' + esc(row.tool.name) + '</span></button></li>';
+      }).join('') + '</ol></div>';
+    }
+
+    function popupHtml() {
+      var id = ui.popup;
+      if (!id) return '';
+      var r = session.result();
+      var rows = r.informative ? r.shortlist : [];
+      var i = -1;
+      rows.forEach(function (row, k) { if (row.tool.id === id) i = k; });
+      if (i < 0) { ui.popup = null; return ''; }
+      var row = rows[i], prev = rows[i - 1], next = rows[i + 1];
+      var ex = session.explain(id, 3);
+      var nav = function (target, dir) {
+        if (!target) return '<span class="pb-pop-nav is-off" aria-hidden="true"></span>';
+        return '<button class="pb-pop-nav pb-pop-nav-' + (dir < 0 ? 'prev' : 'next') + '" data-action="poptool" data-tool="' + target.tool.id + '" aria-label="' + (dir < 0 ? 'Previous ranked' : 'Next ranked') + ': ' + esc(target.tool.name) + '">' +
+          (dir < 0 ? icon('left') : '') + logoHtml(target.tool.id, 'pb-logo-sm') + (dir > 0 ? icon('right') : '') + '</button>';
+      };
+      var rl = row.tied ? '=' + row.rank : String(row.rank);
+      return '<div class="pb-pop-wrap"><div class="pb-pop-back" data-action="popclose"></div><div class="pb-pop-row">' + nav(prev, -1) +
+        '<div class="pb-pop" role="dialog" aria-labelledby="pb-pop-title">' +
+        '<header class="pb-pop-head"><div class="pb-pop-title"><span class="pb-rank" aria-label="Rank ' + rl + '">' + rl + '</span>' + logoHtml(id, 'pb-logo-md') + '<h3 id="pb-pop-title">' + esc(row.tool.name) + '</h3></div>' +
+        '<button class="pb-pop-close" data-action="popclose" aria-label="Close">' + icon('close') + '</button></header>' +
+        '<div class="pb-pop-body"><h4>Why it fits</h4>' + (ex.strengths.length ? '<ul class="pb-reasons">' + ex.strengths.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer favours this tool yet.</p>') +
+        (ex.concerns.length ? '<h4>Watch-outs</h4><ul class="pb-reasons">' + ex.concerns.slice(0, 2).map(reasonHtml).join('') + '</ul>' : '') +
+        '<p class="pb-fine">Provisional until most questions are answered.</p></div></div>' + nav(next, 1) + '</div></div>';
+    }
+
+    /** The drawer: every area and every question, with what is answered and where the reader is. Follow-ups that are open sit under their parent. */
+    function menuHtml(st) {
+      var by = visibleBySection();
+      var cur = st && st.kind === 'q' ? st.qid : null;
+      var curQ = cur ? qOf(cur) : null;
+      var curTop = curQ && parentOf(curQ) ? parentOf(curQ) : cur;
+      var item = function (q, nested) {
+        var here = !!cur && (q.id === cur || (!nested && q.id === curTop));
+        return '<li' + (nested ? ' class="is-nested"' : '') + '><button class="pb-menu-q' + (q.answered ? ' is-answered' : '') + (here ? ' is-here' : '') + '" data-action="jump" data-qid="' + q.id + '"' + (here ? ' aria-current="step"' : '') + '>' +
+          '<span class="pb-menu-mark" aria-hidden="true">' + (q.answered ? icon('check') : '') + '</span><span class="pb-menu-t">' + esc(q.text) + '</span>' + (q.status === 'draft' ? '<span class="pb-tag pb-tag-draft">Draft</span>' : '') + '</button></li>';
+      };
+      return '<div class="pb-menu-wrap"><div class="pb-menu-back" data-action="menuclose"></div><nav class="pb-menu" id="pb-menu" aria-label="All areas and questions">' +
+        '<header class="pb-menu-head"><h3>All questions</h3><button class="pb-ovl-close" data-action="menuclose" aria-label="Close the list">' + icon('close') + '</button></header>' +
+        '<div class="pb-menu-body">' + SECTIONS.map(function (s) {
+          var qs = by[s.id] || [], c = counts(qs);
+          if (!qs.length) return '';
+          var tops = qs.filter(function (q) { return !parentOf(q); });
+          return '<section class="pb-menu-sec' + (st && st.section === s.id ? ' is-here' : '') + '"><button class="pb-menu-area" data-action="jumpsec" data-section="' + s.id + '"><span class="pb-menu-n" aria-hidden="true">' + s.id + '</span><span class="pb-menu-at">' + esc(s.title) + '</span><span class="pb-menu-c">' + c.done + '/' + c.total + '</span></button>' +
+            '<ul class="pb-menu-list">' + tops.map(function (q) { return item(q, false) + childrenOf(q.id).map(function (k) { return item(k, true); }).join(''); }).join('') + '</ul></section>';
+        }).join('') + '</div></nav></div>';
+    }
+
+    function stepBody(st, list, idx) {
+      if (st.kind === 'q') {
+        var q = session.visible().filter(function (v) { return v.id === st.qid; })[0];
+        var notice = ui.notice ? '<div class="pb-notice" role="status"><span>' + esc(ui.notice.text) + '</span> ' + (ui.notice.undo ? '<button class="pb-link" data-action="undo">Undo</button> ' : '') + '<button class="pb-link" data-action="dismiss">Dismiss</button></div>' : '';
+        var pending = childrenOf(st.qid).some(function (c) { return !c.answered; }) && q && q.answered;
+        return notice + questionCard(q, 'Question ' + st.pos + ' of ' + st.count, false) +
+          (pending ? '<p class="pb-hint-follow">Answer the follow-up questions, or press next to skip them.</p>' : '');
+      }
+      var next = list[idx + 1];
+      if (st.kind === 'done') {
+        var s = sectionById(st.section), c = counts(visibleBySection()[st.section]);
+        var nextSec = next && next.kind === 'q' ? sectionById(next.section) : null;
+        return '<div class="pb-done"><span class="pb-done-check" aria-hidden="true">' + icon('check') + '</span><h3 tabindex="-1">' + esc(s.title) + ' is complete</h3>' +
+          '<p>' + c.done + ' of ' + c.total + ' questions answered.</p>' +
+          '<p class="pb-done-next">' + (nextSec ? 'Next: <strong>' + esc(nextSec.title) + '</strong>' : 'Next: <strong>your shortlist</strong>') + '</p>' +
+          '<p class="pb-done-actions"><button class="pb-btn" data-action="next">' + (nextSec ? 'Go to the next area' : 'Continue') + '</button> <button class="pb-btn pb-btn-ghost" data-action="prev">Review this area</button></p></div>';
+      }
+      var prog = session.progress();
+      var res = session.result();
+      if (res.informative) {          // the winner, alone, in the middle (it flies up from the dock)
+        var lead = res.coLeaders.length ? res.coLeaders : [res.ranking[0].tool];
+        var tie = lead.length > 1;
+        var nm = L.listJoin(L.sortNames(lead.map(function (t) { return t.name; })));
+        return '<div class="pb-winner"><p class="pb-winner-sub">All areas are complete · ' + prog.answered + ' of ' + prog.visible + ' questions answered</p>' +
+          '<p class="pb-winner-kicker">' + (tie ? 'Too close to call' : res.state === 'complete' ? 'Best fit' : 'Best fit so far') + '</p>' +
+          '<div class="pb-winner-logos">' + lead.map(function (t) { return '<span class="pb-winner-logo" data-tool="' + t.id + '">' + logoHtml(t.id, tie ? 'pb-logo-xl pb-logo-xl-tie' : 'pb-logo-xl') + '</span>'; }).join('') + '</div>' +
+          '<h3 tabindex="-1">' + esc(nm) + '</h3><p class="pb-winner-line">' + esc(L.leadSentence(res, names)) + '</p>' +
+          '<p class="pb-done-actions"><button class="pb-btn" data-action="finish">See the recommendation</button> <button class="pb-btn pb-btn-ghost" data-action="prev">Review answers</button></p></div>';
+      }
+      return '<div class="pb-done"><span class="pb-done-check" aria-hidden="true">' + icon('check') + '</span><h3 tabindex="-1">All areas are complete</h3>' +
+        '<p>' + prog.answered + ' of ' + prog.visible + ' questions answered. Your shortlist is ready.</p>' +
+        '<p class="pb-done-actions"><button class="pb-btn" data-action="finish">See the recommendation</button> <button class="pb-btn pb-btn-ghost" data-action="prev">Review answers</button></p></div>';
+    }
+
+    function overlayHtml() {
+      var list = steps(), idx = stepIndex(list, ui.step);
+      if (idx < 0) { ui.step = { kind: list[0].kind, section: list[0].section, qid: list[0].qid }; idx = 0; }
+      var st = list[idx], nx = list[idx + 1];
+      var sec = st.kind === 'end' ? null : sectionById(st.section);
+      var pct = st.kind === 'q' ? Math.round(st.pos / st.count * 100) : 100;
+      var title = sec ? sec.title : 'Client discovery';
+      var kicker = sec ? 'Area ' + sec.id + ' of ' + SECTIONS.length : 'Finished';
+      // the countdown runs inside the progress bar: ahead to the next question's position, or across the whole bar on a "complete" card
+      var sweepFrom = st.kind === 'q' ? pct : 0;
+      var sweepTo = st.kind === 'q' ? (nx && nx.kind === 'q' && nx.section === st.section ? Math.round(nx.pos / nx.count * 100) : 100) : 100;
+      return '<div class="pb-ovl-backdrop' + (ui.opening ? ' is-opening' : '') + '" data-action="close"></div>' +
+        '<div class="pb-ovl' + (ui.opening ? ' is-opening' : '') + '" role="dialog" aria-modal="true" aria-labelledby="pb-ovl-title">' +
+        '<header class="pb-ovl-head"><button class="pb-ovl-burger" data-action="menu" aria-label="Show all areas and questions" aria-expanded="' + (ui.menu ? 'true' : 'false') + '" aria-controls="pb-menu">' + icon('menu') + '</button><div class="pb-ovl-titlebox"><span class="pb-ovl-kicker">' + esc(kicker) + '</span><h2 id="pb-ovl-title">' + esc(title) + '</h2></div>' +
+        '<button class="pb-ovl-close" data-action="close" aria-label="Close and go back to client discovery">' + icon('close') + '</button></header>' +
+        '<div class="pb-ovl-progress' + (st.kind === 'q' ? '' : ' is-complete') + '" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="Progress in this area"><span class="pb-prog-base" style="width:' + pct + '%"></span>' + sweepHtml(sweepFrom, sweepTo) + '</div>' +
+        '<button class="pb-arrow pb-arrow-prev" data-action="prev" aria-label="Previous"' + (idx === 0 ? ' disabled' : '') + '>' + icon('left') + '</button>' +
+        '<div class="pb-ovl-stage"><div class="pb-card-q' + (st.kind === 'q' ? '' : ' is-done') + (ui.animate ? ' is-in' : '') + '" tabindex="-1">' + stepBody(st, list, idx) + '</div></div>' +
+        '<button class="pb-arrow pb-arrow-next" data-action="next" aria-label="Next"' + (st.kind === 'end' ? ' disabled' : '') + '>' + icon('right') + '</button>' +
+        (ui.menu ? menuHtml(st) : '') + popupHtml() + '</div>' +
+        '<footer class="pb-ovl-foot">' + top3Html() + '</footer>';       // outside the container, so it can be pinned to the screen
     }
 
     // ------------------------------------------------------------------ SHORTLIST
     function shortlistRows(r) { return r.shortlist.slice(); }
 
+    /** One reason or watch-out: the answer given, the fit word for that answer, the question it answered, and the experts' note. */
     function reasonHtml(row) {
       var tier = L.fitTier(row.absoluteFit);
-      return '<li>' + pill('tier-' + tier.key, tier.label) + ' <strong>' + esc(row.answer.map(function (a) { return a.label; }).join(', ')) + '</strong> ' +
-        '<span class="pb-qsmall">in answer to “' + esc(row.text) + '”</span>' +
-        (row.why.length ? '<br><span class="pb-why">' + esc(row.why.join(' ')) + '</span>' : '') + '</li>';
+      return '<li class="pb-reason"><div class="pb-reason-top"><strong class="pb-ans">' + esc(row.answer.map(function (a) { return a.label; }).join(', ')) + '</strong> ' + pill('tier-' + tier.key, tier.label) + '</div>' +
+        '<div class="pb-reason-q">' + esc(row.text) + '</div>' +
+        (row.why.length ? '<p class="pb-why">' + esc(row.why.join(' ')) + '</p>' : '') + '</li>';
     }
 
     function toolCard(r, row) {
@@ -304,53 +468,53 @@
       var bar = L.barGeometry(row.z);
       var below = r.adjustedByDominance.filter(function (a) { return a.tool === id; })[0];
       var rankLabel = row.tied ? '=' + row.rank : String(row.rank);
-      return '<article class="pb-card pb-tool" data-tool="' + id + '"><header><span class="pb-rank" aria-label="Rank ' + rankLabel + '">' + rankLabel + '</span><h3>' + esc(row.tool.name) + '</h3></header>' +
-        '<div class="pb-fit"><div class="pb-fitbar" role="img" aria-label="Relative fit: ' + (bar.side === 'right' ? 'above' : bar.side === 'left' ? 'below' : 'at') + ' the neutral starting point"><span class="pb-fitmid"></span>' +
+      var side = bar.side === 'right' ? 'above' : bar.side === 'left' ? 'below' : 'at';
+      return '<article class="pb-card pb-tool" data-tool="' + id + '"><header><span class="pb-rank" aria-label="Rank ' + rankLabel + '">' + rankLabel + '</span><span class="pb-card-logo">' + logoHtml(id) + '</span><h3>' + esc(row.tool.name) + '</h3></header>' +
+        '<div class="pb-fit"><div class="pb-fitbar" role="img" aria-label="Fit for this client: ' + side + ' average"><span class="pb-fitmid"></span>' +
         (bar.side !== 'none' ? '<span class="pb-fitfill ' + bar.side + '" style="width:' + bar.pct + '%"></span>' : '') + '</div>' +
-        '<p class="pb-fitcap">Relative fit. Compared with a neutral starting point.</p></div>' +
-        '<h4>Strongest reasons</h4><p class="pb-fine">Answers that count in this tool’s favour. The word shows how well it fits that answer on its own.</p>' + (ex.strengths.length ? '<ul class="pb-reasons">' + ex.strengths.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer favours this tool yet.</p>') +
-        '<h4>Watch-outs</h4><p class="pb-fine">Answers that count against this tool, even where it still fits reasonably.</p>' + (ex.concerns.length ? '<ul class="pb-reasons">' + ex.concerns.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer holds this tool back yet.</p>') +
+        '<p class="pb-fitcap"><span>Weaker</span><span>Average</span><span>Stronger</span></p></div>' +
+        '<h4>Why it fits</h4>' + (ex.strengths.length ? '<ul class="pb-reasons">' + ex.strengths.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer favours this tool yet.</p>') +
+        '<h4>Watch-outs</h4>' + (ex.concerns.length ? '<ul class="pb-reasons">' + ex.concerns.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer holds this tool back yet.</p>') +
         (below ? '<p class="pb-ranknote">Ranked below ' + esc(listTools(below.rankedBelow)) + ' because ' + (below.rankedBelow.length > 1 ? 'each fits' : esc(names[below.rankedBelow[0]]) + ' fits') + ' at least as well on every answer you gave.</p>' : '') +
-        '<details class="pb-details"><summary>Details</summary><p>Fit index (the engine’s z): <strong>' + row.z.toFixed(2) + '</strong>. Weighted average fit on your answers: <strong>' + (row.absoluteFit * 4).toFixed(2) + '</strong> of 4. ' +
-        'The fit index ranks the tools; the average is supporting evidence only.</p></details></article>';
+        '</article>';
     }
 
     function renderShortlist() {
       var r = session.result();
       var prog = session.progress();
-      var head = '<section class="pb-sec"><h2>Top 3 shortlist</h2><p class="pb-lead">Based on your answers, here is how the six tools compare for this client.</p>';
+      var head = '<section class="pb-sec"><h2>Top 3 shortlist</h2><p class="pb-lead">How the six tools compare for this client, based on the answers so far.</p>';
       if (!r.informative) {
-        var open = session.openQuestions().slice(0, 6);
-        return head + '<div class="pb-card"><p><strong>Answer a few questions to see how the tools compare.</strong></p>' + openList(open) + '<p><button class="pb-btn" data-action="go" data-tab="discovery">Go to client discovery</button></p></div></section>';
+        var open = session.openQuestions().slice(0, 4);
+        return head + '<div class="pb-card"><p><strong>Answer a few questions to see how the tools compare.</strong> Start with the ones that matter most:</p>' + openList(open) + '<p><button class="pb-btn" data-action="openq">Go to the questions</button></p></div></section>';
       }
       var tag = '<span class="pb-state pb-state-' + r.state + '">' + esc(L.STATE_LABEL[r.state]) + '</span>';
       var scale = { tooClose: 0, narrow: 1, clear: 2 }[r.leadStrength];
       var steps = ['Too close to call', 'Narrow lead', 'Clear lead'].map(function (t, i) { return '<li' + (i === scale ? ' class="on" aria-current="true"' : '') + '>' + t + '</li>'; }).join('');
       var rows = shortlistRows(r);
       var boundary = L.boundaryMessage(r);
-      var out = head + '<div class="pb-statusline">' + tag + ' <span>' + esc(L.stateLine(r.state, prog.answered, prog.visible)) + '</span></div>' +
+      var out = head + '<div class="pb-verdict"><div class="pb-statusline">' + tag + ' <span>' + esc(L.stateLine(r.state, prog.answered, prog.visible)) + '</span></div>' +
         '<div aria-live="polite" class="pb-live"><p class="pb-leadsentence">' + esc(L.leadSentence(r, names)) + '</p>' + (boundary ? '<p class="pb-boundary">' + esc(boundary) + '</p>' : '') + '</div>' +
-        (r.usesDraftQuestions.length ? '<div class="pb-banner pb-banner-draft">This result uses draft questions (' + esc(r.usesDraftQuestions.join(', ')) + '). Their scores are awaiting review.</div>' : '') +
+        '<ol class="pb-scale" aria-label="Lead strength">' + steps + '</ol></div>' +
+        (r.usesDraftQuestions.length ? '<p class="pb-fine">This result uses questions marked Draft (' + esc(r.usesDraftQuestions.join(', ')) + '). Their scores are awaiting review.</p>' : '') +
         '<div class="pb-tools">' + rows.map(function (row) { return toolCard(r, row); }).join('') + '</div>' +
-        '<ol class="pb-scale" aria-label="Lead strength">' + steps + '</ol>';
+        '<p class="pb-fine">The word beside each answer says how well that tool fits that answer on its own. Watch-outs are the answers that pull a tool down, even where it still fits reasonably well. Verify current platform details and pricing before quoting a client.</p>';
       if (r.excluded.length) {
         out += '<h3>Ruled out by your answers</h3>' + r.excluded.map(function (e) {
           var dep = deploymentFacts(e.tool.id);
           return '<div class="pb-card pb-out"><h4>' + esc(e.tool.name) + '</h4>' + (dep ? '<p>' + esc(dep) + '</p>' : '') + e.because.map(function (b) {
-            return '<p>“' + esc(b.questionText) + '” is answered “' + esc(b.optionLabel) + '”.' + (b.rationale ? '<br><span class="pb-why">' + esc(b.rationale) + '</span>' : '') + '</p>';
+            return '<p>You answered “' + esc(b.optionLabel) + '” to “' + esc(b.questionText) + '”.' + (b.rationale ? '<br><span class="pb-why">' + esc(b.rationale) + '</span>' : '') + '</p>';
           }).join('') + '</div>';
         }).join('');
       }
       var others = r.ranking.filter(function (x) { return x.rank > 3; });
       if (others.length) {
-        out += '<details class="pb-details pb-others"><summary>Other tools (' + others.length + ')</summary><ul>' + others.map(function (x) {
+        out += '<details class="pb-details pb-others"><summary>The other ' + others.length + ' tools</summary><ul>' + others.map(function (x) {
           var c = session.explain(x.tool.id, 1).concerns[0];
-          return '<li><strong>' + esc(x.tool.name) + '</strong> <small>rank ' + x.rank + '</small>' + (c ? ': ' + esc(c.text + ' ' + c.answer.map(function (a) { return a.label; }).join(', ')) : '') + '</li>';
+          return '<li><strong>' + esc(x.tool.name) + '</strong> <span class="pb-qsmall">rank ' + x.rank + '</span>' +
+            (c ? '<span class="pb-why">Held back most by “' + esc(c.answer.map(function (a) { return a.label; }).join(', ')) + '” in answer to “' + esc(c.text) + '”</span>' : '') + '</li>';
         }).join('') + '</ul></details>';
       }
-      out += '<div class="pb-banner">Verify current platform details and pricing before quoting a client.</div>' +
-        '<p class="pb-actions"><button class="pb-btn pb-btn-ghost" data-action="go" data-tab="discovery">Review answers</button> <button class="pb-btn pb-btn-ghost" data-action="go" data-tab="tools">Compare tools</button> ' +
-        '<button class="pb-btn" data-action="go" data-tab="final">Copy summary</button> <button class="pb-btn pb-btn-ghost" data-action="reset">Start over</button></p></section>';
+      out += '<p class="pb-actions"><button class="pb-btn" data-action="subtab" data-sub="final">Write the summary</button> <button class="pb-btn pb-btn-ghost" data-action="openq">Change answers</button> <button class="pb-btn pb-btn-ghost" data-action="reset">Start over</button></p></section>';
       return out;
     }
     /** Deployment facts for a tool from the deck's slide 22 (with the vendor-sourced corrections), used to explain an exclusion. */
@@ -379,8 +543,8 @@
       if (q13.indexOf('no') !== -1) return head + '<div class="pb-card"><p><strong>No existing reporting to migrate.</strong> The discovery result stands.</p></div></section>';
       var shortlist = r.informative ? r.shortlist.map(function (x) { return x.tool.id; }) : [];
       var inUse = (session.answers.Q14 || []).filter(function (id) { var o = qOf('Q14') && qOf('Q14').omap[id]; return o && !o.unknown; });
-      var out = head + '<p class="pb-lead">Basic effort rating (Low, Medium, High) across six migration dimensions. Use this to scope the effort, not just to pick the destination tool.</p>' +
-        '<p class="pb-note">Migration feasibility already shapes the ranking through the “tools in use” answer. This section explains it and adds effort detail; it is never counted twice.</p>';
+      var out = head + '<p class="pb-lead">How hard is the move from the tools the client uses today to each shortlisted tool? Effort is rated Low, Medium or High across six dimensions, so you can scope the work, not only pick the destination.</p>' +
+        '<p class="pb-note">Migration is already part of the ranking through the question about tools in use. This section explains that and adds detail; it is never counted twice.</p>';
       if (!inUse.length) out += '<div class="pb-card"><p>Answer “Which BI tools and licences are currently in use?” to see feasibility from your current tools.</p><p><button class="pb-btn" data-action="goq" data-qid="Q14">Go to the question</button></p></div>';
       if (!shortlist.length) out += '<div class="pb-card"><p>The shortlist appears once enough questions are answered. Effort detail for each shortlisted tool will show here.</p></div>';
       if (inUse.length && shortlist.length) {
@@ -438,17 +602,13 @@
 
     function renderTools() {
       var r = session.result();
-      var head = '<section class="pb-sec"><h2>The tools on your shortlist</h2><p class="pb-lead">A closer look at each tool on your shortlist, in rank order. Equal ranks are shown alphabetically.</p>';
       var shortlist = r.informative ? r.shortlist.map(function (x) { return x.tool.id; }) : [];
-      var out = head;
-      if (!shortlist.length) {
-        out += '<div class="pb-card"><p>The tools on your shortlist appear here once you have answered enough questions. You can still compare any tools below.</p></div>';
-      } else {
-        if (!ui.toolTab || shortlist.indexOf(ui.toolTab) === -1) ui.toolTab = shortlist[0];
-        out += '<div class="pb-tabs2" role="tablist">' + shortlist.map(function (id) {
-          return '<button role="tab" class="pb-tab2' + (id === ui.toolTab ? ' on' : '') + '" aria-selected="' + (id === ui.toolTab ? 'true' : 'false') + '" id="tt-' + id + '" data-action="tooltab" data-tool="' + id + '">' + esc(names[id]) + '</button>';
+      if (!ui.toolTab || toolIds.indexOf(ui.toolTab) === -1) ui.toolTab = shortlist[0] || toolIds[0];
+      var out = '<section class="pb-sec"><h2>Tool profiles</h2><p class="pb-lead">A profile of each tool, then a side-by-side comparison. Tools are listed alphabetically; the ones on your shortlist are marked.</p>' +
+        '<div class="pb-tabs2" role="tablist">' + toolIds.map(function (id) {
+          var short = shortlist.indexOf(id) !== -1;
+          return '<button role="tab" class="pb-tab2' + (id === ui.toolTab ? ' on' : '') + (short ? ' is-short' : '') + '" aria-selected="' + (id === ui.toolTab ? 'true' : 'false') + '" id="tt-' + id + '" data-action="tooltab" data-tool="' + id + '">' + logoHtml(id, 'pb-logo-xs') + '<span>' + esc(names[id]) + '</span>' + (short ? '<span class="pb-short-dot" title="On your shortlist" aria-label="on your shortlist"></span>' : '') + '</button>';
         }).join('') + '</div>' + profileHtml(ui.toolTab);
-      }
       out += '<h3 id="compare">Compare tools</h3>' + compareHtml(shortlist) + '</section>';
       return out;
     }
@@ -456,7 +616,7 @@
     function profileHtml(id) {
       var p = profileOf[id];
       var parts = [['Typical features', p.typicalFeatures], ['Unique features', p.uniqueFeatures], ['Benefits', p.benefits], ['AI capabilities', p.aiCapabilities], ['Cost tier', p.costTier]];
-      return '<div class="pb-profile" role="tabpanel"><p>' + esc(p.intro) + '</p><div class="pb-grid2">' +
+      return '<div class="pb-profile" role="tabpanel"><div class="pb-prof-head">' + logoHtml(id, 'pb-logo-lg') + '<h3>' + esc(names[id]) + '</h3></div><p>' + esc(p.intro) + '</p><div class="pb-grid2">' +
         parts.map(function (x) {
           if (!x[1].length) return '<div class="pb-card pb-withheld"><h4>' + x[0] + '</h4><p class="pb-fine">Not shown yet. The source slide repeats another tool’s list and is awaiting correction.</p></div>';
           return '<div class="pb-card"><h4>' + x[0] + '</h4>' + ul(x[1]) + '</div>';
@@ -521,9 +681,9 @@
     }
     function renderFinal() {
       var text = L.buildSummary(summaryContext());
-      return '<section class="pb-sec"><h2>BI tool finalisation: best-fit recommendation</h2>' +
-        '<p class="pb-lead">A copyable, printable summary of the recommendation, built from your answers. Recommended tool, rationale, trade-offs, migration implications and the next validation step.</p>' +
-        '<div class="pb-card" id="pb-summary"><label class="pb-notelabel">Client name (for the printout only; not stored)<input class="pb-input" data-action="client" value="' + esc(ui.clientName) + '" autocomplete="off"></label>' +
+      return '<section class="pb-sec"><h2>Final recommendation</h2>' +
+        '<p class="pb-lead">A plain-text summary you can copy, print or save: the best fit, the reasons and watch-outs, migration notes, and what to validate next.</p>' +
+        '<div class="pb-card" id="pb-summary"><label class="pb-notelabel">Client name (shown on the printout, never saved)<input class="pb-input" data-action="client" value="' + esc(ui.clientName) + '" autocomplete="off"></label>' +
         '<pre class="pb-pre" id="pb-summary-text">' + esc(text) + '</pre></div>' +
         '<p class="pb-actions"><button class="pb-btn" data-action="copy">Copy as text</button> <button class="pb-btn pb-btn-ghost" data-action="print">Print or save as PDF</button> ' +
         '<button class="pb-btn pb-btn-ghost" data-action="download">Download answers</button> <label class="pb-btn pb-btn-ghost pb-file">Restore answers<input type="file" accept="application/json" data-action="restore"></label></p>' +
@@ -556,148 +716,286 @@
       var matrix = '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Decision matrix, 14 criteria</caption><thead><tr><th scope="col">Criterion</th>' + toolIds.map(function (i) { return '<th scope="col">' + esc(names[i]) + '</th>'; }).join('') + '</tr></thead><tbody>' +
         D.matrix.groups.map(function (g) { return g.criteria.map(function (c) { return '<tr><th scope="row"><small>' + esc(g.name) + '</small><br>' + esc(c.name) + '</th>' + toolIds.map(function (i) { var x = c.cells[i]; return '<td><strong>' + esc(x.headline) + '</strong>' + (x.detail ? '<br>' + esc(x.detail) : '') + (x.leads ? '<br>' + pill('leads', 'Leads (deck)') : '') + '</td>'; }).join('') + '</tr>'; }).join(''); }).join('') + '</tbody></table></div><p class="pb-fine">Source: deck, slides 7 and 9.</p>';
       var why = '<div class="pb-card"><p><strong>Pending update.</strong> The deck’s “why these tools” slide was written for four tools and cites Gartner. It must be rewritten for all six, and its Gartner wording re-checked, before it is shown here.</p></div>';
-      var scoring = scoringHtml();
       var sec = function (id, title, body, open) { return '<details class="pb-details pb-ref" id="' + id + '"' + (open ? ' open' : '') + '><summary>' + esc(title) + '</summary>' + body + '</details>'; };
-      return '<section class="pb-sec"><h2>Reference</h2><p class="pb-lead">Background for people who want depth. Nothing here changes the recommendation.</p>' +
-        sec('ref-scoring', 'How scoring works', scoring, false) + sec('ref-patterns', 'Patterns we see', scen) + sec('ref-fast', 'Fast path by ecosystem', fastT) + sec('ref-deploy', 'Deployment considerations', dep) +
+      return '<section class="pb-sec"><h2>Deployment, integration and scenarios</h2><p class="pb-lead">Background for anyone who wants more depth. Nothing here changes the recommendation.</p>' +
+        sec('ref-patterns', 'Typical client scenarios', scen) + sec('ref-fast', 'Fast path by ecosystem', fastT) + sec('ref-deploy', 'Deployment considerations', dep) +
         sec('ref-integ', 'Technology integration', integT) + sec('ref-matrix', 'Decision matrix', matrix) + sec('ref-why', 'Why these six tools', why) + '</section>';
     }
     function scoringHtml() {
       return '<div class="pb-prose">' +
-        '<p><strong>What is measured.</strong> Every answer has a fit score for each tool, set by our subject-matter experts from 1 (possible but not ideal) to 4 (strong fit). The tool does not add those scores up, because a tool that scores a little higher on average would win whatever the client says.</p>' +
-        '<p><strong>The neutral starting point.</strong> On every question each tool is measured against a neutral reference: its own average across the possible answers or, for “how much does this matter” questions, the case where it does not matter. Only the difference counts, so a tool that tends to score well everywhere gains no automatic advantage. A client who tells us nothing sees every tool tied.</p>' +
-        '<p><strong>Relative fit.</strong> The differences are weighted by how much each question matters, added up, and divided by how much that tool’s score can swing, so a tool with more extreme scores does not win more often by chance. The result is the fit index that ranks the tools.</p>' +
-        '<p><strong>Ties and fairness.</strong> Ties are broken by your answers (ecosystem fit, then governance and security fit, then delivery risk and cost) and otherwise shared. A tool never outranks one that fits at least as well on every answer you gave. Tool order in the data never matters.</p>' +
-        '<p><strong>Ruling tools out.</strong> Some answers rule a tool out before ranking. Today one does: a client that cannot use a vendor-hosted tool rules out Sigma.</p>' +
-        '<p><strong>How sure to be.</strong> The page says whether the lead is clear, narrow or too close to call, and whether the third tool is clearly ahead of the first one left out. The lines are set from simulations in which the weights are nudged, and will be set again after the weighting session. The ranking is provisional until most of the questions are answered.</p>' +
-        '<p><strong>Limits.</strong> Question weights and the scores for questions marked Draft are provisional and awaiting expert review. The tool supports judgment; it does not replace a proof of concept.</p></div>';
+        '<p><strong>Where the scores come from.</strong> For every answer, subject-matter experts rated how well each tool fits, from 1 (possible but not ideal) to 4 (strong fit).</p>' +
+        '<p><strong>Why the scores are not simply added up.</strong> Some tools score well on almost everything, so adding scores would put the same tool first whatever the client says. Instead each tool is compared with its own typical score. Only the difference an answer makes counts, so a tool gets no head start for being good in general.</p>' +
+        '<p><strong>Stating a requirement.</strong> Questions about priorities (dashboard polish, AI, cost, users, talent, hosting) work the same way: a tool gains when it meets what you stated better than it usually meets such requirements. Answering more of them does not favour broad tools.</p>' +
+        '<p><strong>The ranking score.</strong> The differences are weighted by how much each question matters, added up, and divided by how much that tool’s score can swing. A client who tells us nothing sees every tool tied.</p>' +
+        '<p><strong>Ties and fairness.</strong> Ties are broken only by your answers (ecosystem fit, then governance and security, then delivery risk and cost) and otherwise shared. A tool never ranks above one that fits at least as well on every answer you gave. List order never matters.</p>' +
+        '<p><strong>Ruling a tool out.</strong> Some answers rule a tool out before ranking. Today one does: a client that cannot use a vendor-hosted tool rules out Sigma.</p>' +
+        '<p><strong>How sure to be.</strong> The page says whether the lead is clear, narrow or too close to call. Those lines come from simulations and will be set again after the weighting session. Treat the order as provisional until most questions are answered.</p>' +
+        '<p><strong>Limits.</strong> Question weights and the scores for questions marked Draft are provisional. The tool supports judgment; it does not replace a proof of concept.</p></div>';
     }
 
-    // ------------------------------------------------------------------ RAIL ("Your answers") and TOC
+    // ------------------------------------------------------------------ pages, navigation, rail
+    var SUBTABS = {
+      recommendation: { key: 'rec', items: [['shortlist', 'Shortlist'], ['migration', 'Migration analysis'], ['final', 'Final recommendation']] },
+      compare: { key: 'cmp', items: [['tools', 'Tool profiles and comparison'], ['reference', 'Deployment, integration and scenarios']] }
+    };
+    function subTabsHtml(page) {
+      var d = SUBTABS[page];
+      return '<div class="pb-subtabs" role="tablist" aria-label="' + (page === 'recommendation' ? 'Recommendation sections' : 'Comparison sections') + '">' + d.items.map(function (it) {
+        var on = ui[d.key] === it[0];
+        return '<button class="pb-subtab' + (on ? ' on' : '') + '" role="tab" aria-selected="' + on + '" data-action="subtab" data-sub="' + it[0] + '">' + esc(it[1]) + '</button>';
+      }).join('') + '</div>';
+    }
+    function blockHtml(id) { return '<div class="pb-block" id="sec-' + id + '" data-sec="' + id + '">' + RENDER[id]() + '</div>'; }
+    var PAGE_BLOCKS = {
+      home: function () { return blockHtml('overview'); },
+      guidelines: function () { return blockHtml('purpose') + blockHtml('principles') + blockHtml('scoring'); },
+      compare: function () { return subTabsHtml('compare') + blockHtml(ui.cmp); },
+      discovery: function () { return blockHtml('discovery'); },
+      recommendation: function () { return subTabsHtml('recommendation') + blockHtml(ui.rec); }
+    };
+    function pageHtml() { return '<div class="pb-page" data-page="' + ui.page + '">' + PAGE_BLOCKS[ui.page]() + '</div>'; }
+
     function renderRail() {
       var p = session.progress();
-      var r = session.result();
-      var open = session.openQuestions().slice(0, 5);
+      if (!p.answered) { o.rail.innerHTML = ''; return; }
       var pct = Math.round(p.coverage * 100);
-      // on small screens the panel starts collapsed, with a one-line summary that stays visible; the choice survives re-renders
-      var small = !!(root.matchMedia && root.matchMedia('(max-width: 980px)').matches);
-      var isOpen = ui.railOpen === undefined ? !small : ui.railOpen;
-      o.rail.innerHTML = '<details class="pb-rail-card pb-raildetails"' + (isOpen ? ' open' : '') + '><summary><span class="pb-rail-h">Your answers</span> ' +
-        '<span class="pb-rail-sum">' + p.answered + ' of ' + p.visible + ' · ' + esc(L.STATE_LABEL[r.state]) + '</span></summary>' +
+      o.rail.innerHTML = '<div class="pb-rail-card"><span class="pb-rail-h">Your progress</span>' +
         '<p class="pb-rail-count"><strong>' + p.answered + ' of ' + p.visible + '</strong> questions answered</p>' +
         '<div class="pb-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="Questions answered, weighted"><span style="width:' + pct + '%"></span></div>' +
-        '<p><span class="pb-state pb-state-' + r.state + '">' + esc(L.STATE_LABEL[r.state]) + '</span></p>' +
-        (r.informative ? '<p class="pb-rail-lead">' + esc(L.leadSentence(r, names)) + ' <button class="pb-link" data-action="go" data-tab="shortlist">See the shortlist</button></p>' : '') +
-        (r.state === 'none' || r.state === 'provisional' ? '<p class="pb-fine">The order is likely to change as you answer more.</p>' : '') +
-        (open.length ? '<h3 class="pb-rail-h2">Matters most, still open</h3><ul class="pb-open">' + open.map(function (q) { return '<li><button class="pb-link" data-action="goq" data-qid="' + q.id + '">' + esc(q.text) + '</button></li>'; }).join('') + '</ul>' : '') +
-        '<p class="pb-rail-foot"><button class="pb-link" data-action="reset">Start over</button><br><small>Saved on this device.</small></p></details>';
+        '<p><button class="pb-btn pb-btn-sm" data-action="openq">' + (p.remaining ? 'Continue the questions' : 'Review the questions') + '</button></p>' +
+        '<p class="pb-rail-foot"><button class="pb-link" data-action="reset">Start over</button><br><small>Saved on this device.</small></p></div>';
     }
-    /** "On this page": the nine sections, with the question sections under client discovery. Built from data, not from the DOM. */
+    /** "On this page": built from data. Pages that switch between sub-tabs list nothing (the tabs are the navigation). */
     function tocItems() {
-      var by = visibleBySection();
-      var items = [];
-      TABS.forEach(function (t) {
-        items.push({ id: 'sec-' + t.id, label: t.label, sub: false, tab: t.id });
-        if (t.id === 'discovery') SECTIONS.forEach(function (s) { if ((by[s.id] || []).length) items.push({ id: 'disc-' + s.id, label: s.id + '. ' + s.title, sub: true, tab: 'discovery' }); });
-      });
-      return items;
+      if (ui.page === 'home') return [['home-who', 'Who is this for?'], ['home-nav', 'How to navigate']];
+      if (ui.page === 'guidelines') return [['sec-purpose', 'Purpose'], ['sec-principles', 'Guiding principles'], ['sec-scoring', 'How the recommendation is made']];
+      if (ui.page === 'discovery') return [['disc-about', 'Client discovery'], ['disc-areas', 'Areas we ask about']];
+      return [];
     }
     function renderToc() {
       if (!o.toc) return;
-      o.toc.innerHTML = '<h2 class="pb-rail-h">On this page</h2><ul>' + tocItems().map(function (i) {
-        return '<li class="' + (i.sub ? 'sub' : '') + '"><a href="#' + i.id + '" data-toc="' + i.id + '"' + (!i.sub && i.tab === ui.tab ? ' aria-current="location"' : '') + '>' + esc(i.label) + '</a></li>';
-      }).join('') + '</ul>';
+      var items = tocItems();
+      o.toc.innerHTML = items.length ? '<h2 class="pb-rail-h">On this page</h2><ul>' + items.map(function (i) {
+        return '<li><a href="#' + i[0] + '" data-toc="' + i[0] + '">' + esc(i[1]) + '</a></li>';
+      }).join('') + '</ul>' : '';
+      if (o.toc.hidden !== undefined) o.toc.hidden = !items.length;
     }
 
-    // ------------------------------------------------------------------ one page: scrolling and "where am I"
-    function setActive(tab, force) {
-      if (ui.tab === tab && !force) return;
-      ui.tab = tab;
-      renderToc();
-      if (o.onTab) o.onTab(tab);
-    }
-    function focusFirst(el) { var f = el && el.querySelector ? el.querySelector('input,button,textarea,select') : null; if (f && f.focus) f.focus({ preventScroll: true }); }
-    /** Scroll to a section (or to an element inside it). The page is one scroll: this never swaps content. */
-    function go(tab, anchor) {
-      var el = anchor ? o.container.querySelector('#' + anchor) : o.container.querySelector('#sec-' + tab);
-      ui.lockUntil = Date.now() + 1000;          // the scroll watcher stays quiet while a jump is in flight
-      setActive(tab, true);
+    /** Show a page, or a section of a page: go('shortlist') opens the Recommendation page on its Shortlist tab. */
+    function go(id, anchor) {
+      var page = PAGE_IDS.indexOf(id) !== -1 ? id : SECTION_PAGE[id];
+      if (!page) return;
+      var changed = page !== ui.page;
+      ['rec', 'cmp'].forEach(function (k) { if (SUBTABS[page] && SUBTABS[page].key === k && SUBTABS[page].items.some(function (it) { return it[0] === id; }) && ui[k] !== id) { ui[k] = id; changed = true; } });
+      ui.page = page;
+      if (changed) { render(); if (root.scrollTo && !anchor) { try { root.scrollTo(0, 0); } catch (e) { /* not available */ } } }
+      if (o.onTab) o.onTab(page);
+      var target = anchor || (PAGE_IDS.indexOf(id) === -1 ? 'sec-' + id : null);
+      var el = target ? o.container.querySelector('#' + target) : null;
       if (el) { if (el.tagName === 'DETAILS') el.open = true; if (el.scrollIntoView) el.scrollIntoView({ block: 'start' }); }
     }
-    function goQuestion(qid) {
-      var el = o.container.querySelector('#q-' + qid);
-      ui.lockUntil = Date.now() + 1000;
-      setActive('discovery', true);
-      if (el) { if (el.scrollIntoView) el.scrollIntoView({ block: 'center' }); focusFirst(el); }
+
+    // ------------------------------------------------------------------ the question carousel: open, move, close
+    var overlayHost = o.overlay || null;
+    function doc() { return o.container.ownerDocument; }
+    function ensureOverlayHost() {
+      if (overlayHost) return overlayHost;
+      var d = doc();
+      if (d && d.createElement && d.body) { overlayHost = d.createElement('div'); overlayHost.className = 'pb-overlay'; overlayHost.hidden = true; d.body.appendChild(overlayHost); wire(overlayHost, true); }
+      return overlayHost;
     }
-    var spy = null;
-    function observe() {
-      if (!root.IntersectionObserver || !o.container.querySelectorAll) return;
-      if (spy) spy.disconnect();
-      spy = new root.IntersectionObserver(function (entries) {
-        if (Date.now() < (ui.lockUntil || 0)) return;
-        entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.getAttribute('data-sec')); });
-      }, { rootMargin: '-20% 0px -70% 0px' });
-      Array.prototype.forEach.call(o.container.querySelectorAll('.pb-block'), function (b) { spy.observe(b); });
+    function reduceMotion() { return !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    function lockPage(on) { var d = doc(); var h = d && d.documentElement; if (h && h.classList) h.classList[on ? 'add' : 'remove']('pb-lock'); }
+
+    function clearTimer() { if (ui.timer && ui.timer.h && root.clearTimeout) root.clearTimeout(ui.timer.h); ui.timer = null; }
+    function startTimer(kind, secs, fn) {
+      clearTimer();
+      ui.timer = { kind: kind, secs: secs, started: Date.now(), h: root.setTimeout ? root.setTimeout(function () { ui.timer = null; fn(); }, secs * 1000) : null };
+    }
+    /** After a click on an answer: if this question (and any follow-ups it opened) is answered, move on after QUESTION_SECONDS without another click. */
+    function armQuestionTimer() {
+      var st = ui.step, q = st && st.kind === 'q' ? session.visible().filter(function (v) { return v.id === st.qid; })[0] : null;
+      var ready = q && q.answered && !childrenOf(q.id).some(function (c) { return !c.answered; });
+      if (!ui.overlay || !ready || ui.hold) { clearTimer(); return; }
+      startTimer('q', QUESTION_SECONDS, function () { move(1); });
+    }
+    function afterStep() {
+      ui.hold = false;
+      var st = ui.step;
+      if (st && st.kind === 'done') startTimer('done', SECTION_SECONDS, function () { move(1); });
+      else if (st && st.kind === 'end') startTimer('done', session.result().informative ? WINNER_SECONDS : SECTION_SECONDS, function () { finish(); });
+      else clearTimer();
     }
 
-    // ------------------------------------------------------------------ render and events
-    var RENDER = { overview: renderOverview, purpose: renderPurpose, principles: renderPrinciples, discovery: renderDiscovery, shortlist: renderShortlist, migration: renderMigration, tools: renderTools, final: renderFinal, reference: renderReference };
-    /** The sections whose content depends on the answers. Everything else is static and is not redrawn when an answer changes. */
-    var DYNAMIC = ['discovery', 'shortlist', 'migration', 'tools', 'final'];
-    function blockHtml(id) { return '<div class="pb-block" id="sec-' + id + '" data-sec="' + id + '">' + RENDER[id]() + '</div>'; }
-    function activeId() { var a = o.container.ownerDocument && o.container.ownerDocument.activeElement; return a && a.id && o.container.contains(a) ? a.id : null; }
-    function restoreFocus(focusId) {
-      if (!focusId) return;
-      var f = o.container.querySelector('#' + (root.CSS && root.CSS.escape ? root.CSS.escape(focusId) : focusId));
-      if (f && f.focus) f.focus({ preventScroll: true });
-    }
-    function render() {
-      var focusId = activeId();
-      o.container.innerHTML = TABS.map(function (t) { return blockHtml(t.id); }).join('');
-      renderRail(); renderToc(); observe(); restoreFocus(focusId);
-    }
-    /** Redraw only the sections that depend on the answers, in place, so the reader keeps their scroll position. */
-    function update(ids) {
-      ids = ids || DYNAMIC;
-      var els = ids.map(function (id) { return o.container.querySelector('#sec-' + id); });
-      if (els.some(function (e) { return !e; })) { render(); return; }
-      var focusId = activeId();
-      ids.forEach(function (id, i) { els[i].innerHTML = RENDER[id](); });
-      renderRail(); renderToc(); restoreFocus(focusId);
+    function renderOverlay() {
+      var host = ensureOverlayHost();
+      if (!host) return;
+      if (!ui.overlay) { host.hidden = true; host.innerHTML = ''; lockPage(false); return; }
+      var d = doc(), active = d && d.activeElement, focusId = active && active.id && host.contains && host.contains(active) ? active.id : null;
+      var stage = host.querySelector ? host.querySelector('.pb-ovl-stage') : null, scrollTop = stage ? stage.scrollTop : 0;
+      var mb = host.querySelector ? host.querySelector('.pb-menu-body') : null, menuTop = mb ? mb.scrollTop : 0;
+      host.innerHTML = overlayHtml();
+      host.hidden = false;
+      lockPage(true);
+      var stage2 = host.querySelector ? host.querySelector('.pb-ovl-stage') : null;
+      if (ui.animate) {
+        var card = host.querySelector('.pb-card-q');
+        var h = card && card.querySelector('h3[tabindex]');
+        (h || card) && (h || card).focus && (h || card).focus({ preventScroll: true });
+      } else {
+        if (stage2) stage2.scrollTop = scrollTop;
+        if (focusId) { var f = host.querySelector('#' + (root.CSS && root.CSS.escape ? root.CSS.escape(focusId) : focusId)); if (f && f.focus) f.focus({ preventScroll: true }); }
+      }
+      flyWinner(host);
+      var fresh = host.querySelector ? host.querySelector('.pb-follow.is-new') : null;
+      if (fresh && fresh.scrollIntoView) fresh.scrollIntoView({ block: 'nearest', behavior: reduceMotion() ? 'auto' : 'smooth' });   // bring a newly opened follow-up into view
+      var mb2 = host.querySelector ? host.querySelector('.pb-menu-body') : null;
+      if (mb2) { if (menuTop) mb2.scrollTop = menuTop; else { var here = mb2.querySelector('.is-here'); if (here && here.scrollIntoView) here.scrollIntoView({ block: 'center' }); } }
+      ui.animate = false;
+      ui.opening = false;
     }
 
-    function checkedFor(qid) {
-      return Array.prototype.map.call(o.container.querySelectorAll('input[data-qid="' + qid + '"]:checked'), function (i) { return i.value; });
+    /** The winner's logo travels from its place in the dock up to the middle of the container, growing as it goes. */
+    function flyWinner(host) {
+      if (!ui.animate || !ui.step || ui.step.kind !== 'end' || !host.querySelectorAll || reduceMotion()) return;
+      Array.prototype.forEach.call(host.querySelectorAll('.pb-winner-logo'), function (el) {
+        var src = host.querySelector('.pb-logo-btn[data-tool="' + el.getAttribute('data-tool') + '"]');
+        if (!src || !el.animate || !el.getBoundingClientRect) return;
+        var a = src.getBoundingClientRect(), b = el.getBoundingClientRect();
+        if (!b.width) return;
+        var dx = a.left + a.width / 2 - (b.left + b.width / 2), dy = a.top + a.height / 2 - (b.top + b.height / 2), k = a.width / b.width;
+        src.style.visibility = 'hidden';
+        var anim = el.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + k + ')', opacity: 1 }, { transform: 'translate(' + dx * 0.15 + 'px,' + dy * 0.15 + 'px) scale(' + (1 + k) / 2 * 0.6 + ')', opacity: 1, offset: 0.6 }, { transform: 'none', opacity: 1 }], { duration: 1100, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+        var back = function () { src.style.visibility = ''; };
+        anim.onfinish = back; anim.oncancel = back;
+      });
+    }
+
+    function setStep(st) {
+      ui.step = st; ui.animate = true; ui.followShown = {}; ui.popup = null;
+      afterStep();            // starts the countdown on the "complete" cards first, so the first drawing already shows it
+      renderOverlay();
+    }
+    /** Move one step with a short fade. Moving past the final card opens the recommendation. */
+    function move(dir) {
+      var list = steps(), idx = stepIndex(list, ui.step);
+      var to = list[idx + dir];
+      if (!to) { if (dir > 0) finish(); return; }
+      clearTimer();
+      var host = overlayHost, card = host && host.querySelector ? host.querySelector('.pb-card-q') : null;
+      var apply = function () { if (ui.overlay) setStep({ kind: to.kind, section: to.section, qid: to.qid }); };
+      if (card && root.setTimeout && !reduceMotion()) { card.classList.add('is-leaving'); root.setTimeout(apply, 170); } else apply();
+    }
+    /** Jump straight to a question (or to the question a follow-up belongs to), from the drawer. */
+    function jumpTo(qid, sectionId) {
+      var list = steps(), st;
+      if (qid) { var q = qOf(qid), top = q && parentOf(q) ? parentOf(q) : qid; st = list.filter(function (s) { return s.kind === 'q' && s.qid === top; })[0]; }
+      else st = list.filter(function (s) { return s.kind === 'q' && s.section === sectionId; })[0];
+      if (!st) return;
+      clearTimer(); ui.menu = false;
+      setStep({ kind: 'q', section: st.section, qid: st.qid });
+    }
+    function firstUnanswered(sectionId) {
+      var list = steps().filter(function (s) { return s.kind === 'q' && (!sectionId || s.section === sectionId); });
+      var vis = session.visible();
+      var open = list.filter(function (s) { var q = vis.filter(function (v) { return v.id === s.qid; })[0]; return q && (!q.answered || childrenOf(q.id).some(function (c) { return !c.answered; })); })[0];
+      return open || list[0];
+    }
+    /** Open the carousel: no argument = the first unanswered question; a section number = that area; a question id = that question. */
+    function openDiscovery(arg) {
+      var list = steps(), st;
+      if (arg && /^Q\d+$/.test(arg)) {
+        var q = qOf(arg), pid = q ? parentOf(q) : null, top = pid || arg;
+        st = list.filter(function (s) { return s.kind === 'q' && s.qid === top; })[0];
+      } else st = firstUnanswered(arg || null);
+      if (!st) return;
+      ui.page = 'discovery'; ui.overlay = true; ui.opening = true; ui.menu = false; ui.popup = null; ui.followShown = {}; ui.hold = false;
+      if (o.onTab) o.onTab('discovery');
+      renderPage(); renderRail(); renderToc();
+      setStep({ kind: 'q', section: st.section, qid: st.qid });
+    }
+    function closeDiscovery() {
+      clearTimer(); ui.overlay = false; ui.popup = null; ui.notice = null;
+      renderOverlay(); renderPage(); renderRail(); renderToc();
+    }
+    function finish() {
+      var flights = captureFlights();
+      closeDiscovery(); go('recommendation');
+      playFlights(flights);
+    }
+    /** The logos on screen (the dock, or the winner in the middle) are copied before the carousel closes, so they can travel to the shortlist. */
+    function captureFlights() {
+      var host = overlayHost, d = doc();
+      if (!host || !host.querySelectorAll || !d || !d.body || !d.createElement || reduceMotion()) return [];
+      var out = [];
+      Array.prototype.forEach.call(host.querySelectorAll('.pb-logo-btn'), function (btn) {
+        var id = btn.getAttribute('data-tool');
+        var src = host.querySelector('.pb-winner-logo[data-tool="' + id + '"]') || btn;
+        var logo = src.querySelector('.pb-logo');
+        var r = logo && logo.getBoundingClientRect();
+        if (!r || !r.width) return;
+        var c = logo.cloneNode(true);
+        c.className = (logo.classList.contains('pb-mono') ? 'pb-logo pb-mono' : 'pb-logo') + ' pb-flight';
+        c.style.cssText = 'position:fixed;z-index:400;margin:0;pointer-events:none;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;font-size:' + (root.getComputedStyle ? root.getComputedStyle(logo).fontSize : '16px');
+        d.body.appendChild(c);
+        out.push({ id: id, clone: c, rect: r });
+      });
+      return out;
+    }
+    function playFlights(list) {
+      if (!list.length) return;
+      // the page stays at the top where it opened; a logo only flies if its destination is on screen, otherwise it simply fades out
+      list.forEach(function (f) {
+        var target = o.container.querySelector('.pb-tool[data-tool="' + f.id + '"] .pb-card-logo .pb-logo');
+        if (!target || !f.clone.animate) { f.clone.remove(); return; }
+        var t = target.getBoundingClientRect();
+        var vh = root.innerHeight || 800;
+        if (t.top < 0 || t.bottom > vh) { var fade = f.clone.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }); fade.onfinish = function () { f.clone.remove(); }; return; }
+        target.style.opacity = '0';
+        f.clone.style.transformOrigin = '0 0';
+        var a = f.clone.animate([{ transform: 'none' }, { transform: 'translate(' + (t.left - f.rect.left) + 'px,' + (t.top - f.rect.top) + 'px) scale(' + t.width / f.rect.width + ')' }], { duration: 950, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
+        var done = function () { target.style.opacity = ''; f.clone.remove(); };
+        a.onfinish = done; a.oncancel = done;
+      });
+    }
+
+    // ------------------------------------------------------------------ render and answers
+    var RENDER = { overview: renderOverview, purpose: renderPurpose, principles: renderPrinciples, scoring: renderScoring, discovery: renderDiscovery, shortlist: renderShortlist, migration: renderMigration, tools: renderTools, final: renderFinal, reference: renderReference };
+    function renderPage() { o.container.innerHTML = pageHtml(); }
+    function render() { renderPage(); renderRail(); renderToc(); renderOverlay(); }
+    /** An answer changed: redraw the page behind, the progress panel and the carousel. */
+    function refresh() { renderPage(); renderRail(); renderToc(); renderOverlay(); }
+
+    function checkedFor(host, qid) {
+      return Array.prototype.map.call(host.querySelectorAll('input[data-qid="' + qid + '"]:checked'), function (i) { return i.value; });
     }
     function applyAnswer(qid, ids) {
       var before = JSON.parse(JSON.stringify(session.answers));
       var res;
-      try { res = session.answer(qid, ids); } catch (e) { ui.notice = { text: e.message }; update(); return; }
+      try { res = session.answer(qid, ids); } catch (e) { ui.notice = { text: e.message }; refresh(); return; }
       if (res.pruned.length) {
         ui.notice = { text: 'Your answers to ' + res.pruned.map(function (id) { return '“' + qOf(id).text + '”'; }).join(' and ') + ' were cleared because that part of the questionnaire no longer applies.', undo: before };
       } else if (ui.notice && !ui.notice.undo) { ui.notice = null; }
       persist();
-      update();
+      ui.hold = false;
+      armQuestionTimer();
+      refresh();
+    }
+    function clearOption(qid, optionId) {
+      var cur = session.answers[qid] || [];
+      if (cur.indexOf(optionId) === -1) return;          // not selected: nothing to clear
+      applyAnswer(qid, cur.filter(function (id) { return id !== optionId; }));
+    }
+    // A double-click on an answer clears it (on a phone, use Clear). Three paths cover the browsers' differences: a radio that is
+    // clicked twice produces no second change event, a checkbox produces two changes, and where the page was not redrawn in
+    // between the browser's own dblclick event arrives.
+    function isDouble(id) {
+      var now = Date.now(), last = ui.lastToggle;
+      var again = !!(last && last.id === id && now - last.t < 450);
+      ui.lastToggle = again ? null : { id: id, t: now };
+      return again;
     }
 
-    o.container.addEventListener('change', function (e) {
-      var t = e.target;
-      if (t.matches && t.matches('input[data-qid]')) { applyAnswer(t.getAttribute('data-qid'), checkedFor(t.getAttribute('data-qid'))); return; }
-      var act = t.getAttribute && t.getAttribute('data-action');
-      if (act === 'cmp-a') { ui.compare.a = t.value; if (ui.compare.b === t.value) ui.compare.b = '__all__'; update(['tools']); }
-      else if (act === 'cmp-b') { ui.compare.b = t.value; update(['tools']); }
-      else if (act === 'restore' && t.files && t.files[0]) {
-        var rd = new root.FileReader();
-        rd.onload = function () { try { var d = JSON.parse(rd.result); buildSession(d.answers || {}); store.notes = d.notes || store.notes; persist(); ui.notice = null; render(); flash('Answers restored.'); } catch (err) { flash('That file could not be read.'); } };
-        rd.readAsText(t.files[0]);
-      }
-    });
-    o.container.addEventListener('input', function (e) {
-      var t = e.target;
-      if (t.matches && t.matches('textarea[data-note]')) { store.notes[t.getAttribute('data-note')] = t.value; if (!t.value) delete store.notes[t.getAttribute('data-note')]; saveStore(); }
-      else if (t.getAttribute && t.getAttribute('data-action') === 'client') { ui.clientName = t.value; var pre = o.container.querySelector('#pb-summary-text'); if (pre) pre.textContent = L.buildSummary(summaryContext()); }
-    });
     function flash(msg) { var el = o.container.querySelector('#pb-flash'); if (el) el.textContent = msg; }
     function summaryText() { return L.buildSummary(summaryContext()); }
     function copy() {
@@ -705,55 +1003,135 @@
       if (root.navigator && root.navigator.clipboard) { root.navigator.clipboard.writeText(text).then(function () { flash('Copied.'); }, function () { fallbackCopy(text); }); } else fallbackCopy(text);
     }
     function fallbackCopy(text) {
-      var ta = o.container.ownerDocument.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-      o.container.ownerDocument.body.appendChild(ta); ta.select();
-      try { flash(o.container.ownerDocument.execCommand('copy') ? 'Copied.' : 'Select the text and copy it.'); } catch (e) { flash('Select the text and copy it.'); }
-      o.container.ownerDocument.body.removeChild(ta);
+      var ta = doc().createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      doc().body.appendChild(ta); ta.select();
+      try { flash(doc().execCommand('copy') ? 'Copied.' : 'Select the text and copy it.'); } catch (e) { flash('Select the text and copy it.'); }
+      doc().body.removeChild(ta);
     }
     function download() {
       var blob = new root.Blob([JSON.stringify({ app: 'bi-playbook', version: 1, answers: session.answers, notes: store.notes }, null, 2)], { type: 'application/json' });
-      var a = o.container.ownerDocument.createElement('a'); a.href = root.URL.createObjectURL(blob); a.download = 'bi-playbook-answers.json'; a.click(); root.URL.revokeObjectURL(a.href);
+      var a = doc().createElement('a'); a.href = root.URL.createObjectURL(blob); a.download = 'bi-playbook-answers.json'; a.click(); root.URL.revokeObjectURL(a.href);
     }
 
-    o.container.addEventListener('click', function (e) {
-      var b = e.target.closest ? e.target.closest('[data-action]') : null;
-      if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT' || b.tagName === 'OPTION') return;
-      var act = b.getAttribute('data-action');
-      if (act === 'go') go(b.getAttribute('data-tab'), b.getAttribute('data-anchor'));
-      else if (act === 'goq') goQuestion(b.getAttribute('data-qid'));
-      else if (act === 'section') { ui.lockUntil = Date.now() + 1000; setActive('discovery', true); var s = o.container.querySelector('#disc-' + b.getAttribute('data-section')); if (s && s.scrollIntoView) s.scrollIntoView({ block: 'start' }); }
-      else if (act === 'clear') applyAnswer(b.getAttribute('data-qid'), []);
-      else if (act === 'note') { var id = b.getAttribute('data-qid'); ui.openNotes[id] = !(ui.openNotes[id] || store.notes[id]); update(['discovery']); var ta = o.container.querySelector('textarea[data-note="' + id + '"]'); if (ta) ta.focus({ preventScroll: true }); }
-      else if (act === 'undo') { if (ui.notice && ui.notice.undo) { var prev = ui.notice.undo; ui.notice = null; buildSession(prev); persist(); update(); } }
-      else if (act === 'dismiss') { ui.notice = null; update(['discovery']); }
-      else if (act === 'tooltab') { ui.toolTab = b.getAttribute('data-tool'); update(['tools']); }
-      else if (act === 'copy') copy();
-      else if (act === 'print') { var html = o.container.ownerDocument.documentElement; html.setAttribute('data-print', 'summary'); root.print(); html.removeAttribute('data-print'); }
-      else if (act === 'download') download();
-      else if (act === 'reset') api.reset();
-    });
-    o.rail.addEventListener('toggle', function (e) { if (e.target && e.target.classList && e.target.classList.contains('pb-raildetails')) ui.railOpen = e.target.open; }, true);
+    /** Attach the page's handlers to a host element: the content area and the carousel share them. */
+    function wire(host, isOverlay) {
+      host.addEventListener('change', function (e) {
+        var t = e.target;
+        if (t.matches && t.matches('input[data-qid]')) {
+          var qid = t.getAttribute('data-qid');
+          // The page redraws after every change, so the browser does not report a double-click on a checkbox. A second change on the
+          // same answer within a moment is read as a double-click: the answer is cleared.
+          var again = isDouble(t.id);
+          if (again && t.type === 'checkbox') { applyAnswer(qid, checkedFor(host, qid).filter(function (v) { return v !== t.value; })); return; }
+          applyAnswer(qid, checkedFor(host, qid));
+          return;
+        }
+        var act = t.getAttribute && t.getAttribute('data-action');
+        if (act === 'cmp-a') { ui.compare.a = t.value; if (ui.compare.b === t.value) ui.compare.b = '__all__'; render(); }
+        else if (act === 'cmp-b') { ui.compare.b = t.value; render(); }
+        else if (act === 'restore' && t.files && t.files[0]) {
+          var rd = new root.FileReader();
+          rd.onload = function () { try { var d = JSON.parse(rd.result); buildSession(d.answers || {}); store.notes = d.notes || store.notes; persist(); ui.notice = null; render(); flash('Answers restored.'); } catch (err) { flash('That file could not be read.'); } };
+          rd.readAsText(t.files[0]);
+        }
+      });
+      host.addEventListener('input', function (e) {
+        var t = e.target;
+        if (t.matches && t.matches('textarea[data-note]')) { store.notes[t.getAttribute('data-note')] = t.value; if (!t.value) delete store.notes[t.getAttribute('data-note')]; saveStore(); clearTimer(); ui.hold = true; }
+        else if (t.getAttribute && t.getAttribute('data-action') === 'client') { ui.clientName = t.value; var pre = o.container.querySelector('#pb-summary-text'); if (pre) pre.textContent = L.buildSummary(summaryContext()); }
+      });
+      host.addEventListener('click', function (e) {          // a radio clicked twice quickly
+        var t = e.target;
+        if (!t || t.tagName !== 'INPUT' || t.type !== 'radio' || !t.checked) return;
+        var last = ui.lastToggle;
+        if (last && last.id === t.id && Date.now() - last.t < 450) { ui.lastToggle = null; clearOption(t.getAttribute('data-qid'), t.value); }
+      });
+      host.addEventListener('dblclick', function (e) {
+        var tile = e.target.closest ? e.target.closest('.pb-opt') : null;
+        var input = tile && tile.querySelector ? tile.querySelector('input[data-qid]') : null;
+        if (input) clearOption(input.getAttribute('data-qid'), input.value);
+      });
+      host.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-action]') : null;
+        if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT' || b.tagName === 'OPTION') return;
+        var act = b.getAttribute('data-action');
+        if (act === 'go') go(b.getAttribute('data-tab'), b.getAttribute('data-anchor'));
+        else if (act === 'subtab') go(b.getAttribute('data-sub'));
+        else if (act === 'openq') openDiscovery(b.getAttribute('data-section') || null);
+        else if (act === 'goq') openDiscovery(b.getAttribute('data-qid'));
+        else if (act === 'close') closeDiscovery();
+        else if (act === 'menu') { ui.menu = !ui.menu; ui.popup = null; clearTimer(); ui.hold = true; renderOverlay(); }
+        else if (act === 'menuclose') { ui.menu = false; renderOverlay(); }
+        else if (act === 'jump') jumpTo(b.getAttribute('data-qid'), null);
+        else if (act === 'jumpsec') jumpTo(null, b.getAttribute('data-section'));
+        else if (act === 'prev') move(-1);
+        else if (act === 'next') move(1);
+        else if (act === 'finish') finish();
+        else if (act === 'tool') { ui.popup = ui.popup === b.getAttribute('data-tool') ? null : b.getAttribute('data-tool'); renderOverlay(); }
+        else if (act === 'poptool') { ui.popup = b.getAttribute('data-tool'); renderOverlay(); }
+        else if (act === 'popclose') { ui.popup = null; renderOverlay(); }
+        else if (act === 'clear') applyAnswer(b.getAttribute('data-qid'), []);
+        else if (act === 'note') { var id = b.getAttribute('data-qid'); ui.openNotes[id] = !(ui.openNotes[id] || store.notes[id]); clearTimer(); ui.hold = true; refresh(); var ta = host.querySelector('textarea[data-note="' + id + '"]'); if (ta) ta.focus({ preventScroll: true }); }
+        else if (act === 'undo') { if (ui.notice && ui.notice.undo) { var prev = ui.notice.undo; ui.notice = null; buildSession(prev); persist(); refresh(); } }
+        else if (act === 'dismiss') { ui.notice = null; refresh(); }
+        else if (act === 'tooltab') { ui.toolTab = b.getAttribute('data-tool'); render(); }
+        else if (act === 'copy') copy();
+        else if (act === 'print') { var html = doc().documentElement; html.setAttribute('data-print', 'summary'); root.print(); html.removeAttribute('data-print'); }
+        else if (act === 'download') download();
+        else if (act === 'reset') api.reset();
+      });
+      if (isOverlay) host.addEventListener('keydown', function (e) {
+        var k = e.key, t = e.target || {};
+        if (k === 'Escape') { if (ui.popup) { ui.popup = null; renderOverlay(); } else if (ui.menu) { ui.menu = false; renderOverlay(); } else closeDiscovery(); e.preventDefault && e.preventDefault(); return; }
+        if (k === 'Tab' && host.querySelectorAll) {       // keep keyboard focus inside the open carousel
+          var f = Array.prototype.filter.call(host.querySelectorAll('button:not([disabled]), input, textarea, [tabindex="-1"].pb-card-q'), function (n) { return n.offsetParent !== null || n === (doc() && doc().activeElement); });
+          if (!f.length) return;
+          var first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && (t === first || !host.contains(t))) { last.focus(); e.preventDefault(); }
+          else if (!e.shiftKey && t === last) { first.focus(); e.preventDefault(); }
+          return;
+        }
+        var typing = t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || (t.tagName === 'INPUT' && t.type !== 'button');
+        if (!typing && (k === 'ArrowLeft' || k === 'ArrowRight')) { move(k === 'ArrowRight' ? 1 : -1); e.preventDefault && e.preventDefault(); }
+      });
+      // any click or key in the carousel counts as an interaction: a pending auto-advance is cancelled and re-armed by the answer itself
+    }
+    wire(o.container, false);
+    if (overlayHost) wire(overlayHost, true);
     o.rail.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-action]') : null;
       if (!b) return;
       var act = b.getAttribute('data-action');
-      if (act === 'goq') goQuestion(b.getAttribute('data-qid'));
-      else if (act === 'go') go(b.getAttribute('data-tab'));
+      if (act === 'openq') openDiscovery(null);
       else if (act === 'reset') api.reset();
     });
 
     var api = {
-      tabs: TABS,
-      /** The section currently in view. */
-      get tab() { return ui.tab; },
-      /** Scroll to a section. The whole playbook is one page. */
-      go: function (tab) { if (RENDER[tab]) go(tab); },
+      /** The playbook's pages, in order (the tab row). */
+      tabs: PAGES,
+      /** The page being shown. */
+      get tab() { return ui.page; },
+      /** Show a page, or a section of a page ('shortlist' opens the Recommendation page on its Shortlist tab). */
+      go: function (id) { go(id); },
       /** Programmatic equivalent of picking answers in the page (used by tests and by anything embedding the module). */
       answer: function (qid, optionIds) { applyAnswer(qid, optionIds); },
+      /** What a double-click on an answer does: take that answer out of the selection (a single answer becomes unanswered). */
+      clearOption: function (qid, optionId) { clearOption(qid, optionId); },
       setNote: function (qid, text) { if (text) store.notes[qid] = text; else delete store.notes[qid]; saveStore(); },
       session: function () { return session; },
+      /** The question carousel: open (no argument, a section number or a question id), move, close, inspect. */
+      openDiscovery: function (arg) { openDiscovery(arg); },
+      closeDiscovery: function () { closeDiscovery(); },
+      move: function (dir) { move(dir); },
+      step: function () { return ui.step ? JSON.parse(JSON.stringify(ui.step)) : null; },
+      overlayOpen: function () { return !!ui.overlay; },
+      menu: function (open) { ui.menu = !!open; if (ui.overlay) renderOverlay(); },
+      jump: function (qid) { jumpTo(qid, null); },
+      overlayHtml: function () { return ui.overlay ? overlayHtml() : ''; },
+      showTool: function (id) { ui.popup = id; renderOverlay(); },
       reset: function () {
         if (root.confirm && !root.confirm('Clear all answers and notes on this device?')) return;
+        clearTimer(); ui.overlay = false; ui.popup = null; ui.menu = false;
         store = { answers: {}, notes: {} }; saveStore(); buildSession({}); ui.notice = null; ui.openNotes = {}; ui.clientName = ''; render();
       },
       setShowDrafts: function (v) { persist(); showDrafts = !!v; buildSession(store.answers); render(); },
@@ -764,5 +1142,5 @@
     return api;
   }
 
-  return { mount: mount, TABS: TABS, SECTIONS: SECTIONS };
+  return { mount: mount, TABS: PAGES, PAGES: PAGES, SECTIONS: SECTIONS, SECTION_PAGE: SECTION_PAGE };
 }));

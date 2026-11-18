@@ -1,6 +1,6 @@
 # BI Tools Selection Playbook: page design and content draft
 
-Status: audited 2026-11-17 (section 13) and built as a preview the same day (section 14). This file is the page in reading order, so it can be reviewed as content first and as design second.
+Status: audited 2026-11-17 (section 13), built as a preview the same day (section 14) and restructured on 2026-11-18 into five pages with a question carousel (section 15, which supersedes the navigation described in section 3). This file is the page in reading order, so it can be reviewed as content first and as design second.
 
 ## 0. How to read this document
 
@@ -119,6 +119,7 @@ Rules that follow:
 ## 3. Page content, in reading order
 
 ### 3.1 Hero and navigation
+> **Superseded in part by section 15:** the nine tabs became five pages (Overview, Guidelines, Compare tools, Client discovery, Recommendation) and the questions moved into a carousel.
 
 - **Breadcrumb:** Playbook › BI Tools Selection Playbook **[Observed pattern]**
 - **Title:** BI Tools Selection Playbook **[Deck s3 to s6 (each slide title starts with it)]**
@@ -147,27 +148,14 @@ Nine sections, as many as the Delivery Playbook has tabs **[Observed]**.
 
 **Heading:** BI Tools Selection Playbook
 
-**Start here** (the three options the Flow shows when the playbook opens **[Flow]**):
+**Revised 2026-11-18** after a review found the page cluttered and its overview repetitive: the deck's flow cards, decision node and "decision inputs" duplicated what the sections themselves say, so they were removed from the page. The deck's content is unchanged in the Purpose, Guiding principles and Migration sections.
 
-1. **Playbook Purpose.** A short read.
-2. **General Guiding Principles.** A short read.
-3. **Client Requirement Discovery.** Questions with preset answers.
+- **Lead:** *Choose and justify the right BI tool for a client. Answer questions about the client, see how {the six tools, alphabetical} compare, and copy a summary with the reasons.*
+- **Three steps**, each a link that scrolls to its section: *Describe the client* (the discovery questions), *Compare the tools* (the shortlist, the migration effort and each tool in detail), *Write it up* (the summary).
+- **Three facts:** *Internal use only. Not for the client to read.* · *Private. Answers and notes stay in this browser.* · *Neutral. The ranking comes only from the answers you give.* **[Deck s4; Engine]**
+- **One note:** *If the client already uses a BI tool, the migration section shows how hard the move would be next to how well each tool fits. It does not change the ranking.* **[Proposal, D4; deck s3 footnote paraphrased]**
 
-**How the recommendation flow works** (the deck's flow cards **[Deck s3]**):
-
-1. **Playbook purpose.** Guide consistent BI tool selection. Support sales and delivery decisions.
-2. **Guiding principles.** Business problem first. Client-specific, evidence-led decisions.
-3. **Client discovery.** Apply weighted questions across business, governance and readiness.
-4. **Top 3 shortlist.** Rank all six tools. Deep-dive the three highest scores.
-
-Decision node: **Existing BI tool and migration required?** *Yes:* Migration analysis. *No:* Use discovery result (retain the top-ranked recommendation from the weighted assessment). Both lead to **BI tool finalisation: best-fit recommendation** **[Deck s3]**.
-
-**Decision inputs:** Business fit · Technology fit · Governance fit · Commercial fit **[Deck s3]**.
-
-Footnote, verbatim from the deck: *The shortlist is a starting point. Migration effort only changes the answer when the cost, risk or lost investment outweighs the incremental fit.* **[Deck s3]**
-Added line (this tool's handling, see 3.7): *In this tool, migration effort is shown next to the fit. You weigh it; it does not change the ranking on its own.* **[Proposal, D4]**
-
-**Primary button:** Start client discovery.
+**Primary button:** Start with the questions.
 
 ### 3.3 Purpose
 
@@ -304,15 +292,15 @@ Always shown: *Based on {n} of {m} questions.*
 **The shortlist: tool cards** (identical style; equal ranks side by side, alphabetical). Each card shows:
 1. **Rank badge** (1, 2, 3; ties show "=1"; no percentage, no score).
 2. **Tool name.**
-3. **Fit bar:** relative fit, how far this tool's fit to your answers is above what it would score for a client who told us nothing. Caption: *Relative fit. Compared with a neutral starting point.* The numbers are in a "Details" drawer for consultants **[D15]**.
-4. **Strongest reasons** (up to 3): a fit pill for the answer (section 2), the client's answer in bold, the question as context, and the SME rationale for that tool. A line under the heading says: *Answers that count in this tool's favour. The word shows how well it fits that answer on its own.*
-5. **Watch-outs** (up to 3), same format, with the line *Answers that count against this tool, even where it still fits reasonably.* A watch-out can carry a Good fit word: the word is the fit for that answer on its own, the watch-out is relative to the neutral starting point. These are the "risks" the Flow asks for **[D15]**.
+3. **Fit bar:** how far this tool's fit to your answers is above or below what it would score for a client who told us nothing. Labelled *Weaker*, *Average* and *Stronger* under the bar. The engine's numbers are no longer shown on the card (revision 2026-11-18); they remain available from the engine for consultants **[D15]**.
+4. **Why it fits** (up to 3): the client's answer in bold with a fit pill for it (section 2), the question in small type, and the SME rationale for that tool.
+5. **Watch-outs** (up to 3), same format. A watch-out can carry a Good fit word: the word is the fit for that answer on its own, while the watch-out is relative to the neutral starting point. One line under the three cards explains this once, instead of under every heading. These are the "risks" the Flow asks for **[D15]**.
 6. **Rank note**, only when it applies: *Ranked below {Tool} because {Tool} fits at least as well on every answer you gave.*
 > **Data:** `result().shortlist`, `shortlistBoundary`, `leadStrength`, `adjustedByDominance`; `Session.explain(toolId, 3)` returns `strengths` and `concerns`, each with `answer`, `why` and `absoluteFit` **[Engine, tested]**.
 
 **Ruled out by your answers** (only when relevant): a card per excluded tool giving the question, the answer, and the SME's rationale for that tool on that answer. Today **one answer rules a tool out**: "Is a vendor-hosted (SaaS) BI platform acceptable?" answered "No: must run on-premises or on client-controlled infrastructure" rules out Sigma **[Measured: `data/questions.json`]**. The Flow asks for mandatory-constraint filters on security, residency, external access, ecosystem and deployment **[Flow]**; the others are not implemented **[D14]**. So the "every tool ruled out" state in section 4 cannot occur with the current data.
 
-**Other tools** (collapsed): ranks below the shortlist, each with its single biggest watch-out.
+**The other tools** (collapsed): ranks below the shortlist, each with the answer that held it back most: *Held back most by "{answer}" in answer to "{question}"*.
 
 **Banners**
 - **Draft questions in use:** *This result uses draft questions ({list}). Their scores are awaiting review.* Shown only when `usesDraftQuestions` is not empty **[Engine]**.
@@ -486,6 +474,9 @@ Each shows a recommendation. None is applied unless stated.
 - **D13. Question wording.** *Applied 2026-11-17: the Flow's wording is used for Q04, Q06, Q07, Q09, Q10, Q11, Q12 and for the Q01 exit-readiness option, as agreed ("the Flow wins for the question list"). Q06's facilitator instruction moves to the help text.*
 - **D14. Mandatory filters.** The Flow applies filters for security, residency, external access, ecosystem and deployment before ranking **[Flow]**; only the self-hosted answer filters (Sigma). *Recommended: SMEs list, per answer, the tools that cannot meet it, with evidence.*
 - **D15. Final-recommendation fields.** The Flow names "normalized score" and "delivery risk" **[Flow]** and the deck names "trade-offs" **[Deck s3]**. *Recommended: the mapping in 3.10: score in a details drawer, risk as watch-outs.*
+- **D20. Dock, quiet countdown, icons.** Requested by the owner on 2026-11-18: the top three became a background-free dock (leader in colour, second 25% grey, third 40% grey), the visible countdown became the progress bar, the countdown fell from 5 to 3.2 seconds, the area-complete card lost its shadow, the popup grew and its neighbours moved outside it, and all arrows and close buttons became line icons (section 15).
+- **D19. Pages and a question carousel.** Decided by the owner on 2026-11-18, replacing the one-page scroll [D17]: five pages, a landing page like the Data Engineering Playbook's, questions one at a time in a centred container with arrows, a close button, auto-advance, an area-complete card and a live top three (section 15).
+- **D18. Double-click clears an answer.** Requested by the owner on 2026-11-18. A double-click on a chosen answer removes it (a single answer becomes unanswered); on a phone, use *Clear*. Because the page redraws after each change, the browser does not report a double-click on a checkbox, so the page reads two changes to the same answer within 450 ms as one. Checked with real mouse events in the in-app browser.
 - **D17. One page, not tabs.** Decided by the owner on 2026-11-18, replacing the draft's one-section-per-tab design: all nine sections scroll as one page, the tab row and "On this page" jump to a section and follow the reader's position, and an answer redraws only the sections that depend on answers so the reader keeps their place. Whether the marketplace shell can host this is [A1, A2].
 - **D16. Q12 answers.** The Flow offers "Limited upskilling capacity" and "No capacity for change"; the model offers "Can upskill". *Recommended: the Flow's four answers, with SME scores for the two missing ones.* [B1]
 
@@ -541,6 +532,9 @@ Compared question by question on 2026-11-17 **[Measured]**.
 | A15 | The final summary lists the answers to Q05, Q06, Q20 and Q26 as the client's own constraints | Owner review |
 | A16 | The preview shell is only a stand-in: the module needs four page elements (content, rail, "On this page", and a tab row driving `go()`) and the data files, nothing else | Marketplace owner |
 | A17 | The one-line guide under each of the 26 questions (it restates the question and makes no claim about any tool) | Owner review |
+| A18 | "About 5 to 10 minutes" is the owner's estimate for the questionnaire; it has not been timed with users | Time a few real sessions |
+| A19 | The owner first gave 5 seconds, then 4 and 5 in different places, and on 2026-11-18 asked for 3.2 seconds. 3.2 is used for both the question and the area-complete countdowns, in two constants (`QUESTION_SECONDS`, `SECTION_SECONDS`) | Owner |
+| A20 | Tool logos are the files the owner supplied; the Qlik file is a wide wordmark and the Sigma file a black JPEG square, so both look different from the others; whether JMAN may show vendor logos is the owner's decision | Owner |
 
 ## 13. Verification log
 How this document was checked on 2026-11-17, and what remains unchecked.
@@ -562,7 +556,10 @@ How this document was checked on 2026-11-17, and what remains unchecked.
 | 13 | Mutation checks | Six deliberate breakages of the page code, including the scope bug that once hid storage failures | All caught |
 | 14 | Browser walk-through | The preview was loaded in the in-app browser: overview; discovery with real clicks; persistence across a reload; shortlist (provisional, narrow lead, ruled-out card, scale); migration; tool details and comparison; final summary; reference; mobile at 375 px | Two bugs found and fixed (a scope bug and the answers panel on mobile); the console is clean; provisional headlines are now hedged |
 | 15 | One-page and tile redesign (2026-11-18) | Walk-through in the in-app browser at 1280 px and 375 px: tab row and "On this page" jump to sections and follow the scroll; a real click on a tile keeps the reader's place and saves the answer; the shortlist updates below; tiles drawn as a bar, a grid and "Title / detail" pairs; the console is clean | One defect found and fixed: wide tables stretched the page to 996 px on a phone, now 375 px with no horizontal overflow |
-| 16 | Not verified | Printing in a real print dialog; browsers other than the in-app one; screen readers; the marketplace shell; contrast of every rendered state (only the palette pairs were computed) | Open |
+| 16 | Scoring review (2026-11-18) | `python scripts/platform_reach.py` and `python scripts/validate_model.py`: win share and top-three share of every tool for simulated clients by number of requirements stated, before and after the correction; single-answer reach; the deck's scenario for each platform | Correction removes the head start for broad tools (N3b, N3d added); every tool is inside the 10% to 24% band; one deck scenario (presentation-quality dashboards) is now rated too close to call between Tableau and Sigma |
+| 17b | Pages and carousel (2026-11-18) | `npm test` (76 tests, including the carousel, follow-ups, countdowns, dock and popup) and a walk-through in the in-app browser at 1280 px and 375 px with real clicks | Passed; one defect found and fixed in the browser: two old preview servers made the browser show an old build |
+| 17 | Double-click and redesign check | Real mouse double-clicks on a radio answer and on a checkbox answer in the in-app browser; overview, questions and shortlist viewed | Radio and checkbox clear; the first attempt failed for checkboxes (the browser swallows the double-click after a redraw) and was fixed |
+| 18 | Not verified | Printing in a real print dialog; browsers other than the in-app one; screen readers; the marketplace shell; contrast of every rendered state (only the palette pairs were computed) | Open |
 
 **Not verified, by design:** how real clients answer; the marketplace's internals; whether the SMEs agree with the draft scores, weights and proposals; vendor facts beyond those cited; legal and compliance wording.
 
@@ -587,6 +584,14 @@ python scripts/build_site.py --production    # draft questions excluded, no revi
 python -m http.server 5173 --directory site  # then open http://localhost:5173
 ```
 
+**Scoring review, declutter and double-click (revision 2026-11-18, second)**
+- **Scoring.** A review found that clients who answered many questions kept getting Qlik or Power BI. Cause: on the requirement questions every tool was compared with the neutral score 2, so broadly capable tools earned a premium for each requirement stated. Fixed by centring each tool on its own average requirement premium; the fully-random-client win shares moved from 4% to 33% to 12.8% to 18.9% and the mean score from +0.96 to within 0.02 of zero. `docs/platform-reach.md` has the evidence and shows that every platform can be first. `docs/scoring-method.md` corrects an earlier statement that the drift was not structural.
+- **Declutter.** The overview lost its repeated flow cards, decision node and chips. Discovery lost its three step cards, draft banner and per-question fine print; section headers are light rows instead of purple banners; "Add note" is a quiet link. Reviewer-only "Proposed" tags moved from the page to the preview's known-gaps panel. The shortlist lost its explanatory fine print under each heading and its engine numbers.
+- **Copy.** Every sentence on the page was re-read for meaning. Vague or clipped text ("A short read.", "Decision inputs", "in answer to ...") was rewritten, and the scoring explanation now matches the corrected method.
+- **Double-click** clears an answer [D18].
+- **Cache busting.** Every script, style and data URL carries a build hash, so a browser cannot keep showing an older build. During this review two stale preview servers, still listening on port 5173 from earlier sessions, made the browser show an old build; both were stopped.
+- **Live scores.** The result is recalculated on every click; the "Your answers" panel shows the current lead sentence. A live ranking of all six tools is deliberately not shown while answering: seeing standings can lead a person to answer toward a preferred tool. Animations are for discussion.
+
 **One page, and question tiles (revision 2026-11-18)**
 - The nine sections scroll as one page. The tab row stays at the top and marks the section in view; "On this page" lists the nine sections and the five question sections and marks the one in view; both jump to a section, and the web address follows the reader's position.
 - A change of answer redraws only the sections that depend on answers (questions, shortlist, migration, tool details, final), not the static ones, and the reader's scroll position does not move (measured: 0 px).
@@ -608,7 +613,48 @@ python -m http.server 5173 --directory site  # then open http://localhost:5173
 - The integration table shows text only (its colour markers contradict its legend in 6 cells) and says which tools it does not cover.
 - "Why these six tools" is shown as pending.
 
-**What was verified** (section 13, rows 12 to 15) and **what was not**: printing in a real print dialog, browsers other than the in-app one, screen readers, and the marketplace shell.
+**What was verified** (section 13, rows 12 to 17) and **what was not**: printing in a real print dialog, browsers other than the in-app one, screen readers, and the marketplace shell.
+
+---
+
+## 15. Pages and the question carousel (revision 2026-11-18, third)
+**This section supersedes how sections 3.1 to 3.11 describe navigation and the question screens.** The content of those sections (wording of the purpose, principles, shortlist, migration, tool details, summary and reference) still applies; where they say "tab" or "section scrolls", read "page" as below. The owner's request: no infinite scroll, a landing page like the Data Engineering Playbook's, questions one at a time in a large centred container.
+
+**Pages** (the tab row; each is its own view)
+| Page | Holds |
+|---|---|
+| Overview | A short purpose line, *Who is this for?*, *How to navigate* and four cards that open the other pages |
+| Guidelines | Purpose, guiding principles and *How the recommendation is made* (the scoring explanation moved here from Reference) |
+| Compare tools | Tab one: profiles of all six tools (alphabetical, shortlisted ones marked) and the side-by-side comparison. Tab two: deployment, integration and typical scenarios |
+| Client discovery | The heading, *a set of questions to find the most suitable BI tool, about 5 to 10 minutes* **[A18]**, the five areas as cards, and *Start the questions* |
+| Recommendation | Three tabs: Shortlist, Migration analysis, Final recommendation |
+
+**The five areas, in the order they are asked.** The migration-related questions are last, as requested:
+1. Business context and goals (Q01 to Q04, Q21 to Q23, Q25)
+2. Data, security and governance (Q05 to Q09, Q26)
+3. Skills and change readiness (Q10 with its follow-ups Q11 and Q12, then Q24)
+4. Data landscape and delivery (Q16, Q18, Q19)
+5. Existing reporting and migration (Q13 with its follow-ups Q14 and Q15, then Q17 and Q20)
+
+Only the page's grouping changed. Which questions are asked, their scores, weights and Show-if rules are as before. Q17 and Q20 are still worded for a migration but asked of every client **[B2]**; they now come last, where they are easiest to skip.
+
+**The carousel.** Opening an area (or *Start the questions*) puts a container over the page: 90% of the window wide (up to 1500 px) and about 80% high on a desktop, exactly centred on the page (the height leaves room for the dock below it), full screen on a phone, with a dimmed and blurred page behind it.
+- **Header:** the area title with *Area n of 5*, a close button, and a slim progress bar for the questions in the area.
+- **Body:** one question at a time in a centred card, about 84% of the container's width (up to 1140 px), with the answer tiles in even rows: up to three answers side by side, four as a 2 x 2, five or six as three columns, seven or eight as four, nine as three, more as four (`optionColumns`), fading in and out between questions (instant when the reader prefers reduced motion). Answers are the tiles from section 3.5.
+- **Controls:** a left and a right arrow and a close button, all drawn as line icons centred in round buttons. Close returns to the Client discovery page with the answers kept. Left and right arrow keys move between questions, except while an answer is focused; Escape closes (or puts the popup away first).
+- **Follow-up questions** open **inside the card of the question that triggers them**, below its answers, with a short fade. Today: Q11 and Q12 under Q10 (who builds the reports), and Q14 and Q15 under Q13 (existing reporting). When an answer closes a branch the follow-ups disappear, their answers are cleared and a notice with Undo says so.
+- **Burger menu:** a button at the left of the header opens a drawer inside the container listing every area and every question that is asked now, with a tick on answered ones, the current question marked, and open follow-ups indented under their parent. Choosing a question jumps to it (a follow-up jumps to the question that holds it); choosing an area goes to its first question. The drawer closes after a jump, with its close button, by clicking outside it, or with Escape. Opening it cancels a pending auto-advance.
+- **Auto-advance:** after a click, if the question (and any follow-up it opened) is answered and nothing is clicked for **3.2 seconds** **[A19]**, the carousel fades to the next question. There is no countdown text and no extra row: the slim progress bar under the area title carries the countdown, a lighter fill running ahead from this question's position to the next one's. An unanswered question never advances by itself; neither does one with an unanswered follow-up. Typing a note or clearing an answer cancels it. There is no "stay" button: any further click restarts the clock, and the arrows move at once.
+- **Area complete card:** after the last question of an area, *{Area} is complete*, how many questions were answered and *Next: {area}* appear on the container itself, with no card, border or shadow, so it reads as part of the container. The same progress bar sweeps across for **3.2 seconds** **[A19]**, then moves on; the buttons *Go to the next area* and *Review this area* act at once. After the last area, *All areas are complete* leads to the Recommendation page the same way.
+- **The winner:** after the last area, before the Recommendation page opens, the leader's logo flies up from its place in the dock to the middle of the container and grows to a large circle, alone; its name, the lead sentence (hedged with "So far" while the result is provisional) and the buttons fade in after it. The label says *Best fit*, *Best fit so far* or, when tools tie, *Too close to call*, and every co-leader is shown side by side, never a single pick. It stays for **7 seconds** (`WINNER_SECONDS`) with the progress bar sweeping, then the Recommendation page opens; *See the recommendation* does it at once. With no scored answer there is no winner and the plain completion card shows. Reduced-motion readers get no flight.
+- **Into the shortlist:** when the carousel closes to open the Recommendation page, each logo on screen (the winner in the middle, the others in the dock) travels to the logo beside that tool's name on its shortlist card, and the card's own logo appears as it lands. The page is not scrolled for it: it opens at the top, a logo flies only if its destination is on screen, and otherwise it fades out. Only this route animates; opening the page from the tab does not. Reduced-motion readers get no flight.
+- **Live top three, as a dock:** pinned to the bottom of the screen, centred, like the macOS dock, with no heading and no strip behind it; the container above it leaves room for it. Each tool sits alone in a frosted circle (translucent white with a background blur); the sizes step clearly down by rank (68, 50 and 36 px). The leader's logo is in full colour, the second 25% greyed and the third 40% greyed; all return to full colour on hover and grow slightly, lifting their neighbours a little. The tool's name pops up above on hover. Clicking a circle opens a popup, wider and taller than before, with the rank, logo and name as the heading and a close button; the reasons it fits (and its main watch-outs) scroll inside the card with a slim scrollbar; the previous- and next-ranked tools sit **outside the popup**, at its left and right, each as its logo with an arrow. Tied tools share a size and a rank. Before the first scored answer the dock says so in one line. On a phone the container fills the screen and the dock sits at its bottom edge.
+
+**Logos [A20].** The owner supplied a logo file for every tool in the dumps folder (looker, powerbi, qlik, tableau, Symbol for ThoughtSpot, SigmaComputing). `python scripts/prepare_logos.py` trims the PNGs to small square images in `src/page/assets/logos`; the Sigma JPEG (a black square) is copied as it is and shown with rounded corners. A tool without a file would show a neutral monogram. Section 2's earlier rule of "no logos, one identical card style" was a neutrality measure; the owner has asked for logos, so it is dropped for the dock, the winner and the tool profiles. The dock is also a **live ranking while the reader answers**, which can lead people to answer towards a preferred tool; the owner chose to show it, and the popup says it is provisional.
+
+**Cache.** Every script, style and data URL carries a build hash.
+
+**Verified in the in-app browser:** landing page; Client discovery page; opening the carousel with a real click; a real click on an answer, the countdown, auto-advance to the next question, the live logos, the popup, a follow-up opening inside its parent, the area-complete card; a phone-width layout with no sideways overflow. **Not verified:** other browsers, screen readers, keyboard-only use in a real browser, the marketplace shell.
 
 ---
 

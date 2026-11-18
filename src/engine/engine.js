@@ -57,9 +57,29 @@
 
   function sameKey(ka, kb) { return compareKeys(ka, kb) === 0; }
 
+  /** Average premium over the neutral score on the requirement questions, per tool. Mirrors bi_model.requirement_premium. */
+  function requirementPremium(model) {
+    var tools = model.tools.map(function (t) { return t.id; });
+    var num = {}, den = 0;
+    tools.forEach(function (t) { num[t] = 0; });
+    model.questions.forEach(function (q) {
+      var known = q.options.filter(function (o) { return !o.unknown; });
+      if (q.reference !== 'neutral' || !q.weight || !known.length) return;
+      var share = known.length / q.options.length;
+      den += q.weight * share;
+      tools.forEach(function (t) {
+        num[t] += q.weight * share * (known.reduce(function (a, o) { return a + (o.scores[t] - NEUTRAL_SCORE); }, 0) / known.length);
+      });
+    });
+    var out = {};
+    tools.forEach(function (t) { out[t] = den ? num[t] / den : 0; });
+    return out;
+  }
+
   /** Recompute the calibration from the scores: {qid: {mean: {tool: x}, var: {tool: x}}}. Mirrors bi_model.calibration. */
   function calibration(model) {
     var tools = model.tools.map(function (t) { return t.id; });
+    var prem = requirementPremium(model);
     var out = {};
     model.questions.forEach(function (q) {
       var known = q.options.filter(function (o) { return !o.unknown; });
@@ -68,9 +88,9 @@
       tools.forEach(function (t) {
         var cs;
         if (q.reference === 'neutral') {
-          cs = known.map(function (o) { return o.scores[t] - NEUTRAL_SCORE; });
+          mean[t] = NEUTRAL_SCORE + prem[t];
+          cs = known.map(function (o) { return o.scores[t] - mean[t]; });
           for (var i = 0; i < q.options.length - known.length; i++) cs.push(0);
-          mean[t] = NEUTRAL_SCORE;
         } else {
           var m = known.reduce(function (a, o) { return a + o.scores[t]; }, 0) / known.length;
           mean[t] = m;
@@ -256,7 +276,7 @@
   }
 
   return {
-    createEngine: createEngine, calibration: calibration, classifyGap: classifyGap,
+    createEngine: createEngine, calibration: calibration, requirementPremium: requirementPremium, classifyGap: classifyGap,
     TOO_CLOSE_Z: TOO_CLOSE_Z, CLEAR_LEAD_Z: CLEAR_LEAD_Z, NEAR_COMPLETE_COVERAGE: NEAR_COMPLETE_COVERAGE, SCORE_MAX: SCORE_MAX
   };
 }));

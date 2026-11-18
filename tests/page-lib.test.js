@@ -61,7 +61,7 @@ test('lead sentences name the right tools for each lead strength, and ties alpha
   assert.match(L.leadSentence({ ...rc, state: 'complete' }, names), /^Tableau fits this client best/);
 
   const tie = new Session(model());
-  tie.answer('Q21', ['critical']);
+  tie.answer('Q03', ['no']);          // an answer that scores every tool the same: Sigma and Tableau share the baseline, so they tie
   assert.match(L.leadSentence(tie.result(), names), /^So far, Sigma and Tableau fit equally well on these answers\. Use a proof of concept/);
 });
 
@@ -82,13 +82,13 @@ test('state lines say how much the result rests on', () => {
 
 test('the summary is internal, states its status, lists notes, and never names a single winner for a tie', () => {
   const s = new Session(model());
-  s.answer('Q21', ['critical']);
+  s.answer('Q03', ['no']);
   const r = s.result();
   const text = L.buildSummary({
     date: '2026-11-17', clientName: 'Example client', state: r.state, answered: 1, visible: 22, informative: r.informative,
     coLeaders: r.coLeaders.map((t) => t.name), shortlist: r.shortlist.map((x) => ({ name: x.tool.name, rank: x.rank })),
     leadStrength: r.leadStrength, boundaryMessage: null, excluded: [], reasons: [], constraints: [], migration: [],
-    usesDraft: r.usesDraftQuestions,
+    usesDraft: ['Q21'],
     answers: [{ section: 'Business context and goals', question: 'Presentation quality?', answer: 'Critical', note: 'board pack' }]
   });
   assert.match(text, /INTERNAL USE ONLY/);
@@ -136,7 +136,11 @@ test('answers written as "Title: detail" or "Title — detail" split into a titl
   }
 });
 
-test('up to three scored answers sit in one bar; more fill a grid', () => {
+test('up to three answers sit in one bar; more fill a grid', () => {
   assert.equal(L.optionLayout(2), 'seg'); assert.equal(L.optionLayout(3), 'seg');
   assert.equal(L.optionLayout(4), 'grid'); assert.equal(L.optionLayout(10), 'grid');
+});
+
+test('tile columns make even rows where they can: 4 answers a 2 x 2, 6 a 3 x 2, 8 a 4 x 2', () => {
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(L.optionColumns), [1, 2, 3, 2, 3, 3, 4, 4, 3, 4, 4]);
 });

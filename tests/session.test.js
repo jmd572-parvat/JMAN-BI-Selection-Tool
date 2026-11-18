@@ -68,7 +68,7 @@ test('a clear answer produces a leader, a margin and a shortlist', () => {
 
 test('tied leaders are shown as co-leaders, alphabetically, and flagged too close to call', () => {
   const s = new Session(model());
-  s.answer('Q21', ['critical']);          // draft scores give Tableau and Sigma the same fit
+  s.answer('Q03', ['no']);          // scores every tool the same; Sigma and Tableau share a baseline, so they tie
   const r = s.result();
   assert.deepEqual(r.coLeaders.map((t) => t.name), ['Sigma', 'Tableau']);
   assert.equal(r.tooCloseToCall, true);
@@ -148,7 +148,7 @@ test('lead strength follows the calibrated bands, and ties are always too close'
   assert.equal(clear.result().leadStrength, 'clear');
 
   const tie = new Session(model());
-  tie.answer('Q21', ['critical']);
+  tie.answer('Q03', ['no']);
   assert.equal(tie.result().leadStrength, 'tooClose');
 });
 
