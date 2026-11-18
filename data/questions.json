@@ -1,0 +1,3607 @@
+{
+  "meta": {
+    "source": "bi-tools-questions.xlsx",
+    "scoreScale": [
+      1,
+      4
+    ],
+    "weightScale": [
+      0,
+      5
+    ],
+    "draftQuestions": [
+      "Q21",
+      "Q22",
+      "Q23",
+      "Q25",
+      "Q26",
+      "Q24"
+    ],
+    "draftsIncluded": true,
+    "tieBreak": [
+      {
+        "name": "ecosystem",
+        "questions": [
+          "Q04"
+        ]
+      },
+      {
+        "name": "governance",
+        "questions": [
+          "Q05",
+          "Q06",
+          "Q07",
+          "Q08",
+          "Q09",
+          "Q26"
+        ]
+      },
+      {
+        "name": "risk & cost",
+        "questions": [
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q20",
+          "Q23"
+        ]
+      }
+    ],
+    "method": "z-score against a random client: F = sum(weight*(r-baseline)); S = sqrt(sum(weight^2*variance)); z = F/S. baseline = the tool's own mean over informative answers (reference=mean) or the neutral score 2 (reference=neutral). See scripts/bi_model.py. Tools carry no display order: order by rank, then alphabetically."
+  },
+  "tools": [
+    {
+      "id": "looker",
+      "name": "Looker"
+    },
+    {
+      "id": "powerbi",
+      "name": "Power BI"
+    },
+    {
+      "id": "qlik",
+      "name": "Qlik"
+    },
+    {
+      "id": "sigma",
+      "name": "Sigma"
+    },
+    {
+      "id": "tableau",
+      "name": "Tableau"
+    },
+    {
+      "id": "thoughtspot",
+      "name": "ThoughtSpot"
+    }
+  ],
+  "sections": [
+    {
+      "id": "S1",
+      "title": "Business context and goals"
+    },
+    {
+      "id": "S2",
+      "title": "Data & Governance"
+    },
+    {
+      "id": "S3",
+      "title": "Skills & Change Readiness"
+    },
+    {
+      "id": "S4",
+      "title": "Migration Assessment"
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q01",
+      "order": 1,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S1",
+      "text": "What business outcomes are you trying to achieve with BI?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "self_service_analytics_and_reporting",
+          "label": "Self-service analytics and reporting",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, ThoughtSpot, Sigma. Good fit: Qlik. Suitable: Looker. Why the leaders (and 1 more): Power BI: Microsoft 365 distribution and reusable semantic models let business users explore certified reports without rebuilding metrics; advanced DAX still needs an author. Tableau: Drag-and-drop visual exploration lets analysts answer follow-up questions themselves; published sources can govern the data they use. ThoughtSpot: Search-led questions make ad-hoc answers accessible to nontechnical users, provided the search model is curated.",
+            "tools": {
+              "powerbi": "Microsoft 365 distribution and reusable semantic models let business users explore certified reports without rebuilding metrics; advanced DAX still needs an author.",
+              "looker": "Explores give users safe self-service over modeled fields, but new measures or joins require LookML development.",
+              "tableau": "Drag-and-drop visual exploration lets analysts answer follow-up questions themselves; published sources can govern the data they use.",
+              "thoughtspot": "Search-led questions make ad-hoc answers accessible to nontechnical users, provided the search model is curated.",
+              "sigma": "Spreadsheet-style analysis over warehouse data suits business users who want to explore without SQL.",
+              "qlik": "Associative selections support open-ended discovery, though users need to learn the associative model."
+            }
+          }
+        },
+        {
+          "id": "real_time_near_real_time_business",
+          "label": "Real-time / near-real-time business visibility",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker, ThoughtSpot, Qlik, Sigma. Good fit: Power BI, Tableau. Why the leaders (and 1 more): Looker: Live warehouse SQL can expose recent data without scheduled extracts; warehouse freshness and caching still determine actual latency. ThoughtSpot: Live warehouse queries support timely search and dashboards if upstream pipelines keep pace. Qlik: Direct or hybrid connections can feed low-latency views; deployment and source design set the achieved refresh rate.",
+            "tools": {
+              "powerbi": "DirectQuery or Direct Lake can surface fresher operational figures; latency depends on source capacity and model design.",
+              "looker": "Live warehouse SQL can expose recent data without scheduled extracts; warehouse freshness and caching still determine actual latency.",
+              "tableau": "Live connections can show current results, subject to source performance; extracts introduce a refresh interval.",
+              "thoughtspot": "Live warehouse queries support timely search and dashboards if upstream pipelines keep pace.",
+              "sigma": "Direct warehouse queries reduce duplicate extracts, but freshness and response times depend on warehouse compute.",
+              "qlik": "Direct or hybrid connections can feed low-latency views; deployment and source design set the achieved refresh rate."
+            }
+          }
+        },
+        {
+          "id": "faster_data_driven_decision_making",
+          "label": "Faster, data-driven decision-making",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, ThoughtSpot. Good fit: Looker, Qlik, Sigma. Why the leaders: Power BI: Teams delivery, alerts and drill-through move a KPI exception from an executive view to actionable detail quickly. Tableau: Rapid visual comparison and drill-down help analysts expose drivers behind a decision rather than just publish a static KPI. ThoughtSpot: Search and natural-language exploration shorten the path from a new business question to a usable answer.",
+            "tools": {
+              "powerbi": "Teams delivery, alerts and drill-through move a KPI exception from an executive view to actionable detail quickly.",
+              "looker": "Consistent Explore metrics reduce disputes over numbers, though unmodeled questions wait for LookML changes.",
+              "tableau": "Rapid visual comparison and drill-down help analysts expose drivers behind a decision rather than just publish a static KPI.",
+              "thoughtspot": "Search and natural-language exploration shorten the path from a new business question to a usable answer.",
+              "sigma": "Spreadsheet-like follow-up analysis lets managers investigate a result directly against warehouse data.",
+              "qlik": "Associative exploration reveals related and excluded values, helping teams test explanations before deciding."
+            }
+          }
+        },
+        {
+          "id": "standardised_metrics_and_a_single",
+          "label": "Standardised metrics and a single source of truth",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 4,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Looker, Qlik. Good fit: ThoughtSpot. Suitable: Sigma. Why the leaders (and 1 more): Power BI: Shared semantic models and central DAX measures give every report the same certified metric definitions. Tableau: Published data sources centralize reusable connections and calculations; Virtual Connections and data policies can add governed access and row-level security. Workbook-level calculations can still diverge unless authors are required to use the governed layer. Looker: Version-controlled LookML centralizes measure and join logic for consistent reporting across Explores.",
+            "tools": {
+              "powerbi": "Shared semantic models and central DAX measures give every report the same certified metric definitions.",
+              "looker": "Version-controlled LookML centralizes measure and join logic for consistent reporting across Explores.",
+              "tableau": "Published data sources centralize reusable connections and calculations; Virtual Connections and data policies can add governed access and row-level security. Workbook-level calculations can still diverge unless authors are required to use the governed layer.",
+              "thoughtspot": "Curated search models can return consistent metrics if the underlying warehouse definitions are governed.",
+              "sigma": "Warehouse-defined metrics can be reused, but consistency relies on upstream governance rather than a standalone semantic layer.",
+              "qlik": "Reusable measures and governed apps can standardize metrics; consistency needs deliberate model design despite the high score."
+            }
+          }
+        },
+        {
+          "id": "improved_data_quality_and_reporting",
+          "label": "Improved data quality and reporting accuracy",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker. Good fit: Qlik. Suitable: Tableau, ThoughtSpot, Sigma. Why the leaders: Power BI: Power Query transformations, certified models and lineage help trace and prevent reporting errors; upstream source accuracy must still be checked. Looker: LookML tests and reviewed metric definitions reduce calculation drift, though bad source records require upstream fixes.",
+            "tools": {
+              "powerbi": "Power Query transformations, certified models and lineage help trace and prevent reporting errors; upstream source accuracy must still be checked.",
+              "looker": "LookML tests and reviewed metric definitions reduce calculation drift, though bad source records require upstream fixes.",
+              "tableau": "Published sources and validation support consistent dashboards, but locally recreated calculations can weaken accuracy.",
+              "thoughtspot": "A curated search model limits inconsistent answers; results still depend on reliable source data and modeling.",
+              "sigma": "Working directly on governed warehouse tables avoids some extracts, but upstream quality rules must be maintained there.",
+              "qlik": "Shared model logic helps reconcile reports, provided load scripts and source-quality checks are governed."
+            }
+          }
+        },
+        {
+          "id": "operational_performance_monitoring",
+          "label": "Operational performance monitoring",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Qlik. Good fit: Tableau, Looker, ThoughtSpot. Suitable: Sigma. Why the leaders: Power BI: Scorecards, alerts, mobile views and drill-through support daily operational exception monitoring, not just fresh data. Qlik: Associative dashboards and automation support operational tracking and investigation across multiple source systems.",
+            "tools": {
+              "powerbi": "Scorecards, alerts, mobile views and drill-through support daily operational exception monitoring, not just fresh data.",
+              "looker": "Governed KPI dashboards and scheduled alerts monitor operations; defining a new operational metric may require model work.",
+              "tableau": "Live dashboards and subscriptions can track operational indicators, with source and extract design affecting timeliness.",
+              "thoughtspot": "Search and Liveboards let managers investigate an outlying operational KPI against current warehouse data.",
+              "sigma": "Warehouse-backed workbooks support operational drill-down, but alerting and distribution must be designed for the team.",
+              "qlik": "Associative dashboards and automation support operational tracking and investigation across multiple source systems."
+            }
+          }
+        },
+        {
+          "id": "improved_forecasting_and_planning",
+          "label": "Improved forecasting and planning",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 1,
+            "thoughtspot": 2,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Sigma. Good fit: Power BI, Qlik. Suitable: ThoughtSpot. Possible but not ideal: Tableau, Looker. Why the leaders: Sigma: Input Tables and spreadsheet interactions let teams enter assumptions alongside governed warehouse actuals.",
+            "tools": {
+              "powerbi": "What-if parameters and Excel-linked analysis support scenario review; native approval and write-back workflows are limited.",
+              "looker": "Governed forecast-versus-actual analysis is possible, but scenario entry and planning workflow need another layer.",
+              "tableau": "Forecast charts can visualize projections; collaborative driver-based planning is not a core workflow.",
+              "thoughtspot": "AI-assisted analysis can probe forecast variance, but it is not a native planning and write-back system.",
+              "sigma": "Input Tables and spreadsheet interactions let teams enter assumptions alongside governed warehouse actuals.",
+              "qlik": "Qlik supports forecast-versus-actual analysis, scenario dashboards and workflow orchestration through automation and extensions. Data entry, write-back, approvals and dependency logic are not a complete native planning process and must be designed and governed."
+            }
+          }
+        },
+        {
+          "id": "improved_customer_stakeholder_reporting",
+          "label": "Improved customer / stakeholder reporting",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 4,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau. Good fit: Looker, ThoughtSpot, Qlik. Suitable: Sigma. Why the leaders: Power BI: Paginated reports, subscriptions and controlled sharing cover both formal stakeholder packs and interactive customer views. Tableau: Strong visual storytelling and polished dashboards suit customer-facing and management presentations.",
+            "tools": {
+              "powerbi": "Paginated reports, subscriptions and controlled sharing cover both formal stakeholder packs and interactive customer views.",
+              "looker": "Governed embedded views support external stakeholders; highly formatted narrative packs need additional design.",
+              "tableau": "Strong visual storytelling and polished dashboards suit customer-facing and management presentations.",
+              "thoughtspot": "Search-led embedded answers can serve stakeholders, though highly styled reporting may take more design effort.",
+              "sigma": "Operational warehouse workbooks suit interactive customers, but document-style presentation is less differentiated.",
+              "qlik": "Dashboards, extensions and distribution can serve different stakeholder groups with a designed sharing model."
+            }
+          }
+        },
+        {
+          "id": "exit_readiness_and_investor_reporting",
+          "label": "Exit readiness and investor reporting, supporting a credible narrative on performance, scalability and value creation",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker. Good fit: Tableau, Qlik. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Certified measures, lineage and paginated exports help reproduce defensible board and diligence KPIs across periods. Looker: Version-controlled LookML definitions provide traceable investor metrics; formal pack production still needs design.",
+            "tools": {
+              "powerbi": "Certified measures, lineage and paginated exports help reproduce defensible board and diligence KPIs across periods.",
+              "looker": "Version-controlled LookML definitions provide traceable investor metrics; formal pack production still needs design.",
+              "tableau": "Presentation-quality board visuals support the exit story, but metric definitions need governance beyond the workbook.",
+              "thoughtspot": "Search can answer investor follow-ups, but a curated, auditable KPI pack is not its primary differentiator.",
+              "sigma": "Warehouse-backed reconciliations help analysts prepare a pack, while investor narrative and metric controls sit upstream.",
+              "qlik": "Governed associative analysis can investigate value drivers; evidence trails and formal investor output need deliberate controls."
+            }
+          }
+        },
+        {
+          "id": "other_not_yet_defined",
+          "label": "Other / Not yet defined",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "No outcome is specified, so Microsoft integration alone cannot establish whether Power BI is preferable; keep the score neutral.",
+              "looker": "Without a defined outcome, LookML governance may or may not justify its modeling effort; keep the score neutral.",
+              "tableau": "Without a visual or analytical goal, Tableau's storytelling strength cannot yet be weighted; keep the score neutral.",
+              "thoughtspot": "Without a search or self-service goal, ThoughtSpot's advantage is unproven; keep the score neutral.",
+              "sigma": "Without a planning or spreadsheet-style goal, Sigma's fit is undetermined; keep the score neutral.",
+              "qlik": "Without defined outcomes, Qlik's associative exploration cannot yet be judged against a requirement; keep the score neutral."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.111111111,
+        "powerbi": 3.777777778,
+        "qlik": 3.333333333,
+        "sigma": 2.777777778,
+        "tableau": 3.111111111,
+        "thoughtspot": 3.0
+      },
+      "variance": {
+        "looker": 0.987654321,
+        "powerbi": 0.172839506,
+        "qlik": 0.222222222,
+        "sigma": 0.839506173,
+        "tableau": 0.987654321,
+        "thoughtspot": 0.666666667
+      }
+    },
+    {
+      "id": "Q02",
+      "order": 2,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S1",
+      "text": "Who are the primary consumers of the reports/dashboards?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [],
+      "options": [
+        {
+          "id": "c_suite_executive_leadership",
+          "label": "C-suite / Executive leadership",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, ThoughtSpot. Good fit: Looker, Qlik. Suitable: Sigma. Why the leaders: Power BI: Scorecards, Teams delivery and mobile KPI views put concise, governed answers in executives' existing workflow. Tableau: Polished visual summaries and guided drill-down make executive performance stories easy to scan. ThoughtSpot: Natural-language search lets an executive ask an unplanned question without commissioning a new dashboard.",
+            "tools": {
+              "powerbi": "Scorecards, Teams delivery and mobile KPI views put concise, governed answers in executives' existing workflow.",
+              "looker": "Governed executive metrics build trust, though new board questions may require LookML changes.",
+              "tableau": "Polished visual summaries and guided drill-down make executive performance stories easy to scan.",
+              "thoughtspot": "Natural-language search lets an executive ask an unplanned question without commissioning a new dashboard.",
+              "sigma": "Warehouse workbooks are useful for executive detail, but a concise leadership presentation needs careful design.",
+              "qlik": "Associative KPI dashboards allow executive drill-down; the interaction model may need onboarding."
+            }
+          }
+        },
+        {
+          "id": "finance",
+          "label": "Finance",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Sigma. Good fit: Tableau, Qlik. Suitable: ThoughtSpot. Why the leaders: Power BI: Excel-connected semantic models, DAX variances and paginated reconciliation reports fit finance's controlled analysis workflow. Looker: Version-controlled LookML keeps finance definitions consistent and reviewable, although adjustments need separate workflow. Sigma: Spreadsheet-style models and Input Tables suit finance assumptions, scenario entry and warehouse-backed analysis.",
+            "tools": {
+              "powerbi": "Excel-connected semantic models, DAX variances and paginated reconciliation reports fit finance's controlled analysis workflow.",
+              "looker": "Version-controlled LookML keeps finance definitions consistent and reviewable, although adjustments need separate workflow.",
+              "tableau": "Visual variance analysis serves finance, while controlled metric logic and close processes require stronger governance.",
+              "thoughtspot": "Search can answer finance questions, but formal reconciliation and adjustment workflows need other controls.",
+              "sigma": "Spreadsheet-style models and Input Tables suit finance assumptions, scenario entry and warehouse-backed analysis.",
+              "qlik": "Governed measures and associative investigation help reconcile drivers; close and approval processes need design."
+            }
+          }
+        },
+        {
+          "id": "operational_teams_and_business_managers",
+          "label": "Operational teams and business managers",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, ThoughtSpot, Qlik, Sigma. Good fit: Tableau, Looker. Why the leaders (and 1 more): Power BI: Role-filtered dashboards, alerts and mobile drill-through let each operations manager monitor their own area. ThoughtSpot: Search-led investigation lets a manager move from a KPI anomaly to its contributing transactions. Qlik: Associative selections and automation support daily operational comparisons across locations and sources.",
+            "tools": {
+              "powerbi": "Role-filtered dashboards, alerts and mobile drill-through let each operations manager monitor their own area.",
+              "looker": "Shared operational definitions and scheduled delivery help managers compare sites, with new fields dependent on modeling.",
+              "tableau": "Interactive dashboards reveal site or team exceptions, provided refresh cadence meets daily operations.",
+              "thoughtspot": "Search-led investigation lets a manager move from a KPI anomaly to its contributing transactions.",
+              "sigma": "Spreadsheet-style warehouse analysis lets operations staff investigate exceptions without waiting for a new report.",
+              "qlik": "Associative selections and automation support daily operational comparisons across locations and sources."
+            }
+          }
+        },
+        {
+          "id": "sales_and_commercial_teams",
+          "label": "Sales and commercial teams",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot. Good fit: Power BI, Qlik, Sigma. Suitable: Looker. Why the leaders: Tableau: Visual territory and funnel analysis helps commercial teams present and explore performance quickly. ThoughtSpot: Search-led questions let sellers investigate accounts or pipeline changes without predefined dashboards.",
+            "tools": {
+              "powerbi": "CRM connectors, pipeline views and mobile alerts help sales managers track quota, with complex ad-hoc measures needing DAX support.",
+              "looker": "Governed pipeline metrics prevent definition drift, but rapidly changing sales questions may wait for LookML updates.",
+              "tableau": "Visual territory and funnel analysis helps commercial teams present and explore performance quickly.",
+              "thoughtspot": "Search-led questions let sellers investigate accounts or pipeline changes without predefined dashboards.",
+              "sigma": "Warehouse-backed spreadsheet analysis supports commercial slicing; CRM data needs to be modeled upstream.",
+              "qlik": "Associative exploration helps compare territories and sales drivers, though adoption requires model training."
+            }
+          }
+        },
+        {
+          "id": "board_members_investors",
+          "label": "Board members / Investors",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Looker. Good fit: Qlik. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Certified KPIs, paginated output and controlled exports support repeatable board packs with an audit trail. Tableau: Strong storytelling visuals support a board narrative, provided shared sources enforce consistent figures. Looker: Version-controlled metrics keep board numbers stable across packs; formal presentation layouts still need work.",
+            "tools": {
+              "powerbi": "Certified KPIs, paginated output and controlled exports support repeatable board packs with an audit trail.",
+              "looker": "Version-controlled metrics keep board numbers stable across packs; formal presentation layouts still need work.",
+              "tableau": "Strong storytelling visuals support a board narrative, provided shared sources enforce consistent figures.",
+              "thoughtspot": "Board follow-up questions can be searched, but formal, auditable pack creation is less native.",
+              "sigma": "Detailed warehouse workbooks can support pack preparation, but board-ready narrative and controls need more design.",
+              "qlik": "Governed dashboards can support board interrogation; formal packs and audit evidence require configuration."
+            }
+          }
+        },
+        {
+          "id": "private_equity_exit_stakeholders",
+          "label": "Private equity / Exit stakeholders",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker. Good fit: Tableau, Qlik. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Lineage and reusable financial measures help reproduce value-creation, EBITDA and cohort metrics for diligence. Looker: Reviewed LookML definitions make PE metrics traceable across reporting periods and portfolio views.",
+            "tools": {
+              "powerbi": "Lineage and reusable financial measures help reproduce value-creation, EBITDA and cohort metrics for diligence.",
+              "looker": "Reviewed LookML definitions make PE metrics traceable across reporting periods and portfolio views.",
+              "tableau": "Clear visuals help tell the exit story, while cross-company metric standardization must be governed separately.",
+              "thoughtspot": "Search can explore value drivers, but investor-grade traceability and consistent KPI definitions need curation.",
+              "sigma": "Spreadsheet analysis can prepare portfolio scenarios, but diligence-ready metric controls remain upstream.",
+              "qlik": "Associative analysis can examine value drivers across entities; auditable PE definitions need disciplined models."
+            }
+          }
+        },
+        {
+          "id": "external_vendors_partners",
+          "label": "External vendors / Partners",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
+            "tools": {
+              "powerbi": "B2B sharing or embedded capacity with RLS can restrict each partner to its own data; licensing and identity must be assessed.",
+              "looker": "Embedded views and user attributes can segment partner access, subject to authentication and commercial design.",
+              "tableau": "Embedded dashboards can serve partners; permissions and external-user licensing need an explicit design.",
+              "thoughtspot": "Low-code embedding can expose search to partners, with tenant isolation and access rules validated first.",
+              "sigma": "Embedded warehouse workbooks can serve external users, but sharing and warehouse permissions require careful design.",
+              "qlik": "APIs and governed apps can deliver partner analytics; section access and deployment choices must be tested."
+            }
+          }
+        },
+        {
+          "id": "other_not_yet_defined",
+          "label": "Other / Not yet defined",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "The audience is unspecified; do not assume executives, analysts or partners need Microsoft distribution yet.",
+              "looker": "Without a confirmed audience, the value of governed Explores versus embedded delivery cannot be assessed.",
+              "tableau": "Without a defined consumer group, Tableau's visual authoring advantage may not be relevant.",
+              "thoughtspot": "Without knowing whether users need search, ThoughtSpot's consumption advantage cannot be rated above neutral.",
+              "sigma": "Without evidence of spreadsheet-oriented users, Sigma's interface is not yet a differentiator.",
+              "qlik": "Without a known audience, associative exploration and training needs cannot be weighted."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.285714286,
+        "powerbi": 3.714285714,
+        "qlik": 3.142857143,
+        "sigma": 2.857142857,
+        "tableau": 3.428571429,
+        "thoughtspot": 3.0
+      },
+      "variance": {
+        "looker": 0.489795918,
+        "powerbi": 0.204081633,
+        "qlik": 0.12244898,
+        "sigma": 0.693877551,
+        "tableau": 0.244897959,
+        "thoughtspot": 0.857142857
+      }
+    },
+    {
+      "id": "Q03",
+      "order": 3,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S1",
+      "text": "Are delays, low trust in data, inconsistent metrics, or poor access hurting the business?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 1,
+      "showIf": [],
+      "options": [
+        {
+          "id": "no",
+          "label": "No",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
+            "tools": {
+              "powerbi": "If no trust, delay or access pain exists, semantic-model governance is available but not a proven reason to migrate.",
+              "looker": "If current metrics are trusted, introducing LookML to solve inconsistency may add effort without clear benefit.",
+              "tableau": "If reporting already works, richer visual exploration alone does not address a stated business problem.",
+              "thoughtspot": "If access and timeliness are satisfactory, search-led analytics is an optional improvement rather than a remedy.",
+              "sigma": "If no reporting pain is confirmed, warehouse workbooks have no demonstrated incremental payoff yet.",
+              "qlik": "If no reporting pain is identified, associative analysis is a capability, not evidence of a needed change."
+            }
+          }
+        },
+        {
+          "id": "maybe",
+          "label": "Maybe",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Good fit: Power BI, Looker, ThoughtSpot, Qlik. Suitable: Tableau, Sigma. Why the leaders (and 1 more): Power BI: If inconsistent numbers are suspected, pilot a certified model and check whether it improves trust before scaling. Looker: A limited LookML model can test whether metric drift is real, though the modeling investment should be justified. ThoughtSpot: A curated search pilot can expose access gaps, provided source definitions are validated first.",
+            "tools": {
+              "powerbi": "If inconsistent numbers are suspected, pilot a certified model and check whether it improves trust before scaling.",
+              "looker": "A limited LookML model can test whether metric drift is real, though the modeling investment should be justified.",
+              "tableau": "A shared source can test whether visual and reporting inconsistency exists, without assuming governance is the root cause.",
+              "thoughtspot": "A curated search pilot can expose access gaps, provided source definitions are validated first.",
+              "sigma": "A warehouse-backed workbook can reveal manual reporting gaps, with upstream quality checked before rollout.",
+              "qlik": "An associative pilot can investigate conflicting figures across sources before committing to a wider migration."
+            }
+          }
+        },
+        {
+          "id": "yes",
+          "label": "Yes",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: ThoughtSpot. Suitable: Tableau, Sigma. Why the leaders: Power BI: Where trust and delay are confirmed issues, central measures, certification, lineage and refresh controls address the stated pain. Looker: LookML's shared definitions and live warehouse queries target conflicting KPIs and stale extracts directly. Qlik: Shared models and associative exploration help trace discrepant KPIs, with controlled reloads and access design.",
+            "tools": {
+              "powerbi": "Where trust and delay are confirmed issues, central measures, certification, lineage and refresh controls address the stated pain.",
+              "looker": "LookML's shared definitions and live warehouse queries target conflicting KPIs and stale extracts directly.",
+              "tableau": "Published sources can reduce inconsistent figures, but trust still needs disciplined calculations and source controls.",
+              "thoughtspot": "Governed search improves access to answers; source modeling must solve underlying inconsistency first.",
+              "sigma": "Warehouse-based analysis broadens access, but data quality and metric governance must be resolved upstream.",
+              "qlik": "Shared models and associative exploration help trace discrepant KPIs, with controlled reloads and access design."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.0,
+        "powerbi": 3.0,
+        "qlik": 3.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.666666667
+      },
+      "variance": {
+        "looker": 0.666666667,
+        "powerbi": 0.666666667,
+        "qlik": 0.666666667,
+        "sigma": 0.0,
+        "tableau": 0.0,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q04",
+      "order": 4,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S1",
+      "text": "Which enterprise ecosystem do you primarily operate within?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 5,
+      "showIf": [],
+      "options": [
+        {
+          "id": "microsoft",
+          "label": "Microsoft",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 1,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, Qlik. Suitable: ThoughtSpot, Sigma. Possible but not ideal: Looker. Why the leaders: Power BI: Native Microsoft 365, Entra ID and Fabric integration reuses identity, data and skills in a Microsoft estate.",
+            "tools": {
+              "powerbi": "Native Microsoft 365, Entra ID and Fabric integration reuses identity, data and skills in a Microsoft estate.",
+              "looker": "Looker connects to Microsoft data but introduces a separate LookML stack and governance workflow.",
+              "tableau": "Tableau can connect to Azure and SQL sources, though it lacks the native Microsoft distribution advantage.",
+              "thoughtspot": "ThoughtSpot can query supported Microsoft data platforms, but integration depends on warehouse architecture.",
+              "sigma": "Sigma fits when Microsoft data is available in a supported cloud warehouse; it is not a native Fabric replacement.",
+              "qlik": "Qlik can connect across Microsoft sources, though Fabric-specific features need additional integration."
+            }
+          }
+        },
+        {
+          "id": "google_cloud",
+          "label": "Google Cloud",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 1,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker. Good fit: ThoughtSpot. Suitable: Tableau, Qlik, Sigma. Possible but not ideal: Power BI. Why the leaders: Looker: BigQuery push-down and LookML modeling align directly with Google Cloud warehouse operations.",
+            "tools": {
+              "powerbi": "BigQuery connectors can serve a Google estate, but Power BI's Microsoft integration benefit is reduced.",
+              "looker": "BigQuery push-down and LookML modeling align directly with Google Cloud warehouse operations.",
+              "tableau": "Tableau can visualize Google warehouse data, with no particular Google-native governance advantage.",
+              "thoughtspot": "ThoughtSpot search over a Google cloud warehouse can support business users with prepared models.",
+              "sigma": "Sigma can analyze BigQuery tables directly, with warehouse permissions providing the governance base.",
+              "qlik": "Qlik connects to Google sources, though its distinctive strength here is cross-source analysis rather than native alignment."
+            }
+          }
+        },
+        {
+          "id": "salesforce",
+          "label": "Salesforce",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 1,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau. Suitable: Power BI, ThoughtSpot, Qlik. Possible but not ideal: Looker, Sigma. Why the leaders: Tableau: Tableau's Salesforce alignment and visual CRM analytics support a Salesforce-led reporting program.",
+            "tools": {
+              "powerbi": "Salesforce connectors support CRM reporting, but Power BI does not inherit Tableau's Salesforce alignment.",
+              "looker": "Looker can model Salesforce data after ingestion, but that requires a separate Google-oriented stack.",
+              "tableau": "Tableau's Salesforce alignment and visual CRM analytics support a Salesforce-led reporting program.",
+              "thoughtspot": "ThoughtSpot can search curated Salesforce data in a warehouse, but direct ecosystem alignment is limited.",
+              "sigma": "Sigma needs Salesforce data made available in its supported warehouse before users can analyze it.",
+              "qlik": "Qlik connects CRM data to other sources, but lacks Tableau's native Salesforce positioning."
+            }
+          }
+        },
+        {
+          "id": "databricks",
+          "label": "Databricks",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: ThoughtSpot, Sigma. Good fit: Power BI, Tableau, Looker, Qlik. Why the leaders: ThoughtSpot: Search over a curated Databricks warehouse can exploit live data for business questions. Sigma: Spreadsheet-style analysis directly on Databricks warehouse tables fits lakehouse-oriented teams.",
+            "tools": {
+              "powerbi": "Databricks connectivity enables modeled reports over lakehouse data; capacity and query mode need tuning.",
+              "looker": "Live SQL push-down can expose Databricks data through governed LookML measures.",
+              "tableau": "Databricks connections enable visual analysis, with live versus extract choice affecting latency.",
+              "thoughtspot": "Search over a curated Databricks warehouse can exploit live data for business questions.",
+              "sigma": "Spreadsheet-style analysis directly on Databricks warehouse tables fits lakehouse-oriented teams.",
+              "qlik": "Qlik can blend Databricks with other estates; data movement and model design need planning."
+            }
+          }
+        },
+        {
+          "id": "snowflake",
+          "label": "Snowflake",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: ThoughtSpot, Sigma. Good fit: Tableau, Looker, Qlik. Suitable: Power BI. Why the leaders: ThoughtSpot: Live Snowflake queries can power search and dashboards over a curated cloud model. Sigma: Direct Snowflake analysis and spreadsheet-style workbooks fit warehouse-first teams.",
+            "tools": {
+              "powerbi": "Snowflake connectivity can feed semantic models, but data movement or DirectQuery design needs attention.",
+              "looker": "LookML can define governed metrics while Snowflake performs live query computation.",
+              "tableau": "Live or extracted Snowflake connections support visual analysis at different performance and cost points.",
+              "thoughtspot": "Live Snowflake queries can power search and dashboards over a curated cloud model.",
+              "sigma": "Direct Snowflake analysis and spreadsheet-style workbooks fit warehouse-first teams.",
+              "qlik": "Qlik can combine Snowflake and other sources, with a separate associative model to maintain."
+            }
+          }
+        },
+        {
+          "id": "hybrid",
+          "label": "Hybrid",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Qlik. Good fit: Power BI, Tableau. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Qlik: Qlik's cloud and on-premises deployment choices fit a hybrid estate with mixed legacy and modern sources.",
+            "tools": {
+              "powerbi": "Gateways and cloud services can bridge on-premises and Azure data, though hybrid security and refresh need design.",
+              "looker": "Customer-hosted Looker can run within a controlled environment and query data in place, including private-network sources. Hybrid fit still depends on supported database connectivity, network latency and the operational effort of maintaining the Looker instance.",
+              "tableau": "Tableau Server and Cloud options support mixed estates, with connection and governance choices to resolve.",
+              "thoughtspot": "ThoughtSpot Software can support a self-managed deployment, while ThoughtSpot Cloud can query curated cloud data. A hybrid design must confirm the licensed edition, supported source connectivity, network path and whether data movement is permitted.",
+              "sigma": "Sigma can analyze supported cloud warehouse data, but on-premises sources need an upstream integration path.",
+              "qlik": "Qlik's cloud and on-premises deployment choices fit a hybrid estate with mixed legacy and modern sources."
+            }
+          }
+        },
+        {
+          "id": "none",
+          "label": "None / Not yet defined",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "No primary ecosystem is named; connector or licensing advantages should not influence selection yet.",
+              "looker": "Without a strategic cloud preference, Google alignment is not evidence of Looker fit.",
+              "tableau": "Without a preferred ecosystem, Tableau's integration options do not favor it over alternatives.",
+              "thoughtspot": "Without an identified estate, ThoughtSpot connectivity cannot be evaluated as an advantage.",
+              "sigma": "Without a known warehouse, Sigma's architecture may or may not fit; score remains neutral.",
+              "qlik": "No estate is specified, so Qlik's broad connectivity is not yet a decision criterion."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.333333333,
+        "powerbi": 2.5,
+        "qlik": 2.833333333,
+        "sigma": 2.5,
+        "tableau": 3.0,
+        "thoughtspot": 2.833333333
+      },
+      "variance": {
+        "looker": 1.222222222,
+        "powerbi": 0.916666667,
+        "qlik": 0.472222222,
+        "sigma": 1.25,
+        "tableau": 0.333333333,
+        "thoughtspot": 0.805555556
+      }
+    },
+    {
+      "id": "Q21",
+      "order": 5,
+      "status": "draft",
+      "reference": "neutral",
+      "section": "S1",
+      "text": "How important are polished, presentation-quality dashboards and data storytelling?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [],
+      "options": [
+        {
+          "id": "critical",
+          "label": "Critical: executive or board-grade bespoke visuals",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 1,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Visualization & Storytelling' (matrix text slide 7); full row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. CAUTION: Sigma's 4 reflects 'easiest to self-edit', not bespoke presentation quality; SME to confirm.",
+          "rationale": {
+            "summary": "Strong fit: Tableau, Sigma. Suitable: Power BI, Looker, Qlik. Possible but not ideal: ThoughtSpot. Why the leaders: Tableau: Most flexible visuals; best with a dedicated analyst team. Sigma: Easiest to self-edit; spreadsheet-style with fast iteration.",
+            "tools": {
+              "powerbi": "Needs DAX to customize visuals; pairs best with a skilled team.",
+              "looker": "Less flexible than Tableau; visual changes route through LookML.",
+              "tableau": "Most flexible visuals; best with a dedicated analyst team.",
+              "thoughtspot": "Built for exploration; not polished storytelling.",
+              "sigma": "Easiest to self-edit; spreadsheet-style with fast iteration.",
+              "qlik": "Strong but less flexible than Tableau; moderate skill needed."
+            }
+          }
+        },
+        {
+          "id": "important",
+          "label": "Important: clean, professional standard dashboards",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 1,
+            "sigma": 3,
+            "qlik": 2
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Visualization & Storytelling' (matrix text slide 7); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. CAUTION: Sigma's 4 reflects 'easiest to self-edit', not bespoke presentation quality; SME to confirm.",
+          "rationale": {
+            "summary": "Good fit: Tableau, Sigma. Suitable: Power BI, Looker, Qlik. Possible but not ideal: ThoughtSpot. Why the leaders: Tableau: Most flexible visuals; best with a dedicated analyst team. Sigma: Easiest to self-edit; spreadsheet-style with fast iteration.",
+            "tools": {
+              "powerbi": "Needs DAX to customize visuals; pairs best with a skilled team.",
+              "looker": "Less flexible than Tableau; visual changes route through LookML.",
+              "tableau": "Most flexible visuals; best with a dedicated analyst team.",
+              "thoughtspot": "Built for exploration; not polished storytelling.",
+              "sigma": "Easiest to self-edit; spreadsheet-style with fast iteration.",
+              "qlik": "Strong but less flexible than Tableau; moderate skill needed."
+            }
+          }
+        },
+        {
+          "id": "not_a_priority",
+          "label": "Not a priority: functional reporting is enough",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.0,
+        "powerbi": 0.0,
+        "qlik": 0.0,
+        "sigma": 0.666666667,
+        "tableau": 0.666666667,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q22",
+      "order": 6,
+      "status": "draft",
+      "reference": "neutral",
+      "section": "S1",
+      "text": "Is AI-assisted or natural-language analytics a priority?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [],
+      "options": [
+        {
+          "id": "ai_first",
+          "label": "AI-first: business users should ask questions in plain English",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'AI-Assisted & Conversational' (matrix text slide 7); full row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Strong fit: Power BI, ThoughtSpot. Good fit: Tableau, Qlik. Suitable: Looker, Sigma. Why the leaders: Power BI: Most integrated AI: Copilot gives natural-language Q&A and DAX help. ThoughtSpot: AI is the core product: Spotter offers the deepest search of the six.",
+            "tools": {
+              "powerbi": "Most integrated AI: Copilot gives natural-language Q&A and DAX help.",
+              "looker": "Narrower AI scope: Gemini is grounded in governed LookML.",
+              "tableau": "Strong AI support: Tableau Agent builds from a prompt.",
+              "thoughtspot": "AI is the core product: Spotter offers the deepest search of the six.",
+              "sigma": "Lighter AI support: Ask Sigma covers the basics.",
+              "qlik": "Solid AI support: Qlik Answers is grounded in your data."
+            }
+          }
+        },
+        {
+          "id": "ai_assisted",
+          "label": "AI-assisted: useful for report building and Q&A",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'AI-Assisted & Conversational' (matrix text slide 7); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Good fit: Power BI, Tableau, ThoughtSpot, Qlik. Suitable: Looker, Sigma. Why the leaders (and 1 more): Power BI: Most integrated AI: Copilot gives natural-language Q&A and DAX help. Tableau: Strong AI support: Tableau Agent builds from a prompt. ThoughtSpot: AI is the core product: Spotter offers the deepest search of the six.",
+            "tools": {
+              "powerbi": "Most integrated AI: Copilot gives natural-language Q&A and DAX help.",
+              "looker": "Narrower AI scope: Gemini is grounded in governed LookML.",
+              "tableau": "Strong AI support: Tableau Agent builds from a prompt.",
+              "thoughtspot": "AI is the core product: Spotter offers the deepest search of the six.",
+              "sigma": "Lighter AI support: Ask Sigma covers the basics.",
+              "qlik": "Solid AI support: Qlik Answers is grounded in your data."
+            }
+          }
+        },
+        {
+          "id": "not_a_priority",
+          "label": "Not a priority",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.0,
+        "powerbi": 0.666666667,
+        "qlik": 0.222222222,
+        "sigma": 0.0,
+        "tableau": 0.222222222,
+        "thoughtspot": 0.666666667
+      }
+    },
+    {
+      "id": "Q23",
+      "order": 7,
+      "status": "draft",
+      "reference": "neutral",
+      "section": "S1",
+      "text": "How much does licensing cost drive the decision?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "tight_budget",
+          "label": "Tight budget: cost reduction is the main driver",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 1,
+            "tableau": 2,
+            "thoughtspot": 1,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "scoreBasis": "Moved unchanged from Q20 'Tight budget' (SME-scored; no score or rationale change). Matches deck heatmap row 'Licensing & TCO' except Looker 1 vs 2.",
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Qlik, Sigma. Suitable: Tableau. Possible but not ideal: Looker, ThoughtSpot. Why the leaders: Power BI: Existing Microsoft licences and a broad talent pool may contain cost; verify capacity and per-user entitlements.",
+            "tools": {
+              "powerbi": "Existing Microsoft licences and a broad talent pool may contain cost; verify capacity and per-user entitlements.",
+              "looker": "LookML investment and enterprise licensing can be hard to justify under a tight budget without a strategic Google fit.",
+              "tableau": "Creator/viewer licences and content rebuild costs should be tested before selecting a premium visual stack.",
+              "thoughtspot": "AI-search licensing and warehouse compute can strain a tight budget despite quick user adoption.",
+              "sigma": "Warehouse reuse can limit infrastructure duplication, but subscription and query costs still need estimates.",
+              "qlik": "Licensing flexibility can fit some budgets; model-building and capacity costs must be sized explicitly."
+            }
+          }
+        },
+        {
+          "id": "balanced",
+          "label": "Balanced: will pay for clear capability",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 1,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Licensing & TCO' (matrix text slide 9); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Good fit: Power BI, Qlik, Sigma. Suitable: Tableau, Looker. Possible but not ideal: ThoughtSpot. Why the leaders: Power BI: Lowest entry cost; best TCO inside Microsoft estates. Qlik: Flexible licensing that scales cost with usage. Sigma: Minimal infrastructure overhead; no separate BI server to run.",
+            "tools": {
+              "powerbi": "Lowest entry cost; best TCO inside Microsoft estates.",
+              "looker": "Enterprise-only pricing; best value if already on Google Cloud.",
+              "tableau": "Premium pricing, justified for advanced analytics.",
+              "thoughtspot": "Premium, AI-focused pricing: you pay for the search-first experience.",
+              "sigma": "Minimal infrastructure overhead; no separate BI server to run.",
+              "qlik": "Flexible licensing that scales cost with usage."
+            }
+          }
+        },
+        {
+          "id": "not_main_factor",
+          "label": "Cost is not the main factor",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.222222222,
+        "powerbi": 0.666666667,
+        "qlik": 0.222222222,
+        "sigma": 0.222222222,
+        "tableau": 0.0,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q25",
+      "order": 8,
+      "status": "draft",
+      "reference": "neutral",
+      "section": "S1",
+      "text": "How many people will use the dashboards?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 1,
+      "showIf": [],
+      "options": [
+        {
+          "id": "u_1_10",
+          "label": "1-10 users",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral by design: with a small user base scale is not a differentiator, and licensing cost is already captured by Q23 (avoids counting one cost fact twice). All 2, flagged Unknown.",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        },
+        {
+          "id": "u_11_50",
+          "label": "11-50 users",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral by design: with a small user base scale is not a differentiator, and licensing cost is already captured by Q23 (avoids counting one cost fact twice). All 2, flagged Unknown.",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        },
+        {
+          "id": "u_51_100",
+          "label": "51-100 users",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 3,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Scalability & Performance' (matrix text slide 9); 'Scalability & Performance' row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Good fit: Looker, ThoughtSpot, Qlik, Sigma. Suitable: Power BI, Tableau. Why the leaders (and 1 more): Looker: Scales with your warehouse; no caching layer to manage. ThoughtSpot: Built for high concurrency; optimised for cloud warehouses. Qlik: Enterprise-grade scaling; hybrid and multi-cloud ready.",
+            "tools": {
+              "powerbi": "Capped by Fabric limits; scales within your capacity tier.",
+              "looker": "Scales with your warehouse; no caching layer to manage.",
+              "tableau": "Scales with investment; flexible performance architecture.",
+              "thoughtspot": "Built for high concurrency; optimised for cloud warehouses.",
+              "sigma": "Elastic and warehouse-native; scales automatically with usage.",
+              "qlik": "Enterprise-grade scaling; hybrid and multi-cloud ready."
+            }
+          }
+        },
+        {
+          "id": "u_100_plus",
+          "label": "More than 100 users",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Scalability & Performance' (matrix text slide 9); large user base: 'Scalability & Performance' row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Strong fit: Looker. Good fit: ThoughtSpot, Qlik, Sigma. Suitable: Power BI, Tableau. Why the leaders: Looker: Scales with your warehouse; no caching layer to manage.",
+            "tools": {
+              "powerbi": "Capped by Fabric limits; scales within your capacity tier.",
+              "looker": "Scales with your warehouse; no caching layer to manage.",
+              "tableau": "Scales with investment; flexible performance architecture.",
+              "thoughtspot": "Built for high concurrency; optimised for cloud warehouses.",
+              "sigma": "Elastic and warehouse-native; scales automatically with usage.",
+              "qlik": "Enterprise-grade scaling; hybrid and multi-cloud ready."
+            }
+          }
+        },
+        {
+          "id": "tbc",
+          "label": "To be confirmed",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.64,
+        "powerbi": 0.0,
+        "qlik": 0.24,
+        "sigma": 0.24,
+        "tableau": 0.0,
+        "thoughtspot": 0.24
+      }
+    },
+    {
+      "id": "Q05",
+      "order": 9,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S2",
+      "text": "Do you have strict governance or compliance requirements?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: Tableau. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Central certification, lineage, RLS and audit capabilities help enforce strict reporting controls; validate residency separately. Looker: Reviewed LookML definitions and access rules suit formal compliance, subject to hosting and audit requirements. Qlik: Section Access and deployment flexibility support regulated use, if scripts and measures are change-controlled.",
+            "tools": {
+              "powerbi": "Central certification, lineage, RLS and audit capabilities help enforce strict reporting controls; validate residency separately.",
+              "looker": "Reviewed LookML definitions and access rules suit formal compliance, subject to hosting and audit requirements.",
+              "tableau": "Permissions and deployment options support control, but per-workbook calculations need governance.",
+              "thoughtspot": "Curated search and permissions are necessary under strict policy; cloud location and AI access need review.",
+              "sigma": "Warehouse-native permissions help, but strict requirements must cover SaaS region and workbook write access.",
+              "qlik": "Section Access and deployment flexibility support regulated use, if scripts and measures are change-controlled."
+            }
+          }
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Sigma. Good fit: Power BI, Tableau, ThoughtSpot, Qlik. Suitable: Looker. Why the leaders: Sigma: Warehouse-backed spreadsheet access can prioritize ease of use, with normal permissions still enforced.",
+            "tools": {
+              "powerbi": "If controls are not strict, familiar authoring and distribution can be prioritized without building a heavy compliance workflow.",
+              "looker": "LookML rigor remains available, but its governance setup may outweigh value when no strict controls are needed.",
+              "tableau": "Flexible visual authoring is easier to deploy when formal compliance is not a deciding constraint.",
+              "thoughtspot": "Search-led discovery has fewer compliance hurdles, though standard data permissions remain necessary.",
+              "sigma": "Warehouse-backed spreadsheet access can prioritize ease of use, with normal permissions still enforced.",
+              "qlik": "Associative exploration is viable without additional compliance design; implementation complexity remains."
+            }
+          }
+        },
+        {
+          "id": "tbc",
+          "label": "To be confirmed",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "Do not assume a light control regime; confirm RLS, audit, residency and regulatory needs before final scoring.",
+              "looker": "The value of LookML controls cannot be weighted until actual compliance and approval requirements are stated.",
+              "tableau": "Confirm whether Server hosting, audit logs or approved data sources are required before selecting Tableau.",
+              "thoughtspot": "Confirm AI, hosting and row-access policies before using search for sensitive content.",
+              "sigma": "Check cloud-region and warehouse governance requirements before treating Sigma as eligible.",
+              "qlik": "Confirm deployment location and Section Access requirements before Qlik is treated as compliant."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.0,
+        "powerbi": 3.5,
+        "qlik": 3.5,
+        "sigma": 3.0,
+        "tableau": 3.0,
+        "thoughtspot": 2.5
+      },
+      "variance": {
+        "looker": 1.0,
+        "powerbi": 0.25,
+        "qlik": 0.25,
+        "sigma": 1.0,
+        "tableau": 0.0,
+        "thoughtspot": 0.25
+      }
+    },
+    {
+      "id": "Q06",
+      "order": 10,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S2",
+      "text": "What are your security and access requirements?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "basic_access",
+          "label": "Basic access",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot, Sigma. Good fit: Power BI, Qlik. Possible but not ideal: Looker. Why the leaders: Tableau: Simple project and workbook permissions meet basic access needs with limited setup. ThoughtSpot: Basic workspace controls support straightforward access if the data model is already curated. Sigma: Warehouse-granted access and workbook permissions can meet basic needs without extra application-side modeling.",
+            "tools": {
+              "powerbi": "Standard workspace permissions and tenant identity cover basic access without the full enterprise-control buildout.",
+              "looker": "Looker permissions work for basic access, but LookML and role setup may be disproportionate for this need.",
+              "tableau": "Simple project and workbook permissions meet basic access needs with limited setup.",
+              "thoughtspot": "Basic workspace controls support straightforward access if the data model is already curated.",
+              "sigma": "Warehouse-granted access and workbook permissions can meet basic needs without extra application-side modeling.",
+              "qlik": "App permissions can handle basic access; Section Access would be unnecessary unless row restrictions emerge."
+            }
+          }
+        },
+        {
+          "id": "role_based_access_rls",
+          "label": "Role-based access / RLS",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Qlik. Good fit: Tableau, Looker, ThoughtSpot, Sigma. Why the leaders: Power BI: Semantic-model RLS and Entra groups let one report serve role-specific data views. Qlik: Section Access can reduce records by role across apps; configuration and regression tests are important.",
+            "tools": {
+              "powerbi": "Semantic-model RLS and Entra groups let one report serve role-specific data views.",
+              "looker": "User attributes and access filters restrict Explore results by role, with model testing needed.",
+              "tableau": "User filters and content permissions can target groups, though workbook and source rules must stay aligned.",
+              "thoughtspot": "Role-aware search models can restrict results; validate filters across every searchable attribute.",
+              "sigma": "Warehouse roles and workbook permissions provide role-based separation; check inherited table policies.",
+              "qlik": "Section Access can reduce records by role across apps; configuration and regression tests are important."
+            }
+          }
+        },
+        {
+          "id": "enterprise_security",
+          "label": "Enterprise security (SSO and granular controls)",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: Tableau, ThoughtSpot. Suitable: Sigma. Why the leaders: Power BI: Entra SSO, tenant policies and granular model permissions support enterprise controls; residency needs separate hosting checks. Looker: SSO, LookML access rules and audited role configuration suit strict enterprise control; confirm hosting region separately. Qlik: Enterprise identity and Section Access support granular controls, with deployment and residency assessed separately.",
+            "tools": {
+              "powerbi": "Entra SSO, tenant policies and granular model permissions support enterprise controls; residency needs separate hosting checks.",
+              "looker": "SSO, LookML access rules and audited role configuration suit strict enterprise control; confirm hosting region separately.",
+              "tableau": "SSO and Tableau Server/Cloud permissions support enterprise controls; validate row rules and deployment location.",
+              "thoughtspot": "SSO and governed search are feasible, but granular access and region availability must be validated against policy.",
+              "sigma": "SSO plus warehouse policy inheritance can work, but granular protections depend on the data platform and tenancy.",
+              "qlik": "Enterprise identity and Section Access support granular controls, with deployment and residency assessed separately."
+            }
+          }
+        },
+        {
+          "id": "external_access",
+          "label": "External access",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot. Good fit: Power BI, Looker, Qlik, Sigma. Why the leaders: Tableau: Guest or embedded access can expose selected views; test licence and site permissions for each outside audience. ThoughtSpot: Embedded search can serve external users, with per-tenant data isolation validated before launch.",
+            "tools": {
+              "powerbi": "B2B identity, RLS and external sharing can isolate partners; tenant policies and licences must be checked.",
+              "looker": "Embedded authentication and user attributes can segment customers, provided external identities and permissions are tested.",
+              "tableau": "Guest or embedded access can expose selected views; test licence and site permissions for each outside audience.",
+              "thoughtspot": "Embedded search can serve external users, with per-tenant data isolation validated before launch.",
+              "sigma": "External workbooks can be shared only with an explicit tenant and warehouse-access design.",
+              "qlik": "Partner-facing apps can use governed access, but external identity and Section Access need testing."
+            }
+          }
+        },
+        {
+          "id": "tbc",
+          "label": "To be confirmed",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "Security requirements are unconfirmed; do not infer that basic access is sufficient or score detailed controls yet.",
+              "looker": "Until SSO, row access and residency are specified, LookML security effort cannot be estimated.",
+              "tableau": "The choice of Cloud versus Server and permission model depends on security needs still to be confirmed.",
+              "thoughtspot": "Search permissions and hosting fit cannot be judged until the required data controls are known.",
+              "sigma": "Warehouse policy coverage and SaaS residency must be checked once security requirements are confirmed.",
+              "qlik": "Section Access and deployment options should be evaluated after row, identity and residency needs are defined."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.75,
+        "powerbi": 3.5,
+        "qlik": 3.5,
+        "sigma": 3.0,
+        "tableau": 3.5,
+        "thoughtspot": 3.5
+      },
+      "variance": {
+        "looker": 1.1875,
+        "powerbi": 0.25,
+        "qlik": 0.25,
+        "sigma": 0.5,
+        "tableau": 0.25,
+        "thoughtspot": 0.25
+      }
+    },
+    {
+      "id": "Q26",
+      "order": 11,
+      "status": "draft",
+      "reference": "neutral",
+      "section": "S2",
+      "text": "Is a vendor-hosted (SaaS) BI platform acceptable?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes: vendor-hosted SaaS is acceptable",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        },
+        {
+          "id": "no_self_hosted",
+          "label": "No: must run on-premises or on client-controlled infrastructure",
+          "unknown": false,
+          "excludes": [
+            "sigma"
+          ],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "scoreBasis": "Moved unchanged from Q20 'On-premises / residency constraint' (SME-scored). Excludes=sigma: cloud SaaS only (deck slide 22; help.sigmacomputing.com). Looker (original) and ThoughtSpot Software have customer-hosted editions, so they stay scored (2), not excluded. Power BI 4 is under review (Report Server is feature-limited).",
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Qlik. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Power BI: Report Server and region choices may address location constraints, but specific features and data flows must be validated. Tableau: Tableau Server supports on-premises deployment; validate all extracts, support services and exports against policy. Qlik: On-premises deployment options can help meet location policy; confirm every app, reload and support data path.",
+            "tools": {
+              "powerbi": "Report Server and region choices may address location constraints, but specific features and data flows must be validated.",
+              "looker": "A customer-hosted Looker instance can keep the application within a controlled location while queries execute against data in its database. Residency compliance still requires validation of hosting, database, rendering, support access, integrations and all data paths.",
+              "tableau": "Tableau Server supports on-premises deployment; validate all extracts, support services and exports against policy.",
+              "thoughtspot": "ThoughtSpot Software may satisfy an on-premises requirement where that edition is available; ThoughtSpot Cloud requires an approved hosting region and source connectivity. Validate the licensed deployment model and every data, support and telemetry path against the residency policy.",
+              "sigma": "SaaS and supported cloud warehouse locations must both meet residency rules; warehouse RLS is not sufficient.",
+              "qlik": "On-premises deployment options can help meet location policy; confirm every app, reload and support data path."
+            }
+          }
+        },
+        {
+          "id": "tbc",
+          "label": "To be confirmed",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.0,
+        "powerbi": 0.888888889,
+        "qlik": 0.888888889,
+        "sigma": 0.0,
+        "tableau": 0.888888889,
+        "thoughtspot": 0.0
+      }
+    },
+    {
+      "id": "Q07",
+      "order": 12,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S2",
+      "text": "Do you have a defined data model or semantic layer in existing reporting?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [],
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker. Good fit: ThoughtSpot, Qlik. Suitable: Tableau, Sigma. Why the leaders: Power BI: An existing semantic model's measures and relationships may be reusable in Power BI after mapping and validation. Looker: Existing governed definitions can inform LookML, but measures and joins still need translation into its model.",
+            "tools": {
+              "powerbi": "An existing semantic model's measures and relationships may be reusable in Power BI after mapping and validation.",
+              "looker": "Existing governed definitions can inform LookML, but measures and joins still need translation into its model.",
+              "tableau": "A defined model can feed published sources, though calculated metrics may need rebuilding in Tableau.",
+              "thoughtspot": "A prepared data model provides a sound base for searchable measures and dimensions; test search mappings.",
+              "sigma": "An established warehouse model lets Sigma analysts use consistent columns directly, with logic migration reviewed.",
+              "qlik": "A defined model helps, but associations, keys and measures must be adapted to Qlik's app model."
+            }
+          }
+        },
+        {
+          "id": "partial",
+          "label": "Partial",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, Looker, ThoughtSpot, Qlik, Sigma. Why the leaders: Power BI: Retain trusted definitions in a shared model and fill gaps before scaling reports; partial governance lowers rework.",
+            "tools": {
+              "powerbi": "Retain trusted definitions in a shared model and fill gaps before scaling reports; partial governance lowers rework.",
+              "looker": "Model the reliable portion in LookML first, then agree missing joins and measures with data owners.",
+              "tableau": "Publish the reliable fields as shared sources, then reconcile measures still scattered across workbooks.",
+              "thoughtspot": "Curate known-good fields for search; incomplete definitions must be resolved before broad self-service.",
+              "sigma": "Use established warehouse tables first, while standardizing inconsistent definitions upstream.",
+              "qlik": "Map trusted metrics into governed apps; partial source modeling requires reconciliation of associations."
+            }
+          }
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot, Sigma. Good fit: Qlik. Suitable: Power BI. Possible but not ideal: Looker. Why the leaders: Tableau: Visual analysis can start from connected tables, though durable metric definitions still need a data model. ThoughtSpot: Search can be accessible once curated data is prepared; absent modeling makes that preparation the critical path. Sigma: Spreadsheet-style workbooks can start quickly, but trustworthy shared metrics require warehouse groundwork.",
+            "tools": {
+              "powerbi": "Power Query and semantic models can establish reusable measures, but modeling must be budgeted before reporting.",
+              "looker": "LookML offers strong governance eventually, but creating a model from scratch adds substantial initial delivery work.",
+              "tableau": "Visual analysis can start from connected tables, though durable metric definitions still need a data model.",
+              "thoughtspot": "Search can be accessible once curated data is prepared; absent modeling makes that preparation the critical path.",
+              "sigma": "Spreadsheet-style workbooks can start quickly, but trustworthy shared metrics require warehouse groundwork.",
+              "qlik": "Load scripts and associative modeling can combine sources; definition and reconciliation work still remains."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.666666667,
+        "powerbi": 3.333333333,
+        "qlik": 3.0,
+        "sigma": 3.0,
+        "tableau": 3.0,
+        "thoughtspot": 3.333333333
+      },
+      "variance": {
+        "looker": 1.555555556,
+        "powerbi": 0.888888889,
+        "qlik": 0.0,
+        "sigma": 0.666666667,
+        "tableau": 0.666666667,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q08",
+      "order": 13,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S2",
+      "text": "How mature is the current reporting governance process?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [],
+      "options": [
+        {
+          "id": "no_formal_governance",
+          "label": "No formal governance",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot, Sigma. Good fit: Power BI, Qlik. Possible but not ideal: Looker. Why the leaders: Tableau: Teams can start with visual reporting while introducing published sources and ownership gradually. ThoughtSpot: Search can improve access quickly, but ungoverned source metrics must be curated first. Sigma: Spreadsheet-style access has low friction, while warehouse permissions and shared definitions need a new owner.",
+            "tools": {
+              "powerbi": "Shared models and certification can introduce governance incrementally, but ownership and approvals must be established.",
+              "looker": "LookML provides strong controls but a code-review governance process may be heavy to introduce from zero.",
+              "tableau": "Teams can start with visual reporting while introducing published sources and ownership gradually.",
+              "thoughtspot": "Search can improve access quickly, but ungoverned source metrics must be curated first.",
+              "sigma": "Spreadsheet-style access has low friction, while warehouse permissions and shared definitions need a new owner.",
+              "qlik": "Associative apps can consolidate reporting; governance rules and controlled reloads must be set up."
+            }
+          }
+        },
+        {
+          "id": "partially_governed",
+          "label": "Partially governed",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Qlik. Good fit: Tableau, Looker, ThoughtSpot, Sigma. Why the leaders: Power BI: Extend existing ownership with certified measures and workspace policies rather than replace working controls. Qlik: Preserve existing controlled sources and extend governance across Qlik apps and reloads.",
+            "tools": {
+              "powerbi": "Extend existing ownership with certified measures and workspace policies rather than replace working controls.",
+              "looker": "Bring established definitions into reviewed LookML and formalize remaining gaps.",
+              "tableau": "Promote shared data sources and content governance while reconciling calculations outside them.",
+              "thoughtspot": "Use existing curated definitions for search, filling metric-control gaps before broad access.",
+              "sigma": "Reuse governed warehouse tables and close remaining permission or metric-definition gaps there.",
+              "qlik": "Preserve existing controlled sources and extend governance across Qlik apps and reloads."
+            }
+          }
+        },
+        {
+          "id": "fully_governed",
+          "label": "Fully governed",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Suitable: Tableau, ThoughtSpot, Sigma. Why the leaders: Power BI: Certified semantic models, lineage and audit processes can align with a mature reporting-control regime. Looker: Version-controlled LookML and reviewed definitions fit existing formal approval and audit workflows. Qlik: Governed apps and Section Access can fit mature controls if changes to load scripts and measures are reviewed.",
+            "tools": {
+              "powerbi": "Certified semantic models, lineage and audit processes can align with a mature reporting-control regime.",
+              "looker": "Version-controlled LookML and reviewed definitions fit existing formal approval and audit workflows.",
+              "tableau": "Governed sources and Server permissions can participate in controls; workbook-level logic needs monitoring.",
+              "thoughtspot": "Search must use the approved model and preserve access controls; otherwise it may bypass mature governance.",
+              "sigma": "Warehouse governance can underpin Sigma, but workbook logic and input permissions must meet existing controls.",
+              "qlik": "Governed apps and Section Access can fit mature controls if changes to load scripts and measures are reviewed."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.666666667,
+        "powerbi": 3.666666667,
+        "qlik": 3.666666667,
+        "sigma": 3.0,
+        "tableau": 3.0,
+        "thoughtspot": 3.0
+      },
+      "variance": {
+        "looker": 1.555555556,
+        "powerbi": 0.222222222,
+        "qlik": 0.222222222,
+        "sigma": 0.666666667,
+        "tableau": 0.666666667,
+        "thoughtspot": 0.666666667
+      }
+    },
+    {
+      "id": "Q09",
+      "order": 14,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S2",
+      "text": "Are there any AI governance concerns to be aware of?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 1,
+      "showIf": [],
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: Tableau. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Tenant policies, semantic-model security and Copilot access governance help contain AI answers; validate feature entitlements. Looker: Governed LookML fields and model permissions can constrain AI-assisted answers; review what Gemini can access. Qlik: Enterprise controls can govern AI use, with model access and generated outputs included in the risk review.",
+            "tools": {
+              "powerbi": "Tenant policies, semantic-model security and Copilot access governance help contain AI answers; validate feature entitlements.",
+              "looker": "Governed LookML fields and model permissions can constrain AI-assisted answers; review what Gemini can access.",
+              "tableau": "AI assistance needs permissions and output validation; Tableau's visuals alone do not resolve AI-governance risk.",
+              "thoughtspot": "Search-led AI is attractive, but broad natural-language access increases the importance of curation and data controls.",
+              "sigma": "Warehouse policy inheritance helps, but assess AI feature data handling and workbook permissions before use.",
+              "qlik": "Enterprise controls can govern AI use, with model access and generated outputs included in the risk review."
+            }
+          }
+        },
+        {
+          "id": "maybe",
+          "label": "Maybe",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, Looker, ThoughtSpot, Qlik, Sigma. Why the leaders: Power BI: Pilot AI against certified measures with limited users while legal and data owners clarify policy.",
+            "tools": {
+              "powerbi": "Pilot AI against certified measures with limited users while legal and data owners clarify policy.",
+              "looker": "Test AI on a small approved LookML model until permitted data and prompt handling are clear.",
+              "tableau": "Limit AI-assisted analytics to approved sources while the governance position is resolved.",
+              "thoughtspot": "Run a constrained search pilot; do not expose all data through natural language before policy is settled.",
+              "sigma": "Trial AI only on permitted warehouse tables until data-handling rules are confirmed.",
+              "qlik": "Pilot AI features under existing access controls before wider rollout and policy sign-off."
+            }
+          }
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: ThoughtSpot, Sigma. Good fit: Power BI, Tableau, Qlik. Suitable: Looker. Why the leaders: ThoughtSpot: AI-first search becomes easier to trial when no additional AI policy is required; data access still matters. Sigma: Warehouse-backed AI analysis can be trialed under existing data permissions without an added AI-policy gate.",
+            "tools": {
+              "powerbi": "With no special AI constraint, Copilot features can be evaluated for value, though ordinary access controls still apply.",
+              "looker": "Without an AI restriction, governed exploration is usable; LookML effort still needs justification by reporting needs.",
+              "tableau": "AI-assisted visual analysis can be considered without an extra governance blocker, alongside standard permissions.",
+              "thoughtspot": "AI-first search becomes easier to trial when no additional AI policy is required; data access still matters.",
+              "sigma": "Warehouse-backed AI analysis can be trialed under existing data permissions without an added AI-policy gate.",
+              "qlik": "AI and automation can be explored under normal enterprise permissions rather than special approval."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.0,
+        "powerbi": 3.666666667,
+        "qlik": 3.333333333,
+        "sigma": 3.0,
+        "tableau": 3.0,
+        "thoughtspot": 3.0
+      },
+      "variance": {
+        "looker": 0.666666667,
+        "powerbi": 0.222222222,
+        "qlik": 0.222222222,
+        "sigma": 0.666666667,
+        "tableau": 0.0,
+        "thoughtspot": 0.666666667
+      }
+    },
+    {
+      "id": "Q10",
+      "order": 15,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S3",
+      "text": "Who will build the reports?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [],
+      "options": [
+        {
+          "id": "jman",
+          "label": "JMAN",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 4,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Looker, Qlik. Good fit: ThoughtSpot, Sigma. Why the leaders (and 1 more): Power BI: JMAN delivery can draw on a broad Power BI talent pool and advanced DAX specialists, reducing client training dependencies. Tableau: JMAN analysts can develop visual dashboards without requiring the client to author Tableau content immediately. Looker: JMAN specialists can build and review LookML, avoiding reliance on client SQL/Git skills during initial delivery.",
+            "tools": {
+              "powerbi": "JMAN delivery can draw on a broad Power BI talent pool and advanced DAX specialists, reducing client training dependencies.",
+              "looker": "JMAN specialists can build and review LookML, avoiding reliance on client SQL/Git skills during initial delivery.",
+              "tableau": "JMAN analysts can develop visual dashboards without requiring the client to author Tableau content immediately.",
+              "thoughtspot": "JMAN can prepare the modeled warehouse and search experience while client users focus on consuming answers.",
+              "sigma": "JMAN can build warehouse-backed workbooks, though client ownership of later changes needs a handover.",
+              "qlik": "JMAN specialists can handle associative modeling and Section Access before transferring administration."
+            }
+          }
+        },
+        {
+          "id": "client_team",
+          "label": "Client team",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, ThoughtSpot, Sigma. Suitable: Looker, Qlik. Why the leaders: Power BI: A client team can build with familiar Microsoft tools, but complex DAX and semantic design still need trained owners.",
+            "tools": {
+              "powerbi": "A client team can build with familiar Microsoft tools, but complex DAX and semantic design still need trained owners.",
+              "looker": "Client authors need SQL, LookML and Git discipline; without those skills the model-first workflow may bottleneck.",
+              "tableau": "Visual authoring suits client analysts, with shared source governance needed as content grows.",
+              "thoughtspot": "Business users can consume search easily, but client data engineers must prepare the model behind it.",
+              "sigma": "Spreadsheet familiarity helps client authors, provided the warehouse and permissions are already managed.",
+              "qlik": "Client builders must learn associative modeling and Section Access, not just dashboard design."
+            }
+          }
+        },
+        {
+          "id": "joint_delivery",
+          "label": "Joint delivery",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, ThoughtSpot, Sigma. Suitable: Looker, Qlik. Why the leaders: Power BI: Joint delivery can pair JMAN model design with client-owned dashboards and a gradual DAX handover.",
+            "tools": {
+              "powerbi": "Joint delivery can pair JMAN model design with client-owned dashboards and a gradual DAX handover.",
+              "looker": "JMAN can establish LookML patterns while client engineers review changes; joint ownership needs Git and SQL skills.",
+              "tableau": "JMAN and client analysts can share visual development with published-source conventions agreed early.",
+              "thoughtspot": "JMAN can curate search models while client users validate answers and take on ongoing content ownership.",
+              "sigma": "JMAN can prepare warehouse workbooks while client teams learn to extend analyses safely.",
+              "qlik": "JMAN can establish apps and Section Access while client maintainers learn load scripts and deployments."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.666666667,
+        "powerbi": 4.0,
+        "qlik": 2.666666667,
+        "sigma": 3.0,
+        "tableau": 3.333333333,
+        "thoughtspot": 3.0
+      },
+      "variance": {
+        "looker": 0.888888889,
+        "powerbi": 0.0,
+        "qlik": 0.888888889,
+        "sigma": 0.0,
+        "tableau": 0.222222222,
+        "thoughtspot": 0.0
+      }
+    },
+    {
+      "id": "Q11",
+      "order": 16,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S3",
+      "text": "What is the delivery team's technical skill level (SQL, DAX, modelling)?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [
+        {
+          "q": "Q10",
+          "in": [
+            "client_team",
+            "joint_delivery"
+          ]
+        }
+      ],
+      "options": [
+        {
+          "id": "beginner",
+          "label": "Beginner",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot, Sigma. Good fit: Power BI. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: Tableau: Drag-and-drop authoring is approachable for beginner analysts, with published-source conventions taught first. ThoughtSpot: Search-led consumption is easy for beginners; preparing searchable datasets still needs specialist skills. Sigma: Spreadsheet-style exploration suits beginners when the warehouse model is already clean and governed.",
+            "tools": {
+              "powerbi": "A beginner can consume Power BI reports quickly, but should not own complex DAX models without support.",
+              "looker": "Beginner client builders face a substantial LookML, SQL and Git learning curve before editing governed measures.",
+              "tableau": "Drag-and-drop authoring is approachable for beginner analysts, with published-source conventions taught first.",
+              "thoughtspot": "Search-led consumption is easy for beginners; preparing searchable datasets still needs specialist skills.",
+              "sigma": "Spreadsheet-style exploration suits beginners when the warehouse model is already clean and governed.",
+              "qlik": "Associative model design and Section Access need more training than basic dashboard consumption."
+            }
+          }
+        },
+        {
+          "id": "intermediate",
+          "label": "Intermediate",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Sigma. Good fit: Tableau, Looker, ThoughtSpot, Qlik. Why the leaders: Power BI: Intermediate analysts can extend reports and basic DAX with review of complex model changes. Sigma: Spreadsheet-capable analysts can build workbooks quickly after learning warehouse permissions and reusable logic.",
+            "tools": {
+              "powerbi": "Intermediate analysts can extend reports and basic DAX with review of complex model changes.",
+              "looker": "Intermediate SQL users can learn LookML, but Git review and join design still require enablement.",
+              "tableau": "Intermediate analysts can author dashboards and work with shared sources without specialist visual development.",
+              "thoughtspot": "Intermediate users can curate common questions; data-team modeling remains important for accurate search.",
+              "sigma": "Spreadsheet-capable analysts can build workbooks quickly after learning warehouse permissions and reusable logic.",
+              "qlik": "Intermediate teams can build Qlik apps with targeted training in associations and script quality."
+            }
+          }
+        },
+        {
+          "id": "advanced",
+          "label": "Advanced",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: Tableau, ThoughtSpot, Sigma. Why the leaders: Power BI: Advanced DAX and data-model skills can support reusable enterprise semantic models and performance tuning. Looker: Advanced SQL and Git practitioners can maintain versioned LookML and validate governed Explores. Qlik: Advanced builders can exploit associative modeling and automation with controlled Section Access.",
+            "tools": {
+              "powerbi": "Advanced DAX and data-model skills can support reusable enterprise semantic models and performance tuning.",
+              "looker": "Advanced SQL and Git practitioners can maintain versioned LookML and validate governed Explores.",
+              "tableau": "Advanced analysts can design complex visuals, while metric governance needs its own controls.",
+              "thoughtspot": "Advanced data teams can tune the search model and warehouse for broader self-service.",
+              "sigma": "Advanced warehouse teams can manage complex workbooks, Input Tables and controlled access.",
+              "qlik": "Advanced builders can exploit associative modeling and automation with controlled Section Access."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.666666667,
+        "powerbi": 3.666666667,
+        "qlik": 3.0,
+        "sigma": 3.666666667,
+        "tableau": 3.333333333,
+        "thoughtspot": 3.333333333
+      },
+      "variance": {
+        "looker": 1.555555556,
+        "powerbi": 0.222222222,
+        "qlik": 0.666666667,
+        "sigma": 0.222222222,
+        "tableau": 0.222222222,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q12",
+      "order": 17,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S3",
+      "text": "How much training and change management can the client support?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 2,
+      "showIf": [
+        {
+          "q": "Q10",
+          "in": [
+            "client_team",
+            "joint_delivery"
+          ]
+        }
+      ],
+      "options": [
+        {
+          "id": "full_support_for_upskilling",
+          "label": "Full support for upskilling",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: Tableau, ThoughtSpot, Sigma. Why the leaders: Power BI: Full training capacity enables both self-service authoring and specialist DAX/model governance adoption. Looker: Full enablement can cover LookML, SQL and Git workflows required to maintain Looker independently. Qlik: Full support allows time to teach associative exploration, load scripts and Section Access.",
+            "tools": {
+              "powerbi": "Full training capacity enables both self-service authoring and specialist DAX/model governance adoption.",
+              "looker": "Full enablement can cover LookML, SQL and Git workflows required to maintain Looker independently.",
+              "tableau": "Training can establish Tableau authoring standards and shared-source practices across teams.",
+              "thoughtspot": "Training can teach users search conventions while engineers maintain the curated model.",
+              "sigma": "Training can cover warehouse permissions, workbook logic and Input Tables for broader adoption.",
+              "qlik": "Full support allows time to teach associative exploration, load scripts and Section Access."
+            }
+          }
+        },
+        {
+          "id": "can_upskill",
+          "label": "Can upskill",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, ThoughtSpot, Sigma. Good fit: Tableau, Looker, Qlik. Why the leaders: Power BI: A phased upskilling plan can move Microsoft-literate users from consumption to basic report authoring. ThoughtSpot: Search-led use has a gentle entry point; model maintainers still need focused training. Sigma: Spreadsheet users can adopt workbooks quickly, then learn warehouse governance and advanced input workflows.",
+            "tools": {
+              "powerbi": "A phased upskilling plan can move Microsoft-literate users from consumption to basic report authoring.",
+              "looker": "SQL-capable staff can upskill into LookML, with time reserved for Git and model review.",
+              "tableau": "Analysts can upskill in visual design and published-source discipline while delivering early dashboards.",
+              "thoughtspot": "Search-led use has a gentle entry point; model maintainers still need focused training.",
+              "sigma": "Spreadsheet users can adopt workbooks quickly, then learn warehouse governance and advanced input workflows.",
+              "qlik": "Teams can upskill from app consumption toward associative design, with specialist oversight during handover."
+            }
+          }
+        },
+        {
+          "id": "no_training_required",
+          "label": "No training required",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, ThoughtSpot, Sigma. Good fit: Power BI. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: Tableau: Familiar drag-and-drop authoring reduces immediate training, though shared-source rules still need communicating. ThoughtSpot: Search is accessible to users without formal training if JMAN or a data team curates the model. Sigma: Spreadsheet familiarity reduces onboarding for end users; warehouse administration still needs capable owners.",
+            "tools": {
+              "powerbi": "With no training planned, familiar Microsoft consumption helps, but advanced DAX work still needs an existing owner.",
+              "looker": "Without training, new LookML and Git practices make client-side maintenance risky unless expertise already exists.",
+              "tableau": "Familiar drag-and-drop authoring reduces immediate training, though shared-source rules still need communicating.",
+              "thoughtspot": "Search is accessible to users without formal training if JMAN or a data team curates the model.",
+              "sigma": "Spreadsheet familiarity reduces onboarding for end users; warehouse administration still needs capable owners.",
+              "qlik": "Without training, associative modeling and Section Access are a support risk even if dashboards are consumable."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.666666667,
+        "powerbi": 3.666666667,
+        "qlik": 3.0,
+        "sigma": 3.666666667,
+        "tableau": 3.333333333,
+        "thoughtspot": 3.666666667
+      },
+      "variance": {
+        "looker": 1.555555556,
+        "powerbi": 0.222222222,
+        "qlik": 0.666666667,
+        "sigma": 0.222222222,
+        "tableau": 0.222222222,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q24",
+      "order": 18,
+      "status": "draft",
+      "reference": "neutral",
+      "section": "S3",
+      "text": "How important is a large talent pool and partner ecosystem for the chosen platform?",
+      "type": "single",
+      "stage": "discovery",
+      "weight": 1,
+      "showIf": [],
+      "options": [
+        {
+          "id": "critical",
+          "label": "Critical: must be easy to hire for and to staff",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 1,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Community & Partner Support' (matrix text slide 9); full row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, Qlik. Suitable: Looker, ThoughtSpot. Possible but not ideal: Sigma. Why the leaders: Power BI: Largest talent pool; easiest to staff and support.",
+            "tools": {
+              "powerbi": "Largest talent pool; easiest to staff and support.",
+              "looker": "Smaller talent pool, tied to the Google Cloud ecosystem.",
+              "tableau": "Mature global community with strong enterprise partner support.",
+              "thoughtspot": "Smaller, growing community; fewer implementation partners available.",
+              "sigma": "Newest and smallest talent pool, in a rapidly growing ecosystem.",
+              "qlik": "Established global ecosystem with a solid enterprise support network."
+            }
+          }
+        },
+        {
+          "id": "important",
+          "label": "Important: a clear advantage",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 2,
+            "sigma": 1,
+            "qlik": 3
+          },
+          "scoreBasis": "Deck heatmap (slide 8), row 'Community & Partner Support' (matrix text slide 9); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
+          "rationale": {
+            "summary": "Good fit: Power BI, Tableau, Qlik. Suitable: Looker, ThoughtSpot. Possible but not ideal: Sigma. Why the leaders: Power BI: Largest talent pool; easiest to staff and support. Tableau: Mature global community with strong enterprise partner support. Qlik: Established global ecosystem with a solid enterprise support network.",
+            "tools": {
+              "powerbi": "Largest talent pool; easiest to staff and support.",
+              "looker": "Smaller talent pool, tied to the Google Cloud ecosystem.",
+              "tableau": "Mature global community with strong enterprise partner support.",
+              "thoughtspot": "Smaller, growing community; fewer implementation partners available.",
+              "sigma": "Newest and smallest talent pool, in a rapidly growing ecosystem.",
+              "qlik": "Established global ecosystem with a solid enterprise support network."
+            }
+          }
+        },
+        {
+          "id": "not_a_factor",
+          "label": "Not a factor",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "This answer does not favour any platform.",
+              "looker": "This answer does not favour any platform.",
+              "tableau": "This answer does not favour any platform.",
+              "thoughtspot": "This answer does not favour any platform.",
+              "sigma": "This answer does not favour any platform.",
+              "qlik": "This answer does not favour any platform."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.0,
+        "powerbi": 0.666666667,
+        "qlik": 0.222222222,
+        "sigma": 0.222222222,
+        "tableau": 0.222222222,
+        "thoughtspot": 0.0
+      }
+    },
+    {
+      "id": "Q13",
+      "order": 19,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "Does the client have an active reporting suite?",
+      "type": "single",
+      "stage": "migration",
+      "weight": 0,
+      "showIf": [],
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
+            "tools": {
+              "powerbi": "An active suite means Power BI fit depends on reusable models, existing licences and report conversion; confirm the incumbent first.",
+              "looker": "An active suite could offer reusable warehouse metrics, but LookML conversion effort depends on which platform is installed.",
+              "tableau": "With an incumbent suite, Tableau suitability turns on workbook reuse, licensing and the cost of rebuilding existing content.",
+              "thoughtspot": "Existing reporting can seed search use cases, but models and dashboards may require migration rather than direct reuse.",
+              "sigma": "An existing warehouse may speed Sigma analysis; report and licensing migration cannot be judged from 'Yes' alone.",
+              "qlik": "An active suite may offer reusable source logic, but app and licence transition depends on the actual incumbent."
+            }
+          }
+        },
+        {
+          "id": "partial",
+          "label": "Partial / Departmental only",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
+            "tools": {
+              "powerbi": "Departmental reports can be consolidated into a shared semantic model, after discovering conflicting definitions.",
+              "looker": "Partial adoption leaves metrics to model in LookML; department-level definitions need reconciliation first.",
+              "tableau": "Published sources could unify departmental dashboards, but local calculations and licence footprints need inventory.",
+              "thoughtspot": "Search can broaden departmental access once data and definitions are standardized across teams.",
+              "sigma": "Shared warehouse workbooks can replace isolated spreadsheets if the underlying tables are consolidated.",
+              "qlik": "Associative apps can join departmental sources, but duplicated metrics and access rules need resolution."
+            }
+          }
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
+            "tools": {
+              "powerbi": "With no suite to migrate, Power BI can start new models and distribution; data readiness, not conversion, drives effort.",
+              "looker": "No incumbent removes content migration, but LookML and warehouse modeling still need to be established.",
+              "tableau": "No existing workbooks need converting, so visual reporting can start from prepared data sources.",
+              "thoughtspot": "No prior dashboards constrain design, but curated warehouse data is still needed before search works well.",
+              "sigma": "Without legacy reports, business users can start warehouse-backed analysis once tables and permissions are ready.",
+              "qlik": "With no incumbent apps, deployment can start fresh; source integration and associative modeling remain."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.0,
+        "powerbi": 2.0,
+        "qlik": 2.0,
+        "sigma": 2.0,
+        "tableau": 2.0,
+        "thoughtspot": 2.0
+      },
+      "variance": {
+        "looker": 0.0,
+        "powerbi": 0.0,
+        "qlik": 0.0,
+        "sigma": 0.0,
+        "tableau": 0.0,
+        "thoughtspot": 0.0
+      }
+    },
+    {
+      "id": "Q14",
+      "order": 20,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "Which BI tools and licences are currently in use?",
+      "type": "multi",
+      "stage": "migration",
+      "weight": 3,
+      "showIf": [
+        {
+          "q": "Q13",
+          "in": [
+            "yes",
+            "partial"
+          ]
+        }
+      ],
+      "options": [
+        {
+          "id": "powerbi",
+          "label": "Power BI",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 1,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Sigma. Suitable: Tableau, ThoughtSpot, Qlik. Possible but not ideal: Looker. Why the leaders: Power BI: If Power BI is already licensed, retaining models, RLS and reports avoids most migration and protects skills investment. Sigma: Warehouse data and spreadsheet-oriented users may ease a move, but Power BI models and licences do not transfer automatically.",
+            "tools": {
+              "powerbi": "If Power BI is already licensed, retaining models, RLS and reports avoids most migration and protects skills investment.",
+              "looker": "Moving existing Power BI DAX and report logic to LookML entails substantial rebuild and licence change.",
+              "tableau": "Power BI measures and visual pages need reconstruction in Tableau; source data may carry over.",
+              "thoughtspot": "Existing Power BI data may seed search, but semantic logic and dashboards need re-expression in the new model.",
+              "sigma": "Warehouse data and spreadsheet-oriented users may ease a move, but Power BI models and licences do not transfer automatically.",
+              "qlik": "Power BI star schemas and RLS need translation into associative apps and Section Access."
+            }
+          }
+        },
+        {
+          "id": "looker",
+          "label": "Looker",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 1,
+            "looker": 4,
+            "tableau": 1,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 1
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker. Suitable: ThoughtSpot, Sigma. Possible but not ideal: Power BI, Tableau, Qlik. Why the leaders: Looker: Keeping licensed Looker preserves versioned LookML, Explores and governance with minimal conversion.",
+            "tools": {
+              "powerbi": "Replacing LookML with DAX and Power BI models is a significant conversion; existing licence value is lost.",
+              "looker": "Keeping licensed Looker preserves versioned LookML, Explores and governance with minimal conversion.",
+              "tableau": "LookML metrics and joins must be rebuilt as published-source or workbook logic; this is a high-effort change.",
+              "thoughtspot": "Warehouse tables may be reusable, but governed LookML metrics must be recreated for search.",
+              "sigma": "Warehouse data carries over, while LookML governance must be redesigned around tables and workbooks.",
+              "qlik": "Associative apps cannot directly reuse LookML, so metric logic and user access need a high-effort rebuild."
+            }
+          }
+        },
+        {
+          "id": "tableau",
+          "label": "Tableau",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 1,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Tableau, Sigma. Suitable: Power BI, ThoughtSpot, Qlik. Possible but not ideal: Looker. Why the leaders: Tableau: Keeping licensed Tableau retains workbooks, authoring conventions and trained users. Sigma: Spreadsheet-style authorship eases adoption, yet Tableau workbook logic and layouts still need conversion.",
+            "tools": {
+              "powerbi": "Tableau calculations and dashboards must be rebuilt in Power BI; source connections may be reused.",
+              "looker": "Moving Tableau workbooks into a governed LookML model is high-effort because calculations and views require redesign.",
+              "tableau": "Keeping licensed Tableau retains workbooks, authoring conventions and trained users.",
+              "thoughtspot": "Curated data can feed search, but Tableau's custom visuals and dashboard interactions do not transfer directly.",
+              "sigma": "Spreadsheet-style authorship eases adoption, yet Tableau workbook logic and layouts still need conversion.",
+              "qlik": "Sources may transfer, but Tableau extracts, prep logic and visuals require Qlik-specific rebuilding."
+            }
+          }
+        },
+        {
+          "id": "thoughtspot",
+          "label": "ThoughtSpot",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 1,
+            "tableau": 2,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: ThoughtSpot, Sigma. Suitable: Power BI, Tableau, Qlik. Possible but not ideal: Looker. Why the leaders: ThoughtSpot: Keeping ThoughtSpot preserves search models, Liveboards, access setup and incumbent licences. Sigma: Both query cloud warehouses, helping data reuse; users still need workbook designs for prior search tasks.",
+            "tools": {
+              "powerbi": "Warehouse connections can be reused, but ThoughtSpot search models and Liveboards must become Power BI reports.",
+              "looker": "A new LookML layer must be authored for existing ThoughtSpot content before governed Explores are available.",
+              "tableau": "Curated source data can support Tableau visuals, but search-driven content needs a visual redesign.",
+              "thoughtspot": "Keeping ThoughtSpot preserves search models, Liveboards, access setup and incumbent licences.",
+              "sigma": "Both query cloud warehouses, helping data reuse; users still need workbook designs for prior search tasks.",
+              "qlik": "Moving to Qlik requires new associations and retraining despite reusable underlying source data."
+            }
+          }
+        },
+        {
+          "id": "sigma",
+          "label": "Sigma",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, ThoughtSpot, Sigma. Suitable: Looker, Qlik. Why the leaders (and 1 more): Power BI: Warehouse data can be reused in Power BI, while Sigma workbook and Input Table logic needs redesign. Tableau: Visual workbooks can use the same data, but Sigma inputs and spreadsheet interactions need substitutes. ThoughtSpot: Search can reuse warehouse tables, though workbook logic must be translated into a search-friendly model.",
+            "tools": {
+              "powerbi": "Warehouse data can be reused in Power BI, while Sigma workbook and Input Table logic needs redesign.",
+              "looker": "Warehouse tables are a start, but a governed LookML model has to replace workbook-defined measures.",
+              "tableau": "Visual workbooks can use the same data, but Sigma inputs and spreadsheet interactions need substitutes.",
+              "thoughtspot": "Search can reuse warehouse tables, though workbook logic must be translated into a search-friendly model.",
+              "sigma": "Retaining Sigma keeps existing workbooks, Input Tables, user habits and licence arrangements.",
+              "qlik": "The warehouse may carry over, but Sigma spreadsheet workflows need rebuilding in associative apps."
+            }
+          }
+        },
+        {
+          "id": "qlik",
+          "label": "Qlik",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 1,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Qlik. Suitable: Power BI, Tableau, ThoughtSpot, Sigma. Possible but not ideal: Looker. Why the leaders: Qlik: Retaining licensed Qlik preserves associative models, apps, reloads and Section Access without tool migration.",
+            "tools": {
+              "powerbi": "Qlik associations and Section Access must be remapped to a Power BI model and RLS; migration effort is material.",
+              "looker": "Qlik load scripts and associative logic require a high-effort redesign in LookML, including security rules.",
+              "tableau": "Qlik views and prep logic need rebuilding as Tableau sources and dashboards; visual usage patterns may transfer.",
+              "thoughtspot": "A warehouse-ready Qlik estate can seed search, but on-premises data and apps may need cloud preparation.",
+              "sigma": "Existing Qlik data may move to the warehouse, but workbook logic and access need redesign.",
+              "qlik": "Retaining licensed Qlik preserves associative models, apps, reloads and Section Access without tool migration."
+            }
+          }
+        },
+        {
+          "id": "excel_other",
+          "label": "Excel / Other",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, ThoughtSpot, Sigma. Suitable: Looker, Qlik. Why the leaders (and 1 more): Power BI: Excel-heavy workflows can move to Power BI and keep familiar Microsoft analysis, but manual workbook logic needs inventory. Tableau: Analysts can move from spreadsheet charts to Tableau visuals; formulas and linked workbooks still need conversion. ThoughtSpot: Search can replace some manual lookups once Excel data is loaded and curated in a warehouse.",
+            "tools": {
+              "powerbi": "Excel-heavy workflows can move to Power BI and keep familiar Microsoft analysis, but manual workbook logic needs inventory.",
+              "looker": "Excel measures and data preparation must become governed LookML, adding model setup even if data sources are reusable.",
+              "tableau": "Analysts can move from spreadsheet charts to Tableau visuals; formulas and linked workbooks still need conversion.",
+              "thoughtspot": "Search can replace some manual lookups once Excel data is loaded and curated in a warehouse.",
+              "sigma": "Spreadsheet-style warehouse workbooks offer a familiar interface, with data ingestion needed before transition.",
+              "qlik": "Excel data can feed associative exploration, but load scripts and modeling introduce new skills."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 1.714285714,
+        "powerbi": 2.714285714,
+        "qlik": 2.142857143,
+        "sigma": 3.428571429,
+        "tableau": 2.714285714,
+        "thoughtspot": 2.857142857
+      },
+      "variance": {
+        "looker": 1.06122449,
+        "powerbi": 1.346938776,
+        "qlik": 0.693877551,
+        "sigma": 0.816326531,
+        "tableau": 1.346938776,
+        "thoughtspot": 0.979591837
+      }
+    },
+    {
+      "id": "Q15",
+      "order": 21,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "What is the migration scale?",
+      "type": "single",
+      "stage": "migration",
+      "weight": 2,
+      "showIf": [
+        {
+          "q": "Q13",
+          "in": [
+            "yes",
+            "partial"
+          ]
+        }
+      ],
+      "options": [
+        {
+          "id": "small",
+          "label": "Small — up to 25 reports / 200 users",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Sigma. Good fit: Tableau, ThoughtSpot. Suitable: Looker, Qlik. Why the leaders: Power BI: For up to 25 reports, familiar templates and existing licences can minimize setup and conversion time. Sigma: Small teams can recreate spreadsheet-style analyses rapidly against ready warehouse tables.",
+            "tools": {
+              "powerbi": "For up to 25 reports, familiar templates and existing licences can minimize setup and conversion time.",
+              "looker": "For a small estate, LookML's setup may be a larger share of effort than the dashboards themselves.",
+              "tableau": "A small number of dashboards is manageable to recreate visually; check calculation and licence costs.",
+              "thoughtspot": "A few high-value search cases can be piloted quickly if a modeled warehouse already exists.",
+              "sigma": "Small teams can recreate spreadsheet-style analyses rapidly against ready warehouse tables.",
+              "qlik": "For a small estate, modeling and Qlik skill acquisition may dominate report-conversion effort."
+            }
+          }
+        },
+        {
+          "id": "medium",
+          "label": "Medium — 26–200 reports / 201–500 users",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, ThoughtSpot, Qlik, Sigma. Good fit: Tableau, Looker. Why the leaders (and 1 more): Power BI: At 26–200 reports, shared models and deployment processes can reduce duplicate conversion work. ThoughtSpot: Warehouse-backed search can reach hundreds of users; validate concurrency and content translation early. Qlik: At medium scale, reusable associative models can support many apps after migration planning.",
+            "tools": {
+              "powerbi": "At 26–200 reports, shared models and deployment processes can reduce duplicate conversion work.",
+              "looker": "At medium scale, initial LookML investment can pay off by governing measures reused across many reports.",
+              "tableau": "At medium scale, published sources and content standards help, but workbook-by-workbook rebuilding remains.",
+              "thoughtspot": "Warehouse-backed search can reach hundreds of users; validate concurrency and content translation early.",
+              "sigma": "Shared cloud warehouse tables support many workbooks; monitor query cost as users and reports grow.",
+              "qlik": "At medium scale, reusable associative models can support many apps after migration planning."
+            }
+          }
+        },
+        {
+          "id": "large",
+          "label": "Large — over 200 reports / over 500 users",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker, ThoughtSpot, Qlik, Sigma. Good fit: Power BI, Tableau. Why the leaders (and 1 more): Looker: A large estate benefits from shared LookML and warehouse compute, offsetting upfront modeling effort. ThoughtSpot: Search over a scalable cloud warehouse suits a broad audience, with model and concurrency testing essential. Qlik: Large app estates can leverage enterprise-scale deployment; script governance and user migration remain substantial.",
+            "tools": {
+              "powerbi": "Over 200 reports or 500 users call for model reuse and capacity planning; conversion still needs a portfolio inventory.",
+              "looker": "A large estate benefits from shared LookML and warehouse compute, offsetting upfront modeling effort.",
+              "tableau": "A large Tableau portfolio needs Server/Cloud capacity and content governance as well as bulk rebuild planning.",
+              "thoughtspot": "Search over a scalable cloud warehouse suits a broad audience, with model and concurrency testing essential.",
+              "sigma": "Warehouse-native workbooks can serve broad usage, but compute spend and access controls need planning.",
+              "qlik": "Large app estates can leverage enterprise-scale deployment; script governance and user migration remain substantial."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.0,
+        "powerbi": 3.666666667,
+        "qlik": 3.333333333,
+        "sigma": 4.0,
+        "tableau": 3.0,
+        "thoughtspot": 3.666666667
+      },
+      "variance": {
+        "looker": 0.666666667,
+        "powerbi": 0.222222222,
+        "qlik": 0.888888889,
+        "sigma": 0.0,
+        "tableau": 0.0,
+        "thoughtspot": 0.222222222
+      }
+    },
+    {
+      "id": "Q16",
+      "order": 22,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "What is the data estate?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 4,
+      "showIf": [],
+      "options": [
+        {
+          "id": "cloud_warehouse_ready",
+          "label": "Cloud warehouse ready",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker, ThoughtSpot, Sigma. Good fit: Power BI, Tableau, Qlik. Why the leaders: Looker: A cloud warehouse lets LookML define governed measures directly over existing tables. ThoughtSpot: A curated warehouse is the prerequisite for search and live analytics, reducing foundational work. Sigma: Direct analysis of ready warehouse tables makes this a strong starting architecture for Sigma.",
+            "tools": {
+              "powerbi": "Ready cloud tables can feed Power BI models; select Import, DirectQuery or Direct Lake to balance speed and freshness.",
+              "looker": "A cloud warehouse lets LookML define governed measures directly over existing tables.",
+              "tableau": "Live or extract connections can reuse warehouse data without first consolidating new sources.",
+              "thoughtspot": "A curated warehouse is the prerequisite for search and live analytics, reducing foundational work.",
+              "sigma": "Direct analysis of ready warehouse tables makes this a strong starting architecture for Sigma.",
+              "qlik": "Qlik can connect to the warehouse, although a separate associative layer must be designed."
+            }
+          }
+        },
+        {
+          "id": "hybrid_on_premises",
+          "label": "Hybrid / on-premises",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Qlik. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Power BI: Gateways and Report Server options accommodate on-premises sources while cloud reporting can be phased in. Tableau: Tableau Server and live connectors can operate closer to on-premises data, reducing forced cloud migration. Qlik: Cloud and on-premises deployment choices support mixed legacy and modern Qlik data estates.",
+            "tools": {
+              "powerbi": "Gateways and Report Server options accommodate on-premises sources while cloud reporting can be phased in.",
+              "looker": "Customer-hosted Looker can be deployed near on-premises data and queries remain in the connected database. Hybrid suitability still depends on supported drivers, secure network access, latency and the client operating the Looker application.",
+              "tableau": "Tableau Server and live connectors can operate closer to on-premises data, reducing forced cloud migration.",
+              "thoughtspot": "ThoughtSpot Software may support a self-managed deployment for on-premises data, while cloud deployment requires secure connectivity to supported sources. Confirm the licensed edition and source architecture before treating hybrid operation as available.",
+              "sigma": "Sigma depends on a supported cloud warehouse, so on-premises data requires an ingestion or replication path.",
+              "qlik": "Cloud and on-premises deployment choices support mixed legacy and modern Qlik data estates."
+            }
+          }
+        },
+        {
+          "id": "fragmented_sources_no_warehouse",
+          "label": "Fragmented sources / no warehouse",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 3,
+            "thoughtspot": 1,
+            "sigma": 1,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Qlik. Good fit: Power BI, Tableau. Possible but not ideal: Looker, ThoughtSpot, Sigma. Why the leaders: Qlik: Qlik load scripts and associative models can combine disparate sources, though reconciliation remains essential.",
+            "tools": {
+              "powerbi": "Power Query and gateways can combine fragmented sources, but quality and definitions still require upstream work.",
+              "looker": "Without a prepared warehouse, LookML development waits on source consolidation and modeling.",
+              "tableau": "Tableau can connect to varied sources for early analysis, while governance across them needs a shared data design.",
+              "thoughtspot": "Search quality suffers without curated tables; consolidating fragmented sources is a prerequisite.",
+              "sigma": "No warehouse means a cloud data foundation must be built before Sigma can deliver governed workbooks.",
+              "qlik": "Qlik load scripts and associative models can combine disparate sources, though reconciliation remains essential."
+            }
+          }
+        },
+        {
+          "id": "high_volume_rapidly_growing",
+          "label": "High-volume / rapidly growing",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker, ThoughtSpot, Qlik, Sigma. Good fit: Power BI, Tableau. Why the leaders (and 1 more): Looker: Pushing growing queries to a warehouse can scale, if compute spend and LookML design are monitored. ThoughtSpot: Warehouse-backed search can scale with data and users; test query concurrency and indexing/model choices. Qlik: Qlik scale is feasible with app partitioning, reload strategy and capacity planning across environments.",
+            "tools": {
+              "powerbi": "A rapidly growing estate needs incremental refresh and capacity sizing for Power BI models.",
+              "looker": "Pushing growing queries to a warehouse can scale, if compute spend and LookML design are monitored.",
+              "tableau": "High-volume sources need careful live-versus-extract design and infrastructure capacity.",
+              "thoughtspot": "Warehouse-backed search can scale with data and users; test query concurrency and indexing/model choices.",
+              "sigma": "Elastic warehouse compute supports growth, with query costs and workbook design watched closely.",
+              "qlik": "Qlik scale is feasible with app partitioning, reload strategy and capacity planning across environments."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.75,
+        "powerbi": 3.25,
+        "qlik": 3.75,
+        "sigma": 2.75,
+        "tableau": 3.25,
+        "thoughtspot": 2.75
+      },
+      "variance": {
+        "looker": 1.6875,
+        "powerbi": 0.1875,
+        "qlik": 0.1875,
+        "sigma": 1.6875,
+        "tableau": 0.1875,
+        "thoughtspot": 1.6875
+      }
+    },
+    {
+      "id": "Q17",
+      "order": 23,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "How complex is the existing content?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "standard_dashboards_simple_calculations",
+          "label": "Standard dashboards / simple calculations",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 4,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Sigma. Good fit: Looker, ThoughtSpot, Qlik. Why the leaders: Power BI: Simple dashboards and measures can be rebuilt with standard visuals and a modest semantic model. Tableau: Standard dashboards are straightforward to recreate with Tableau visual authoring. Sigma: Simple calculations translate naturally into warehouse-backed spreadsheet workbooks.",
+            "tools": {
+              "powerbi": "Simple dashboards and measures can be rebuilt with standard visuals and a modest semantic model.",
+              "looker": "Simple reporting works after core fields are modeled in LookML; initial setup is the main cost.",
+              "tableau": "Standard dashboards are straightforward to recreate with Tableau visual authoring.",
+              "thoughtspot": "A small curated model can power simple Liveboards and search; preparation is still necessary.",
+              "sigma": "Simple calculations translate naturally into warehouse-backed spreadsheet workbooks.",
+              "qlik": "Simple dashboards can be delivered in an app, although associative modeling introduces setup."
+            }
+          }
+        },
+        {
+          "id": "complex_calculations_semantic_models",
+          "label": "Complex calculations / semantic models",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 2,
+            "thoughtspot": 3,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Looker. Good fit: ThoughtSpot, Qlik. Suitable: Tableau, Sigma. Why the leaders: Power BI: DAX and shared semantic models can encode complex measures, but existing formulas need audited translation. Looker: LookML centralizes complex measures and joins, with testing to preserve existing definitions.",
+            "tools": {
+              "powerbi": "DAX and shared semantic models can encode complex measures, but existing formulas need audited translation.",
+              "looker": "LookML centralizes complex measures and joins, with testing to preserve existing definitions.",
+              "tableau": "Complex calculations can be recreated, but workbook-level formulas risk divergence without shared sources.",
+              "thoughtspot": "Curated warehouse metrics can support complex questions; search requires those calculations to be modeled first.",
+              "sigma": "Warehouse SQL can carry complex logic, but workbook formulas alone are not a substitute for semantic governance.",
+              "qlik": "Qlik scripting and reusable expressions can support complexity, with careful mapping of source metric rules."
+            }
+          }
+        },
+        {
+          "id": "custom_visuals_extensions",
+          "label": "Custom visuals / extensions",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Qlik. Good fit: Looker. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Custom visuals and extension APIs offer replacements, but proprietary visuals rarely migrate unchanged. Tableau: Tableau extensions and advanced visual authoring can recreate custom views; test feature parity for each one. Qlik: Extensions and custom visual APIs provide options, though existing third-party components need reassessment.",
+            "tools": {
+              "powerbi": "Custom visuals and extension APIs offer replacements, but proprietary visuals rarely migrate unchanged.",
+              "looker": "Looker can embed or extend analysis, yet specialized visuals may require custom development outside standard Explores.",
+              "tableau": "Tableau extensions and advanced visual authoring can recreate custom views; test feature parity for each one.",
+              "thoughtspot": "Search and Liveboards favor standard interactions; highly specialized visuals may need separate embedding work.",
+              "sigma": "Workbook visuals support common needs, but bespoke interactive extensions may be hard to replicate.",
+              "qlik": "Extensions and custom visual APIs provide options, though existing third-party components need reassessment."
+            }
+          }
+        },
+        {
+          "id": "write_back_planning_complex_dependencies",
+          "label": "Write-back / planning / complex dependencies",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 1,
+            "tableau": 1,
+            "thoughtspot": 2,
+            "sigma": 4,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Sigma. Good fit: Qlik. Suitable: Power BI, ThoughtSpot. Possible but not ideal: Tableau, Looker. Why the leaders: Sigma: Input Tables and spreadsheet interaction can carry planning assumptions into warehouse-backed workflows; validate controls.",
+            "tools": {
+              "powerbi": "What-if analysis is possible, but transaction write-back, approvals and planning dependencies need another system.",
+              "looker": "LookML can report on planning data, but native input, approvals and write-back are not the primary workflow.",
+              "tableau": "Visualizing plan versus actual is straightforward; replacing operational write-back requires an external application.",
+              "thoughtspot": "Search can analyze planned results, while input workflows and dependency management need other tooling.",
+              "sigma": "Input Tables and spreadsheet interaction can carry planning assumptions into warehouse-backed workflows; validate controls.",
+              "qlik": "Automation and extensions can support planning, but end-to-end write-back needs implementation and testing."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 2.75,
+        "powerbi": 3.5,
+        "qlik": 3.25,
+        "sigma": 3.0,
+        "tableau": 2.75,
+        "thoughtspot": 2.5
+      },
+      "variance": {
+        "looker": 1.1875,
+        "powerbi": 0.75,
+        "qlik": 0.1875,
+        "sigma": 1.0,
+        "tableau": 1.6875,
+        "thoughtspot": 0.25
+      }
+    },
+    {
+      "id": "Q18",
+      "order": 24,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "What are the refresh and performance requirements?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "scheduled_daily_batch",
+          "label": "Scheduled / daily batch",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
+            "tools": {
+              "powerbi": "Scheduled refresh and subscriptions support daily batch reports without demanding a live-query architecture.",
+              "looker": "Scheduled deliveries can use warehouse data after its daily load; caching policies should match the batch window.",
+              "tableau": "Extract schedules and subscriptions suit predictable daily updates.",
+              "thoughtspot": "Scheduled warehouse loads can feed Liveboards; live querying is not essential for once-daily reporting.",
+              "sigma": "Workbooks can read refreshed warehouse tables on the required daily cadence.",
+              "qlik": "Reload schedules and report distribution can align apps to the daily batch cycle."
+            }
+          }
+        },
+        {
+          "id": "near_real_time_live_query",
+          "label": "Near-real-time / live query",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 4,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Looker, ThoughtSpot, Qlik, Sigma. Good fit: Power BI, Tableau. Why the leaders (and 1 more): Looker: Live warehouse queries expose newly loaded data; cache and warehouse refresh policies determine effective freshness. ThoughtSpot: Live warehouse search can show fresh results once upstream ingestion updates the model. Qlik: Direct or hybrid connections support low-latency views if the source can sustain the requested cadence.",
+            "tools": {
+              "powerbi": "DirectQuery or Direct Lake can limit reporting lag; test source load and capacity before promising near-real-time.",
+              "looker": "Live warehouse queries expose newly loaded data; cache and warehouse refresh policies determine effective freshness.",
+              "tableau": "Live connections can reduce extract lag, with source query performance determining usability.",
+              "thoughtspot": "Live warehouse search can show fresh results once upstream ingestion updates the model.",
+              "sigma": "Direct warehouse access supports fresh figures; concurrency and query cost need testing.",
+              "qlik": "Direct or hybrid connections support low-latency views if the source can sustain the requested cadence."
+            }
+          }
+        },
+        {
+          "id": "high_concurrency_strict_sla",
+          "label": "High concurrency / strict SLA",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: ThoughtSpot, Qlik, Sigma. Good fit: Power BI, Tableau, Looker. Why the leaders: ThoughtSpot: Cloud warehouse-backed search can handle many users, but benchmark peak queries before committing to an SLA. Qlik: Enterprise deployment and app design can serve concurrency, provided reloads and query capacity meet the SLA. Sigma: Warehouse compute can scale concurrency; workbook query patterns and spend must be load-tested.",
+            "tools": {
+              "powerbi": "Capacity planning, aggregation and model tuning are needed to meet simultaneous users and a measurable SLA.",
+              "looker": "Warehouse sizing, query governance and Looker caching must be load-tested against the SLA.",
+              "tableau": "Server/Cloud capacity and extract or live-query choices need concurrency testing against response-time targets.",
+              "thoughtspot": "Cloud warehouse-backed search can handle many users, but benchmark peak queries before committing to an SLA.",
+              "sigma": "Warehouse compute can scale concurrency; workbook query patterns and spend must be load-tested.",
+              "qlik": "Enterprise deployment and app design can serve concurrency, provided reloads and query capacity meet the SLA."
+            }
+          }
+        },
+        {
+          "id": "offline_on_premises_operation",
+          "label": "Offline / on-premises operation",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Qlik. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Power BI: Power BI Report Server supports self-hosted Power BI and paginated reports for an on-premises environment. It is not a disconnected desktop operating model and lacks parts of the Power BI service feature set, so offline requirements and feature parity must be defined. Tableau: Tableau Server can operate on-premises, but true offline use and data access still need a defined solution. Qlik: On-premises deployment options can support local operations; validate offline behavior for each required app.",
+            "tools": {
+              "powerbi": "Power BI Report Server supports self-hosted Power BI and paginated reports for an on-premises environment. It is not a disconnected desktop operating model and lacks parts of the Power BI service feature set, so offline requirements and feature parity must be defined.",
+              "looker": "Customer-hosted Looker can run on-premises and query databases in place, but it still requires server, database and network availability. It does not provide true disconnected operation, and some hosted features need extra configuration or are unavailable.",
+              "tableau": "Tableau Server can operate on-premises, but true offline use and data access still need a defined solution.",
+              "thoughtspot": "ThoughtSpot Software can support a self-managed deployment, but true offline operation is not inherent: the application and connected data platform must remain available. Confirm edition eligibility, supported sources and any internet-dependent features.",
+              "sigma": "Warehouse-dependent SaaS workbooks cannot work offline without a separate data and application approach.",
+              "qlik": "On-premises deployment options can support local operations; validate offline behavior for each required app."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.0,
+        "powerbi": 3.25,
+        "qlik": 3.75,
+        "sigma": 3.25,
+        "tableau": 3.25,
+        "thoughtspot": 3.25
+      },
+      "variance": {
+        "looker": 0.5,
+        "powerbi": 0.1875,
+        "qlik": 0.1875,
+        "sigma": 0.6875,
+        "tableau": 0.1875,
+        "thoughtspot": 0.6875
+      }
+    },
+    {
+      "id": "Q19",
+      "order": 25,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "Is embedded or external reporting required?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 3,
+      "showIf": [],
+      "options": [
+        {
+          "id": "internal_reporting_only",
+          "label": "Internal reporting only",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI. Good fit: Tableau, Looker, ThoughtSpot, Qlik, Sigma. Why the leaders: Power BI: Apps, workspace distribution and RLS provide controlled internal access with familiar Microsoft sign-in.",
+            "tools": {
+              "powerbi": "Apps, workspace distribution and RLS provide controlled internal access with familiar Microsoft sign-in.",
+              "looker": "Governed Explores and schedules can serve internal groups without implementing an external embed.",
+              "tableau": "Internal sites and subscriptions cover staff reporting; advanced embedding is unnecessary for this option.",
+              "thoughtspot": "Employee search and Liveboards can widen access, subject to the curated internal model.",
+              "sigma": "Warehouse permissions plus workbook sharing can serve internal analysts without external identity design.",
+              "qlik": "Governed internal apps and Section Access can distribute analytics across staff roles."
+            }
+          }
+        },
+        {
+          "id": "controlled_external_sharing",
+          "label": "Controlled external sharing",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 3,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 3,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: ThoughtSpot. Good fit: Power BI, Tableau, Looker, Qlik, Sigma. Why the leaders: ThoughtSpot: Low-code embedding can deliver controlled external search after per-tenant isolation is tested.",
+            "tools": {
+              "powerbi": "Guest access and RLS can isolate external stakeholders; tenant settings and licence costs must be checked.",
+              "looker": "User attributes and embedded or authenticated views can constrain each external group's data.",
+              "tableau": "Site permissions and external sharing can expose specific dashboards, with licences and row filters reviewed.",
+              "thoughtspot": "Low-code embedding can deliver controlled external search after per-tenant isolation is tested.",
+              "sigma": "Embedded workbooks can be exposed selectively, but identity and warehouse policy must be aligned.",
+              "qlik": "Partner apps can be shared with filtered access; verify external identity, Section Access and licensing."
+            }
+          }
+        },
+        {
+          "id": "embedded_customer_facing_analytics",
+          "label": "Embedded customer-facing analytics",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 4,
+            "tableau": 4,
+            "thoughtspot": 4,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Looker, ThoughtSpot, Qlik. Good fit: Sigma. Why the leaders (and 2 more): Power BI: Embedded APIs and RLS can place customer dashboards in an application; capacity and tenant isolation must be designed. Tableau: Embedding APIs can deliver interactive customer dashboards, with custom visual and licensing choices assessed. Looker: Embedding and user attributes can expose governed customer views with per-tenant metric consistency.",
+            "tools": {
+              "powerbi": "Embedded APIs and RLS can place customer dashboards in an application; capacity and tenant isolation must be designed.",
+              "looker": "Embedding and user attributes can expose governed customer views with per-tenant metric consistency.",
+              "tableau": "Embedding APIs can deliver interactive customer dashboards, with custom visual and licensing choices assessed.",
+              "thoughtspot": "ThoughtSpot Embedded provides the Visual Embed SDK and APIs for customer-facing search, Answers and Liveboards. External use requires the appropriate ThoughtSpot Embedded subscription or add-on, with tenant isolation, object access and row-level security configured.",
+              "sigma": "Warehouse-backed workbooks can embed analysis, though customized UX and tenant governance require effort.",
+              "qlik": "APIs and extensions can provide rich embedded apps; data isolation and deployment need engineering."
+            }
+          }
+        },
+        {
+          "id": "pixel_perfect_export_scheduled",
+          "label": "Pixel-perfect export / scheduled distribution",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 3
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau. Good fit: Qlik. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Power BI: Paginated reports and scheduled subscriptions fit fixed-layout statements and repeatable PDF or email delivery. Tableau: Formatted dashboards and exports can support scheduled packs; verify exact pixel-perfect requirements.",
+            "tools": {
+              "powerbi": "Paginated reports and scheduled subscriptions fit fixed-layout statements and repeatable PDF or email delivery.",
+              "looker": "Schedules distribute governed results, but complex fixed-layout documents may need another reporting layer.",
+              "tableau": "Formatted dashboards and exports can support scheduled packs; verify exact pixel-perfect requirements.",
+              "thoughtspot": "Liveboards support sharing, but document-style fixed layouts and recurring exports are less differentiated.",
+              "sigma": "Warehouse workbooks can export analysis, but regulated pixel-perfect layouts may need a separate reporting tool.",
+              "qlik": "Qlik NPrinting provides scheduled distribution and PixelPerfect reports for fixed-layout output. This capability depends on deploying and licensing NPrinting and designing report templates; it is not simply a standard Qlik dashboard export."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 3.0,
+        "powerbi": 3.75,
+        "qlik": 3.25,
+        "sigma": 2.75,
+        "tableau": 3.5,
+        "thoughtspot": 3.25
+      },
+      "variance": {
+        "looker": 0.5,
+        "powerbi": 0.1875,
+        "qlik": 0.1875,
+        "sigma": 0.1875,
+        "tableau": 0.25,
+        "thoughtspot": 0.6875
+      }
+    },
+    {
+      "id": "Q20",
+      "order": 26,
+      "status": "approved",
+      "reference": "mean",
+      "section": "S4",
+      "text": "What are the migration constraints?",
+      "type": "multi",
+      "stage": "discovery",
+      "weight": 4,
+      "showIf": [],
+      "options": [
+        {
+          "id": "aggressive_timeline",
+          "label": "Aggressive timeline",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Sigma. Good fit: Power BI, Tableau, ThoughtSpot. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: Sigma: Spreadsheet-style workbooks can start fast on governed warehouse tables; ingestion is the critical dependency.",
+            "tools": {
+              "powerbi": "Existing Microsoft skills, reusable semantic models and templates can shorten delivery; complex data remediation still takes time.",
+              "looker": "A new LookML layer and review workflow can lengthen a short timeline unless an approved model already exists.",
+              "tableau": "Visual authoring can deliver early dashboards quickly; migrating calculations and governance still needs effort.",
+              "thoughtspot": "Search can be piloted quickly on a ready warehouse, but model preparation can dominate the timeline.",
+              "sigma": "Spreadsheet-style workbooks can start fast on governed warehouse tables; ingestion is the critical dependency.",
+              "qlik": "Associative models can connect sources, but specialist modeling and retraining can challenge an aggressive deadline."
+            }
+          }
+        },
+        {
+          "id": "limited_delivery_or_change_capacity",
+          "label": "Limited delivery or change capacity",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 1,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Sigma. Good fit: Tableau, ThoughtSpot. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: Power BI: Microsoft familiarity and reusable templates lower rollout effort; a named owner is still needed for DAX and governance. Sigma: Spreadsheet-style authoring reduces change effort if warehouse data and permissions are already maintained.",
+            "tools": {
+              "powerbi": "Microsoft familiarity and reusable templates lower rollout effort; a named owner is still needed for DAX and governance.",
+              "looker": "LookML, SQL and Git maintenance require dedicated skills, making limited delivery capacity a significant risk.",
+              "tableau": "Analysts can author standard views with limited ramp-up; shared sources still require stewardship.",
+              "thoughtspot": "Search consumption is easy, but a small team must still curate models and answer-quality checks.",
+              "sigma": "Spreadsheet-style authoring reduces change effort if warehouse data and permissions are already maintained.",
+              "qlik": "Associative modeling and Section Access require specialist time, so limited capacity slows safe handover."
+            }
+          }
+        },
+        {
+          "id": "risk_minimized_parallel_run",
+          "label": "Risk-minimized parallel run",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 4,
+            "qlik": 4
+          },
+          "rationale": {
+            "summary": "Strong fit: Power BI, Tableau, Qlik, Sigma. Suitable: Looker, ThoughtSpot. Why the leaders (and 1 more): Power BI: Parallel reports can run against shared sources and reconcile KPIs before cutover; keep model versions controlled. Tableau: Publish Tableau dashboards in parallel and reconcile metrics and visuals against the incumbent before retiring it. Qlik: Parallel Qlik apps can compare source totals and access rules with legacy reports before a phased cutover.",
+            "tools": {
+              "powerbi": "Parallel reports can run against shared sources and reconcile KPIs before cutover; keep model versions controlled.",
+              "looker": "Run Looker alongside the incumbent and compare governed measures; LookML translation remains a validation task.",
+              "tableau": "Publish Tableau dashboards in parallel and reconcile metrics and visuals against the incumbent before retiring it.",
+              "thoughtspot": "Pilot search alongside existing reports to compare answers, but preserve incumbent content until models are validated.",
+              "sigma": "Warehouse-backed workbooks can coexist with legacy reports while measures and user workflows are checked.",
+              "qlik": "Parallel Qlik apps can compare source totals and access rules with legacy reports before a phased cutover."
+            }
+          }
+        },
+        {
+          "id": "no_material_constraints_tbc",
+          "label": "No material constraints / TBC",
+          "unknown": true,
+          "excludes": [],
+          "scores": {
+            "powerbi": 2,
+            "looker": 2,
+            "tableau": 2,
+            "thoughtspot": 2,
+            "sigma": 2,
+            "qlik": 2
+          },
+          "rationale": {
+            "summary": "This answer does not favour any platform; it is recorded but not scored.",
+            "tools": {
+              "powerbi": "No constraint is confirmed; do not prioritize Microsoft cost or delivery advantages until scope and budget are known.",
+              "looker": "Without stated constraints, LookML effort should not be treated as either a blocker or a requirement.",
+              "tableau": "With no delivery or hosting constraint known, Tableau suitability should be decided by content and audience needs.",
+              "thoughtspot": "Without confirmed constraints, search deployment and effort cannot be preferred on this answer alone.",
+              "sigma": "No constraints are specified, so warehouse readiness and budget need discovery before favoring Sigma.",
+              "qlik": "Until timing, residency and budget are defined, Qlik deployment flexibility alone should not sway selection."
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "looker": 1.333333333,
+        "powerbi": 3.666666667,
+        "qlik": 2.666666667,
+        "sigma": 4.0,
+        "tableau": 3.333333333,
+        "thoughtspot": 2.666666667
+      },
+      "variance": {
+        "looker": 0.222222222,
+        "powerbi": 0.222222222,
+        "qlik": 0.888888889,
+        "sigma": 0.0,
+        "tableau": 0.222222222,
+        "thoughtspot": 0.222222222
+      }
+    }
+  ]
+}

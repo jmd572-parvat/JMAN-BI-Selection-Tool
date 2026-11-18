@@ -1,0 +1,477 @@
+{
+ "source": "deck slides 16, 17, 18, 28, 29",
+ "dimensions": [
+  {
+   "name": "Data model rebuild effort",
+   "note": ""
+  },
+  {
+   "name": "Report/dashboard rebuild",
+   "note": ""
+  },
+  {
+   "name": "User retraining needs (Onboarding)",
+   "note": ""
+  },
+  {
+   "name": "Historical content migration",
+   "note": ""
+  },
+  {
+   "name": "Parallel-run complexity",
+   "note": "(Running both tools – existing and new side by side)"
+  },
+  {
+   "name": "Time to full cutover",
+   "note": ""
+  }
+ ],
+ "effort": {
+  "powerbi": {
+   "Data model rebuild effort": "Medium",
+   "Report/dashboard rebuild": "Medium",
+   "User retraining needs (Onboarding)": "Low",
+   "Historical content migration": "Medium",
+   "Parallel-run complexity": "Low",
+   "Time to full cutover": "Medium"
+  },
+  "tableau": {
+   "Data model rebuild effort": "Medium",
+   "Report/dashboard rebuild": "Low",
+   "User retraining needs (Onboarding)": "Low",
+   "Historical content migration": "Low",
+   "Parallel-run complexity": "Low",
+   "Time to full cutover": "Medium"
+  },
+  "looker": {
+   "Data model rebuild effort": "High",
+   "Report/dashboard rebuild": "High",
+   "User retraining needs (Onboarding)": "Medium",
+   "Historical content migration": "High",
+   "Parallel-run complexity": "Medium",
+   "Time to full cutover": "High"
+  },
+  "thoughtspot": {
+   "Data model rebuild effort": "Medium",
+   "Report/dashboard rebuild": "Medium",
+   "User retraining needs (Onboarding)": "Low",
+   "Historical content migration": "High",
+   "Parallel-run complexity": "Medium",
+   "Time to full cutover": "Medium"
+  },
+  "qlik": {
+   "Data model rebuild effort": "Medium",
+   "Report/dashboard rebuild": "Medium",
+   "User retraining needs (Onboarding)": "Medium",
+   "Historical content migration": "Medium",
+   "Parallel-run complexity": "Low",
+   "Time to full cutover": "Medium"
+  },
+  "sigma": {
+   "Data model rebuild effort": "Low",
+   "Report/dashboard rebuild": "Low",
+   "User retraining needs (Onboarding)": "Low",
+   "Historical content migration": "High",
+   "Parallel-run complexity": "Low",
+   "Time to full cutover": "Low"
+  }
+ },
+ "feasibility": {
+  "powerbi": {
+   "tableau": {
+    "rating": "Moderate",
+    "reasons": [
+     "DAX measures have no direct equivalent - rebuild in calculated fields",
+     "Visual logic differs; dashboards recreated, not imported"
+    ]
+   },
+   "looker": {
+    "rating": "Hard",
+    "reasons": [
+     "DAX model must be re-expressed as LookML from scratch",
+     "Requires a warehouse-first rebuild plus data-team capacity"
+    ]
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "reasons": [
+     "Warehouse model must be clean before search works well",
+     "Dashboards give way to search/liveboards"
+    ]
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "reasons": [
+     "Star schema maps reasonably to Qlik’s associative model",
+     "Section Access needs reconfiguring from Power BI RLS"
+    ]
+   },
+   "sigma": {
+    "rating": "Easy",
+    "reasons": [
+     "Both sit on the warehouse - minimal modeling to move",
+     "Excel-like interface is familiar to Power BI business users"
+    ]
+   }
+  },
+  "tableau": {
+   "powerbi": {
+    "rating": "Moderate",
+    "reasons": [
+     "Calculated fields translate to DAX but need rewriting",
+     "Strongest path if the client is already Microsoft-committed"
+    ]
+   },
+   "looker": {
+    "rating": "Hard",
+    "reasons": [
+     "No import path — every view rebuilt in LookML",
+     "Tableau’s visual flexibility is hard to replicate in LookML"
+    ]
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "reasons": [
+     "Curated data sources ease the warehouse prep step",
+     "Highly custom Tableau visuals have no direct equivalent"
+    ]
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "reasons": [
+     "Similar analyst-driven exploration model eases adoption",
+     "Extracts and data prep logic must be rebuilt"
+    ]
+   },
+   "sigma": {
+    "rating": "Easy",
+    "reasons": [
+     "Live warehouse connection carries over cleanly",
+     "Analysts adapt quickly; less custom modeling to unwind"
+    ]
+   }
+  },
+  "looker": {
+   "powerbi": {
+    "rating": "Hard",
+    "reasons": [
+     "LookML semantic layer investment is lost entirely",
+     "Governed metrics must be rebuilt as DAX measures"
+    ]
+   },
+   "tableau": {
+    "rating": "Hard",
+    "reasons": [
+     "No semantic layer equivalent — governance logic rebuilt per workbook",
+     "Risk of metric drift once LookML guardrails are removed"
+    ]
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "reasons": [
+     "Both are warehouse-native - data layer largely reusable",
+     "Governed metric definitions must be re-declared in ThoughtSpot"
+    ]
+   },
+   "qlik": {
+    "rating": "Hard",
+    "reasons": [
+     "LookML logic does not map to the associative model",
+     "Hybrid/on-prem target adds infrastructure work"
+    ]
+   },
+   "sigma": {
+    "rating": "Moderate",
+    "reasons": [
+     "Shared warehouse-native foundation reduces data work",
+     "Central semantic governance gives way to spreadsheet-style modeling"
+    ]
+   }
+  },
+  "thoughtspot": {
+   "powerbi": {
+    "rating": "Moderate",
+    "reasons": [
+     "Warehouse connection reusable; dashboards built fresh",
+     "Users shift from search-first back to dashboard-first"
+    ]
+   },
+   "tableau": {
+    "rating": "Moderate",
+    "reasons": [
+     "Clean warehouse model is a good starting point",
+     "Requires building the curated visual layer that didn’t exist before"
+    ]
+   },
+   "looker": {
+    "rating": "Hard",
+    "reasons": [
+     "LookML must be authored from scratch by the data team",
+     "Longest runway of any ThoughtSpot exit path"
+    ]
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "reasons": [
+     "Warehouse sources map over; app logic is new",
+     "Associative model is a significant retraining step"
+    ]
+   },
+   "sigma": {
+    "rating": "Easy",
+    "reasons": [
+     "Both query the warehouse live - little to migrate",
+     "Business users move easily to a familiar grid interface"
+    ]
+   }
+  },
+  "qlik": {
+   "powerbi": {
+    "rating": "Moderate",
+    "reasons": [
+     "Associative model must be flattened into a star schema",
+     "Section Access rules rebuilt as Power BI RLS"
+    ]
+   },
+   "tableau": {
+    "rating": "Moderate",
+    "reasons": [
+     "Similar exploratory mindset eases user adoption",
+     "Load scripts and data prep need rebuilding"
+    ]
+   },
+   "looker": {
+    "rating": "Hard",
+    "reasons": [
+     "Associative logic has no LookML equivalent",
+     "Requires a warehouse-first re-architecture"
+    ]
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "reasons": [
+     "Warehouse-centric target suits Qlik’s modern deployments",
+     "On-prem Qlik estates need a cloud data layer first"
+    ]
+   },
+   "sigma": {
+    "rating": "Moderate",
+    "reasons": [
+     "Straightforward if already on a cloud warehouse",
+     "On-prem or hybrid Qlik estates need migrating to cloud first"
+    ]
+   }
+  },
+  "sigma": {
+   "powerbi": {
+    "rating": "Easy",
+    "reasons": [
+     "Warehouse stays as-is - only the presentation layer changes",
+     "No proprietary semantic layer to unwind"
+    ]
+   },
+   "tableau": {
+    "rating": "Easy",
+    "reasons": [
+     "Live warehouse connection transfers directly",
+     "Workbook logic is lightweight and quick to recreate"
+    ]
+   },
+   "looker": {
+    "rating": "Moderate",
+    "reasons": [
+     "Warehouse foundation is already in place",
+     "LookML modeling layer still has to be built from scratch"
+    ]
+   },
+   "thoughtspot": {
+    "rating": "Easy",
+    "reasons": [
+     "Both are warehouse-native with minimal middle layer",
+     "Users gain search on top of data they already trust"
+    ]
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "reasons": [
+     "Fine for cloud Qlik; harder if target is on-prem",
+     "Associative model is new territory for spreadsheet users"
+    ]
+   }
+  }
+ },
+ "grid": {
+  "powerbi": {
+   "tableau": {
+    "rating": "Moderate",
+    "notes": [
+     "DAX retraining",
+     "Rebuilding Visuals"
+    ]
+   },
+   "looker": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "sigma": {
+    "rating": "Easy",
+    "notes": []
+   }
+  },
+  "tableau": {
+   "powerbi": {
+    "rating": "Moderate",
+    "notes": [
+     "DAX retraining",
+     "Rebuilding Visuals"
+    ]
+   },
+   "looker": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "sigma": {
+    "rating": "Easy",
+    "notes": []
+   }
+  },
+  "looker": {
+   "powerbi": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "tableau": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "qlik": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "sigma": {
+    "rating": "Moderate",
+    "notes": []
+   }
+  },
+  "thoughtspot": {
+   "powerbi": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "tableau": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "looker": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "sigma": {
+    "rating": "Easy",
+    "notes": []
+   }
+  },
+  "qlik": {
+   "powerbi": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "tableau": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "looker": {
+    "rating": "Hard",
+    "notes": []
+   },
+   "thoughtspot": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "sigma": {
+    "rating": "Moderate",
+    "notes": []
+   }
+  },
+  "sigma": {
+   "powerbi": {
+    "rating": "Easy",
+    "notes": []
+   },
+   "tableau": {
+    "rating": "Easy",
+    "notes": []
+   },
+   "looker": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "thoughtspot": {
+    "rating": "Easy",
+    "notes": []
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "notes": []
+   }
+  },
+  "excel": {
+   "powerbi": {
+    "rating": "Easy",
+    "notes": []
+   },
+   "tableau": {
+    "rating": "Easy",
+    "notes": []
+   },
+   "looker": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "thoughtspot": {
+    "rating": "Easy",
+    "notes": []
+   },
+   "qlik": {
+    "rating": "Moderate",
+    "notes": []
+   },
+   "sigma": {
+    "rating": "Easy",
+    "notes": []
+   }
+  }
+ },
+ "challenges": {
+  "powerbi": "Smooth from Excel; migrating from Tableau/Qlik means DAX retraining and rebuilding visuals.",
+  "tableau": "Easy for analysts coming from Excel; enterprise governance takes longer without an expert in place.",
+  "looker": "Biggest upfront lift — requires building a LookML model from scratch, but pays off long-term.",
+  "thoughtspot": "Needs a clean, modeled warehouse first; if data isn’t warehouse-ready, that becomes the real project.",
+  "qlik": "QlikView-to-Sense needs app conversion; the associative model has a learning curve for new users.",
+  "sigma": "Fastest migration for spreadsheet-heavy teams; limited value if the org isn’t warehouse-centric yet."
+ }
+}

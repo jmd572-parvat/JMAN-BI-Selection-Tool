@@ -1,0 +1,20 @@
+{
+  "name": "bi-selection-tool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BI tool selection playbook: bias-free scoring engine and questionnaire session (no dependencies)",
+  "scripts": {
+    "test": "node --test",
+    "model:build": "python scripts/excel_to_json.py",
+    "model:validate": "python scripts/validate_model.py",
+    "parity:update": "python scripts/excel_to_json.py && python scripts/make_parity_fixtures.py",
+    "deck:extract": "python scripts/extract_deck_content.py",
+    "build:site": "python scripts/build_site.py",
+    "build:site:production": "python scripts/build_site.py --production",
+    "docs:check": "python scripts/check_docs.py",
+    "calibrate": "python scripts/calibrate_thresholds.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

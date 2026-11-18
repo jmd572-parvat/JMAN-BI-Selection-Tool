@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BI Tools Selection Playbook</title>
+<meta name="description" content="A guide for choosing and justifying the right BI tool for each client engagement.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- PREVIEW SHELL. The marketplace provides the hero, tab row, "On this page", helpfulness row and Q&A (docs/page-design.md, A1).
+     Everything inside <main id="pb-main"> and the "Your answers" rail is the content module (playbook.js). -->
+<div class="pv-preview" id="pv-preview">
+  <strong>Preview build</strong>
+  <span>The hero, tab row, feedback and Q&amp;A are the marketplace&rsquo;s own; they are stood in for here.</span>
+  <label id="pv-draftbox" hidden><input type="checkbox" id="pv-draft" checked> Show draft questions</label>
+</div>
+
+<header class="pv-hero">
+  <div class="pv-hero-in">
+    <div>
+      <div class="pv-crumb">Playbook &rsaquo; BI Tools Selection Playbook</div>
+      <h1>BI Tools Selection Playbook</h1>
+      <p>A guide for choosing and justifying the right BI tool for each client engagement: Looker, Power BI, Qlik, Sigma, Tableau or ThoughtSpot.</p>
+      <div class="pv-meta"><span>v1 draft</span><span>Updated {{BUILD_DATE}}</span><span class="pv-badge">Internal use only</span><span>Owner: to be confirmed</span></div>
+    </div>
+    <button class="pv-ask" type="button" disabled title="Provided by the marketplace">Ask a question</button>
+  </div>
+</header>
+
+<nav class="pv-tabs" aria-label="Playbook sections"><ul id="pv-tablist"></ul></nav>
+
+<div class="pv-gaps">
+  <details>
+    <summary><strong>About this preview: known gaps</strong></summary>
+    <ul>
+      <li>Three answers listed in the Flow are not offered yet because they have no expert scores: data residency (security question), and limited upskilling capacity and no capacity for change (training question).</li>
+      <li>Two questions, &ldquo;How complex is the existing content?&rdquo; and &ldquo;What are the migration constraints?&rdquo;, are worded for migrations but asked of every client.</li>
+      <li>Question weights are provisional. Scores for questions tagged Draft are awaiting expert review. Result confidence lines depend on the weights and will be set again after the weighting session.</li>
+      <li>Only one answer rules a tool out today (a client that cannot use a vendor-hosted tool rules out Sigma). The Flow lists more categories of mandatory filter.</li>
+      <li>&ldquo;Why we ask&rdquo; help text exists for two of the questions. The one-line guide under every question is proposed wording awaiting owner review.</li>
+      <li>Reference content comes from the deck and has not been re-verified. Corrections are marked where a vendor source contradicts it.</li>
+    </ul>
+    <p>See <code>docs/page-design.md</code>, sections 11 and 12.</p>
+  </details>
+</div>
+
+<div class="pv-layout">
+  <main id="pb-main" tabindex="-1" aria-live="off"><p>Loading the playbook&hellip;</p></main>
+  <aside class="pv-rail" aria-label="Page navigation and your answers">
+    <nav class="pv-toc pb-rail-card" id="pb-toc" aria-label="On this page"></nav>
+    <div id="pb-rail"></div>
+  </aside>
+</div>
+
+<footer class="pv-foot">Answers and notes stay in this browser. Nothing is sent anywhere.</footer>
+
+<script>window.PLAYBOOK_CONFIG = {{CONFIG}};</script>
+<script src="engine.js"></script>
+<script src="session.js"></script>
+<script src="lib.js"></script>
+<script src="playbook.js"></script>
+<script>
+(function () {
+  var cfg = window.PLAYBOOK_CONFIG;
+  var main = document.getElementById('pb-main');
+  var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
+  Promise.all([get('data/questions.json'), get('data/deck/profiles.json'), get('data/deck/matrix.json'), get('data/deck/migration.json'), get('data/deck/reference.json')])
+    .then(function (d) {
+      var tabsEl = document.getElementById('pv-tablist');
+      var buttons = {};
+      function setActive(id) {
+        Object.keys(buttons).forEach(function (k) { if (k === id) buttons[k].setAttribute('aria-current', 'page'); else buttons[k].removeAttribute('aria-current'); });
+        if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id);
+        var cur = buttons[id]; if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });   // keep the current tab visible on narrow screens
+      }
+      var ctl = Playbook.mount({
+        container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'),
+        model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: setActive
+      });
+      ctl.tabs.forEach(function (t) {
+        var li = document.createElement('li'); var b = document.createElement('button');
+        b.className = 'pv-tab'; b.type = 'button'; b.textContent = t.label;
+        b.addEventListener('click', function () { ctl.go(t.id); });   // scrolls to the section: the playbook is one page
+        li.appendChild(b); tabsEl.appendChild(li); buttons[t.id] = b;
+      });
+      function route() { var id = location.hash.replace('#/', ''); if (buttons[id]) ctl.go(id); else setActive(ctl.tab); }
+      window.addEventListener('hashchange', route);
+      route();
+      document.getElementById('pb-toc').addEventListener('click', function (e) {
+        var a = e.target.closest('a[data-toc]'); if (!a) return;
+        e.preventDefault(); var el = document.getElementById(a.getAttribute('data-toc')); if (el) el.scrollIntoView({ block: 'start' });
+      });
+      if (cfg.draftToggle) {
+        var box = document.getElementById('pv-draft'); document.getElementById('pv-draftbox').hidden = false;
+        box.checked = ctl.showDrafts; box.addEventListener('change', function () { ctl.setShowDrafts(box.checked); });
+      }
+      window.__playbook = ctl;   // for inspection while previewing
+    })
+    .catch(function (err) { main.innerHTML = '<div class="pb-card"><p><strong>The playbook data could not be loaded.</strong> ' + String(err.message).replace(/[<>&]/g, '') + '</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; });
+})();
+</script>
+</body>
+</html>

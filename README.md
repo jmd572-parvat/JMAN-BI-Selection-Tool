@@ -1,1 +1,33 @@
-# JMAN-BI-Selection-Tool
+# JMAN BI Selection Tool
+
+A playbook page that helps choose and justify a BI tool (Looker, Power BI, Qlik, Sigma, Tableau, ThoughtSpot) for a client engagement. It is built to be dropped into the company marketplace.
+
+The recommendation comes only from the client's answers. No platform is favoured: scores are compared against a neutral starting point, tool order never matters, and ties are shown as ties. See `docs/scoring-method.md`.
+
+## Where things are
+| Path | What |
+|---|---|
+| `data/bi-tools-questions.xlsx` | Working copy of the questions, options, weights and expert scores (edit it in Excel only, never rewrite it with a library, so the Flow drawing and comments survive) |
+| `data/questions.json` | Built from the workbook by `scripts/excel_to_json.py` |
+| `data/deck/*.json` | Deck content (profiles, matrix, migration, reference) extracted by `scripts/extract_deck_content.py` |
+| `src/engine/` | Scoring engine and questionnaire session (plain JavaScript, no dependencies) |
+| `src/page/` | The page: content module, page logic, styles, preview shell |
+| `scripts/` | Converters, the Python reference engine, validation, calibration, site build, docs check |
+| `tests/` | `node --test` suite (66 tests) |
+| `docs/` | Design, scoring method, engine, validation, workshop and open items |
+
+## Commands
+```bash
+python scripts/build_site.py                 # preview build into site/ (draft questions included, with a toggle)
+python scripts/build_site.py --production    # production build: draft questions and reviewer notes removed
+python -m http.server 5173 --directory site  # then open http://localhost:5173
+npm test                                     # all tests
+python scripts/validate_model.py             # model checks (neutrality, scenarios, branching)
+python scripts/check_docs.py                 # keep the docs tied to the data and code
+python scripts/calibrate_thresholds.py       # re-derive confidence thresholds after any weight change
+```
+
+After changing the workbook: `python scripts/excel_to_json.py`, then `npm run parity:update`, then the checks above.
+
+## Status
+A working preview exists. It is not ready to ship: three answers need expert scores, weights are provisional, and the marketplace shell is stood in for. The open items are in `docs/page-design.md`, sections 11 and 12.

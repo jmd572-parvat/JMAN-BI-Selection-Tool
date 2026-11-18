@@ -1,0 +1,194 @@
+{
+ "source": "deck slides 19, 20, 21, 22, 25",
+ "fastPath": [
+  {
+   "condition": "Primarily Microsoft 365 / Azure / Fabric / Entra ID?",
+   "tool": "Power BI",
+   "note": "(Primary Recommendation)"
+  },
+  {
+   "condition": "primarily Google Cloud / BigQuery?",
+   "tool": "Looker",
+   "note": ""
+  },
+  {
+   "condition": "primarily Salesforce-centric?",
+   "tool": "Tableau",
+   "note": ""
+  },
+  {
+   "condition": "Databricks/Snowflake-centric, and AI-first natural language search is the priority?",
+   "tool": "ThoughtSpot",
+   "note": ""
+  },
+  {
+   "condition": "Databricks/Snowflake-centric, and the team is spreadsheet-native?",
+   "tool": "Sigma",
+   "note": ""
+  },
+  {
+   "condition": "a mixed, multi-cloud, or hybrid on-prem/cloud estate?",
+   "tool": "Qlik",
+   "note": ""
+  }
+ ],
+ "scenarios": [
+  {
+   "scenario": "Deep in Microsoft 365/Azure, wants fast adoption",
+   "tool": "Power BI",
+   "why": "Native Copilot, fastest adoption, best TCO in Microsoft estates"
+  },
+  {
+   "scenario": "Needs highly custom, presentation-quality dashboards",
+   "tool": "Tableau",
+   "why": "Most flexible visuals, best with a dedicated analyst team"
+  },
+  {
+   "scenario": "Google Cloud-native, wants governed self-service",
+   "tool": "Looker",
+   "why": "Purpose-built semantic layer, scales with the warehouse"
+  },
+  {
+   "scenario": "Business users want to just ask questions in plain English",
+   "tool": "ThoughtSpot",
+   "why": "AI-first search experience, fastest path to an answer"
+  },
+  {
+   "scenario": "Regulated or hybrid environment needing on-prem control",
+   "tool": "Qlik",
+   "why": "Flexible deployment, strong governance across hybrid IT"
+  },
+  {
+   "scenario": "Spreadsheet-heavy finance/ops team, limited IT support",
+   "tool": "Sigma",
+   "why": "Feels like Excel, lowest IT effort, fastest adoption"
+  }
+ ],
+ "integration": {
+  "tools": [
+   "powerbi",
+   "tableau",
+   "looker",
+   "thoughtspot"
+  ],
+  "rows": [
+   {
+    "platform": "Fabric",
+    "cells": {
+     "powerbi": "Fully built-in with Microsoft security",
+     "tableau": "Standard SQL connection",
+     "looker": "Standard SQL connection",
+     "thoughtspot": "Standard connector"
+    }
+   },
+   {
+    "platform": "Snowflake",
+    "cells": {
+     "powerbi": "Optimized for fast queries",
+     "tableau": "Optimized high-speed queries",
+     "looker": "Strong native link",
+     "thoughtspot": "Strong native link"
+    }
+   },
+   {
+    "platform": "Databricks",
+    "cells": {
+     "powerbi": "Native with Delta support",
+     "tableau": "Native with Delta support",
+     "looker": "Standard with Delta support",
+     "thoughtspot": "Native with Delta support"
+    }
+   },
+   {
+    "platform": "Others",
+    "cells": {
+     "powerbi": "Strong with SQL, Excel, SharePoint",
+     "tableau": "Broad database & cloud app support",
+     "looker": "Good with BigQuery, Redshift, etc.",
+     "thoughtspot": "Works with major cloud platforms"
+    }
+   }
+  ],
+  "legend": {
+   "green": "Deep, optimized integration for fastest performance and most features",
+   "yellow": "Optimized connection with good performance, but not the deepest level",
+   "blue": "Standard connection; works well but may lack speed or advanced features"
+  },
+  "markerConflicts": [
+   "Fabric / Tableau: marker yellow with text 'Standard SQL connection'",
+   "Fabric / Looker: marker yellow with text 'Standard SQL connection'",
+   "Fabric / ThoughtSpot: marker yellow with text 'Standard connector'",
+   "Snowflake / Power BI: marker blue with text 'Optimized for fast queries'",
+   "Snowflake / Tableau: marker blue with text 'Optimized high-speed queries'",
+   "Databricks / Looker: marker yellow with text 'Standard with Delta support'"
+  ]
+ },
+ "deployment": [
+  {
+   "consideration": "Primary deployment",
+   "cells": {
+    "powerbi": "Cloud (Fabric) or on-prem",
+    "tableau": "Cloud, on-prem, or hybrid",
+    "looker": "Cloud-only (Google Cloud)",
+    "thoughtspot": "Cloud-only (SaaS)",
+    "qlik": "Cloud, on-prem, or hybrid",
+    "sigma": "Cloud-only (SaaS)"
+   }
+  },
+  {
+   "consideration": "On-premises option",
+   "cells": {
+    "powerbi": "Yes — Power BI Report Server",
+    "tableau": "Yes — Tableau Server",
+    "looker": "No",
+    "thoughtspot": "No",
+    "qlik": "Yes — Qlik Sense Enterprise",
+    "sigma": "No"
+   }
+  },
+  {
+   "consideration": "Data residency control",
+   "cells": {
+    "powerbi": "Regional Azure data centers",
+    "tableau": "Choose region or self-host",
+    "looker": "Tied to Google Cloud region",
+    "thoughtspot": "Limited region choice",
+    "qlik": "Full control if on-prem/hybrid",
+    "sigma": "Tied to warehouse region"
+   }
+  },
+  {
+   "consideration": "Best fit",
+   "cells": {
+    "powerbi": "Microsoft-committed enterprises",
+    "tableau": "Orgs needing deployment flexibility",
+    "looker": "Google Cloud-native orgs",
+    "thoughtspot": "Cloud-first, SaaS-only orgs",
+    "qlik": "Regulated industries, on-prem needs",
+    "sigma": "Warehouse-centric teams"
+   }
+  }
+ ],
+ "whyTheseTools": [
+  {
+   "theme": "Market Leadership",
+   "text": "Each tool is recognized as a leader or challenger in the latest Gartner Magic Quadrant for Analytics and Business Intelligence Platforms."
+  },
+  {
+   "theme": "Widespread Adoption",
+   "text": "These tools are among the most widely adopted platforms across industries, making them highly relevant in client environments."
+  },
+  {
+   "theme": "Enterprise-Grade Capability",
+   "text": "All four platforms offer robust features for scalability, data governance, and integration with modern data stacks."
+  },
+  {
+   "theme": "Client Demand & Familiarity",
+   "text": "These tools represent the most requested and implemented BI solutions in our recent projects, with strong in-house expertise across teams."
+  },
+  {
+   "theme": "Innovative Approaches",
+   "text": "Each brings unique strengths—e.g., ThoughtSpot's search-based analytics, Looker's semantic modeling, Tableau’s intuitive visual storytelling, and Power BI’s native Microsoft integration—allowing us to match tool capabilities to client needs."
+  }
+ ]
+}
