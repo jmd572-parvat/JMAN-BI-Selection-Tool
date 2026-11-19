@@ -674,6 +674,16 @@ Owner feedback of 2026-11-19, decided in conversation. **This section supersedes
 
 **[A22]** Showing a live ranking while the client answers is the owner's choice and can lead people to answer towards a favourite; the recommendation itself is held back until the end.
 
+## 17. The questions in a corner window (revision 2026-11-19, second)
+Owner request: when the reader leaves the questions before finishing, the container should shrink into a small window in a corner, like a video pop-up, stay there until the questionnaire is complete, and reopen at any time.
+
+- **Leaving:** closing the container (the close button, Escape or a click outside it) while any question is unanswered animates it shrinking into a corner window at the bottom right of the screen (the backdrop and the dock fade as it goes). With every question answered, closing simply closes it.
+- **The corner window:** a small card with a progress ring and the count (*7 of 20 answered*), the area the reader was in, and an expand icon, with a slim progress bar along its bottom edge. It stays on every page, so the reader can read or compare tools meanwhile. It has no dismiss button: it goes only when every question is answered, or on *Start over*.
+- **Reopening:** a click grows the container back out of the corner, at the question where it was left (it opens the Client discovery page behind it, as before).
+- **After a reload:** a questionnaire that was started but not finished shows its corner window on load.
+- **Progress card removed:** the "Your progress" card in the side panel is gone; the corner window replaces it.
+- **Motion:** readers who ask for reduced motion get no shrink or grow, only the window appearing and disappearing.
+
 ---
 
 ## Appendix: question inventory

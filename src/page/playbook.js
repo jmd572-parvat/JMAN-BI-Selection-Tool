@@ -109,7 +109,7 @@
   };
 
   /** Line icons (24 px grid, drawn with the text colour): used for every arrow, close and tick so they centre exactly. */
-  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>' };
+  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', expand: '<path d="M14 5h5v5M10 19H5v-5M19 5l-6 6M5 19l-6 6"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>' };
   function icon(name) {
     return '<svg class="pb-ico pb-ico-' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICON_PATHS[name] + '</svg>';
   }
@@ -117,7 +117,7 @@
   function today() { return new Date().toISOString().slice(0, 10); }
 
   /**
-   * @param {{container: Element, rail: Element, toc?: Element, overlay?: Element, model: object, deck: object, config?: object, onTab?: Function}} o
+   * @param {{container: Element, rail: Element, toc?: Element, overlay?: Element, mini?: Element, model: object, deck: object, config?: object, onTab?: Function}} o
    */
   function mount(o) {
     var config = o.config || {};
@@ -799,16 +799,7 @@
     };
     function pageHtml() { return '<div class="pb-page" data-page="' + ui.page + '">' + PAGE_BLOCKS[ui.page]() + '</div>'; }
 
-    function renderRail() {
-      var p = session.progress();
-      if (!p.answered) { o.rail.innerHTML = ''; return; }
-      var pct = Math.round(p.coverage * 100);
-      o.rail.innerHTML = '<div class="pb-rail-card"><span class="pb-rail-h">Your progress</span>' +
-        '<p class="pb-rail-count"><strong>' + p.answered + ' of ' + p.visible + '</strong> questions answered</p>' +
-        '<div class="pb-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="Questions answered, weighted"><span style="width:' + pct + '%"></span></div>' +
-        '<p><button class="pb-btn pb-btn-sm" data-action="openq">' + (p.remaining ? 'Continue the questions' : 'Review the questions') + '</button></p>' +
-        '<p class="pb-rail-foot"><button class="pb-link" data-action="reset">Start over</button><br><small>Saved on this device.</small></p></div>';
-    }
+    function renderRail() { o.rail.innerHTML = ''; }          // progress now lives in the floating mini window
     /** "On this page": built from data. Pages that switch between sub-tabs list nothing (the tabs are the navigation). */
     function tocItems() {
       if (ui.page === 'home') return [['home-who', 'Who is this for?'], ['home-nav', 'How to navigate'], ['sec-purpose', 'Purpose'], ['sec-criteria', 'What we ask about'], ['sec-principles', 'Guiding principles'], ['sec-scoring', 'How the recommendation is made']];
@@ -840,6 +831,65 @@
 
     // ------------------------------------------------------------------ the question carousel: open, move, close
     var overlayHost = o.overlay || null;
+    var miniHost = o.mini || null;
+    function ensureMiniHost() {
+      if (miniHost) return miniHost;
+      var d = doc();
+      if (d && d.createElement && d.body) { miniHost = d.createElement('div'); miniHost.className = 'pb-mini'; miniHost.hidden = true; d.body.appendChild(miniHost); wire(miniHost, false); }
+      return miniHost;
+    }
+    /** The questions, minimised: a small window in the corner that stays until every question is answered, and reopens them where they were left. */
+    function renderMini() {
+      var host = ensureMiniHost();
+      if (!host) return;
+      var p = session.progress();
+      var show = ui.minimized && !ui.overlay && p.visible > 0 && p.remaining > 0;
+      if (!show) { host.hidden = true; host.innerHTML = ''; return; }
+      var pct = Math.round(p.answered / p.visible * 100);
+      var st = ui.step && ui.step.kind !== 'end' ? sectionById(ui.step.section) : null;
+      host.innerHTML = '<button class="pb-mini-card' + (ui.miniFresh ? ' is-in' : '') + '" data-action="resume" aria-label="Resume the questions: ' + p.answered + ' of ' + p.visible + ' answered">' +
+        '<span class="pb-mini-ring" style="--p:' + pct + '%" aria-hidden="true"><span>' + p.answered + '</span></span>' +
+        '<span class="pb-mini-t"><strong>Client discovery</strong><span>' + p.answered + ' of ' + p.visible + ' answered' + (st ? ' · ' + esc(st.title) : '') + '</span></span>' +
+        '<span class="pb-mini-open" aria-hidden="true">' + icon('expand') + '</span><span class="pb-mini-bar" aria-hidden="true"><span style="width:' + pct + '%"></span></span></button>';
+      host.hidden = false;
+      ui.miniFresh = false;
+    }
+    /** The container shrinks into the corner window. */
+    function minimize() {
+      var host = overlayHost, ovl = host && host.querySelector ? host.querySelector('.pb-ovl') : null;
+      clearTimer(); ui.overlay = false; ui.popup = null; ui.menu = false; ui.notice = null; ui.minimized = true; ui.miniFresh = false;
+      renderPage(); renderRail(); renderToc(); renderMini();
+      var mini = miniHost && miniHost.querySelector ? miniHost.querySelector('.pb-mini-card') : null;
+      if (!(ovl && mini && ovl.animate && ovl.getBoundingClientRect && !reduceMotion())) { renderOverlay(); return; }
+      var a = ovl.getBoundingClientRect(), b = mini.getBoundingClientRect();
+      var dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+      mini.style.opacity = '0';
+      var back = host.querySelector('.pb-ovl-backdrop'), foot = host.querySelector('.pb-ovl-foot');
+      if (back) back.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, fill: 'forwards' });
+      if (foot) foot.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' });
+      var anim = ovl.animate([{ transform: 'none', opacity: 1, borderRadius: '28px' }, { opacity: .9, offset: .65 },
+        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + b.width / a.width + ',' + b.height / a.height + ')', opacity: 0, borderRadius: '90px' }],
+        { duration: 560, easing: 'cubic-bezier(.5,0,.2,1)', fill: 'forwards' });
+      var done = function () { if (!ui.overlay) { host.hidden = true; host.innerHTML = ''; lockPage(false); } mini.style.opacity = ''; mini.classList.add('is-in'); };
+      anim.onfinish = done; anim.oncancel = done;
+    }
+    /** Open the questions again where they were left, growing out of the corner window. */
+    function resumeDiscovery() {
+      var mini = miniHost && miniHost.querySelector ? miniHost.querySelector('.pb-mini-card') : null;
+      var from = mini && mini.getBoundingClientRect ? mini.getBoundingClientRect() : null;
+      var st = ui.step && stepIndex(steps(), ui.step) >= 0 ? ui.step : firstUnanswered(null);
+      ui.minimized = false; ui.page = 'discovery'; ui.overlay = true; ui.opening = !from; ui.popup = null; ui.menu = false; ui.followShown = {}; ui.hold = false;
+      if (o.onTab) o.onTab('discovery');
+      renderPage(); renderRail(); renderToc(); renderMini();
+      setStep({ kind: st.kind, section: st.section, qid: st.qid });
+      var ovl = overlayHost && overlayHost.querySelector ? overlayHost.querySelector('.pb-ovl') : null;
+      if (from && ovl && ovl.animate && ovl.getBoundingClientRect && !reduceMotion()) {
+        var b = ovl.getBoundingClientRect();
+        var dx = from.left + from.width / 2 - (b.left + b.width / 2), dy = from.top + from.height / 2 - (b.top + b.height / 2);
+        ovl.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + from.width / b.width + ',' + from.height / b.height + ')', opacity: 0, borderRadius: '90px' }, { opacity: 1, offset: .35 }, { transform: 'none', opacity: 1, borderRadius: '28px' }],
+          { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+      }
+    }
     function doc() { return o.container.ownerDocument; }
     function ensureOverlayHost() {
       if (overlayHost) return overlayHost;
@@ -954,14 +1004,16 @@
         st = list.filter(function (s) { return s.kind === 'q' && s.qid === top; })[0];
       } else st = firstUnanswered(arg || null);
       if (!st) return;
-      ui.page = 'discovery'; ui.overlay = true; ui.opening = true; ui.menu = false; ui.popup = null; ui.followShown = {}; ui.hold = false;
+      ui.page = 'discovery'; ui.overlay = true; ui.opening = true; ui.menu = false; ui.minimized = false; ui.popup = null; ui.followShown = {}; ui.hold = false;
       if (o.onTab) o.onTab('discovery');
       renderPage(); renderRail(); renderToc();
       setStep({ kind: 'q', section: st.section, qid: st.qid });
     }
     function closeDiscovery() {
-      clearTimer(); ui.overlay = false; ui.popup = null; ui.notice = null;
-      renderOverlay(); renderPage(); renderRail(); renderToc();
+      var p = session.progress();
+      if (ui.overlay && p.visible > 0 && p.remaining > 0) { minimize(); return; }      // unfinished: it shrinks into the corner and waits
+      clearTimer(); ui.overlay = false; ui.popup = null; ui.notice = null; ui.minimized = false;
+      renderOverlay(); renderPage(); renderRail(); renderToc(); renderMini();
     }
     function finish() {
       if (lockedNow()) return;
@@ -1009,9 +1061,9 @@
     // ------------------------------------------------------------------ render and answers
     var RENDER = { overview: renderOverview, purpose: renderPurpose, principles: renderPrinciples, scoring: renderScoring, criteria: renderCriteria, matrix: renderMatrix, versus: renderVersus, discovery: renderDiscovery, shortlist: renderShortlist, migration: renderMigration, tools: renderTools, final: renderFinal, reference: renderReference };
     function renderPage() { o.container.innerHTML = pageHtml(); }
-    function render() { renderPage(); renderRail(); renderToc(); renderOverlay(); }
+    function render() { renderPage(); renderRail(); renderToc(); renderOverlay(); renderMini(); }
     /** An answer changed: redraw the page behind, the progress panel and the carousel. */
-    function refresh() { renderPage(); renderRail(); renderToc(); renderOverlay(); }
+    function refresh() { renderPage(); renderRail(); renderToc(); renderOverlay(); renderMini(); }
 
     function checkedFor(host, qid) {
       return Array.prototype.map.call(host.querySelectorAll('input[data-qid="' + qid + '"]:checked'), function (i) { return i.value; });
@@ -1115,6 +1167,7 @@
         else if (act === 'prev') move(-1);
         else if (act === 'next') move(1);
         else if (act === 'finish') finish();
+        else if (act === 'resume') resumeDiscovery();
         else if (act === 'tool') { ui.popup = ui.popup === b.getAttribute('data-tool') ? null : b.getAttribute('data-tool'); renderOverlay(); }
         else if (act === 'poptool') { ui.popup = b.getAttribute('data-tool'); renderOverlay(); }
         else if (act === 'popclose') { ui.popup = null; renderOverlay(); }
@@ -1173,19 +1226,22 @@
       move: function (dir) { move(dir); },
       step: function () { return ui.step ? JSON.parse(JSON.stringify(ui.step)) : null; },
       overlayOpen: function () { return !!ui.overlay; },
+      minimized: function () { return !!ui.minimized && !ui.overlay && session.progress().remaining > 0; },
+      resume: function () { resumeDiscovery(); },
       menu: function (open) { ui.menu = !!open; if (ui.overlay) renderOverlay(); },
       jump: function (qid) { jumpTo(qid, null); },
       overlayHtml: function () { return ui.overlay ? overlayHtml() : ''; },
       showTool: function (id) { ui.popup = id; renderOverlay(); },
       reset: function () {
         if (root.confirm && !root.confirm('Clear all answers and notes on this device?')) return;
-        clearTimer(); ui.overlay = false; ui.popup = null; ui.menu = false;
+        clearTimer(); ui.overlay = false; ui.popup = null; ui.menu = false; ui.minimized = false;
         store = { answers: {}, notes: {} }; saveStore(); buildSession({}); ui.notice = null; ui.openNotes = {}; ui.clientName = ''; render();
       },
       setShowDrafts: function (v) { persist(); showDrafts = !!v; buildSession(store.answers); render(); },
       get showDrafts() { return showDrafts; },
       summary: summaryText
     };
+    (function () { var p = session.progress(); ui.minimized = p.answered > 0 && p.remaining > 0; ui.miniFresh = false; })();     // a started, unfinished questionnaire keeps its corner window
     render();
     return api;
   }

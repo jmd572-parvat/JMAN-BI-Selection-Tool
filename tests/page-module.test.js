@@ -31,11 +31,12 @@ function load(storage, opts, modelOverride) {
   const mkHost = () => ({ innerHTML: '', hidden: true, contains: () => true, querySelectorAll: () => ctxChecked, querySelector: () => null, addEventListener(type, fn) { (listeners[type] = listeners[type] || []).push(fn); } });
   const container = Object.assign(mkHost(), { ownerDocument: { activeElement: { id: 'o-Q04-microsoft' }, documentElement: { setAttribute() {}, removeAttribute() {} } } });
   const overlay = mkHost();
+  const mini = mkHost();
   const rail = { innerHTML: '', addEventListener() {} };
   const toc = { innerHTML: '', addEventListener() {} };
   const deck = { profiles: json('data/deck/profiles.json'), matrix: json('data/deck/matrix.json'), migration: json('data/deck/migration.json'), reference: json('data/deck/reference.json') };
-  const api = ctx.Playbook.mount({ container, rail, toc, overlay, model: modelOverride || json('data/questions.json'), deck, config: Object.assign({ preview: true, showDrafts: true, lockUntilComplete: false }, opts || {}) });   // most tests look at results after one answer; the lock has its own tests
-  return { api, container, overlay, rail, toc, ctx, timers, listeners, setChecked: (inputs) => { ctxChecked = inputs; } };
+  const api = ctx.Playbook.mount({ container, rail, toc, overlay, mini, model: modelOverride || json('data/questions.json'), deck, config: Object.assign({ preview: true, showDrafts: true, lockUntilComplete: false }, opts || {}) });   // most tests look at results after one answer; the lock has its own tests
+  return { api, container, overlay, mini, rail, toc, ctx, timers, listeners, setChecked: (inputs) => { ctxChecked = inputs; } };
 }
 const memoryStorage = () => { const m = {}; return { m, getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: (k) => { delete m[k]; } }; };
 const PAGES = ['home', 'compare', 'discovery', 'recommendation'];
@@ -715,4 +716,41 @@ test('the burger menu lists every area and question, marks answers and the curre
   h.listeners.click.forEach((fn) => fn({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'jumpsec', 'data-section': '5' }[k]) }) } }));
   assert.equal(h.api.step().section, '5');
   assert.equal(h.api.step().qid, 'Q13');
+});
+
+test('leaving the questions unfinished shrinks them into a corner window that stays until every question is answered, and reopens where they were left', () => {
+  const h = load(memoryStorage());
+  assert.equal(h.api.minimized(), false);
+  assert.equal(h.mini.hidden, true, 'nothing to show before the questions are started');
+  h.api.openDiscovery('Q10');
+  h.api.answer('Q04', ['microsoft']);
+  h.api.closeDiscovery();
+  assert.equal(h.api.overlayOpen(), false);
+  assert.ok(h.api.minimized());
+  assert.equal(h.mini.hidden, false);
+  assert.match(h.mini.innerHTML, /data-action="resume" aria-label="Resume the questions: 1 of 20 answered"/);
+  assert.match(h.mini.innerHTML, /1 of 20 answered · Skills and change readiness/, 'it says where they are');
+  assert.match(h.mini.innerHTML, /class="pb-mini-ring" style="--p:5%"/);
+  h.api.go('compare');                      // it follows the reader to other pages
+  assert.equal(h.mini.hidden, false);
+  h.listeners.click.forEach((fn) => fn({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'resume' }[k]) }) } }));
+  assert.ok(h.api.overlayOpen(), 'a click reopens them');
+  assert.equal(h.api.step().qid, 'Q10', 'at the question that was left');
+  assert.equal(h.api.tab, 'discovery');
+  assert.equal(h.mini.hidden, true, 'the corner window goes while the questions are open');
+  // finishing everything closes them for good
+  for (let i = 0; i < 60 && h.api.session().openQuestions().length; i++) {
+    const q = h.api.session().visible().find((v) => !v.answered);
+    h.api.answer(q.id, [q.options.find((o) => !o.unknown).id]);
+  }
+  h.api.closeDiscovery();
+  assert.equal(h.api.minimized(), false);
+  assert.equal(h.mini.hidden, true, 'nothing is left to resume');
+  // a questionnaire that was started in an earlier visit keeps its corner window on load, and Start over removes it
+  const store = memoryStorage();
+  const a = load(store); a.api.answer('Q04', ['microsoft']);
+  const b = load(store);
+  assert.equal(b.mini.hidden, false);
+  b.api.reset();
+  assert.equal(b.mini.hidden, true);
 });

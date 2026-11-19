@@ -64,7 +64,7 @@ The engine reads `data/questions.json`, produced by `python scripts/excel_to_jso
 
 ## Tests
 ```
-npm test                 # 83 tests: parity with Python, bias properties, session behaviour, browser-global loading, page logic, the page module, both site builds
+npm test                 # 84 tests: parity with Python, bias properties, session behaviour, browser-global loading, page logic, the page module, both site builds
 npm run parity:update    # after ANY change to the workbook, bi_model.py or the converter
 python scripts/validate_model.py   # model-level checks (neutrality N1-N8, scenarios, branching)
 python scripts/calibrate_thresholds.py   # re-derive the lead and coverage thresholds (after any weight change)
