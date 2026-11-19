@@ -60,10 +60,9 @@ def main():
             h.update(f.read_bytes())
     html = html.replace("{{VERSION}}", h.hexdigest()[:10])
     html = html.replace("{{CONFIG}}", json.dumps(cfg)).replace("{{BUILD_DATE}}", datetime.date.today().isoformat())
-    if a.production:   # the preview strip and the gaps panel are for reviewers, not for the published page
+    if a.production:   # the preview strip is for reviewers, not for the published page
         import re
         html = re.sub(r'<div class="pv-preview".*?</div>\n', "", html, flags=re.S)
-        html = re.sub(r'<div class="pv-gaps">.*?</div>\n\n', "", html, flags=re.S)
     (out / "index.html").write_text(html, encoding="utf-8")
     q = json.loads((out / "data" / "questions.json").read_text(encoding="utf-8"))
     total = sum(f.stat().st_size for f in out.rglob("*") if f.is_file())

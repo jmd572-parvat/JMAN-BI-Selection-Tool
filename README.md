@@ -13,7 +13,7 @@ The recommendation comes only from the client's answers. No platform is favoured
 | `src/engine/` | Scoring engine and questionnaire session (plain JavaScript, no dependencies) |
 | `src/page/` | The page: content module, page logic, styles, preview shell |
 | `scripts/` | Converters, the Python reference engine, validation, calibration, site build, docs check |
-| `tests/` | `node --test` suite (76 tests) |
+| `tests/` | `node --test` suite (83 tests) |
 | `docs/` | Design, scoring method, engine, validation, workshop and open items |
 
 ## Commands

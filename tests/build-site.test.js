@@ -25,10 +25,11 @@ test('preview build: drafts included with a toggle, reviewer notes present', () 
   delete cfg.logos;
   assert.deepEqual(cfg, { preview: true, showDrafts: true, draftToggle: true, storageKey: 'bi-playbook-v1' });
   assert.match(html, /pv-preview/);
-  assert.match(html, /About this preview: known gaps/);
+  assert.ok(!/known gaps/.test(html), 'the known-gaps panel is gone');
   const q = JSON.parse(read(out, 'data/questions.json'));
   assert.equal(q.questions.length, 26);
   assert.ok(q.meta.draftsIncluded);
+  assert.deepEqual(q.meta.draftQuestions, [], 'no question is a draft any more');
   assert.ok(!html.includes('{{'), 'no unreplaced template placeholders');
   assert.match(html, /playbook\.js\?v=[0-9a-f]{10}/, 'script URLs carry a build version');
 });
@@ -40,12 +41,11 @@ test('production build: no draft questions, no reviewer strip, no preview config
   delete cfg.logos;
   assert.deepEqual(cfg, { preview: false, showDrafts: false, draftToggle: false, storageKey: 'bi-playbook-v1' });
   assert.ok(!/pv-preview/.test(html), 'the reviewer strip is removed');
-  assert.ok(!/known gaps/.test(html), 'the known-gaps panel is removed');
   assert.ok(!html.includes('{{'));
   const q = JSON.parse(read(out, 'data/questions.json'));
   assert.equal(q.meta.draftsIncluded, false);
   assert.ok(q.questions.every((x) => x.status !== 'draft'), 'no draft question ships');
-  assert.equal(q.questions.length, 20);
+  assert.equal(q.questions.length, 26, 'with no drafts the production build holds every question');
 });
 
 test('both builds contain every file the page loads, and nothing refers to a missing file', () => {

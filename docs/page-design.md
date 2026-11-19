@@ -1,6 +1,6 @@
 # BI Tools Selection Playbook: page design and content draft
 
-Status: audited 2026-11-17 (section 13), built as a preview the same day (section 14) and restructured on 2026-11-18 into five pages with a question carousel (section 15, which supersedes the navigation described in section 3). This file is the page in reading order, so it can be reviewed as content first and as design second.
+Status: known gaps closed 2026-11-18 (D21); audited 2026-11-17 (section 13), built as a preview the same day (section 14) and restructured on 2026-11-18 into pages and on 2026-11-19 into four (section 16, which supersedes sections 3 and 15 where they differ) with a question carousel (section 15, which supersedes the navigation described in section 3). This file is the page in reading order, so it can be reviewed as content first and as design second.
 
 ## 0. How to read this document
 
@@ -119,7 +119,7 @@ Rules that follow:
 ## 3. Page content, in reading order
 
 ### 3.1 Hero and navigation
-> **Superseded in part by section 15:** the nine tabs became five pages (Overview, Guidelines, Compare tools, Client discovery, Recommendation) and the questions moved into a carousel.
+> **Superseded in part by sections 15 and 16:** the nine tabs became four pages (Overview, Compare tools, Client discovery, Recommendation) and the questions moved into a carousel.
 
 - **Breadcrumb:** Playbook › BI Tools Selection Playbook **[Observed pattern]**
 - **Title:** BI Tools Selection Playbook **[Deck s3 to s6 (each slide title starts with it)]**
@@ -252,14 +252,14 @@ Answers are tiles. Up to three scored answers sit side by side in one bar; four 
 - When an answer closes a branch, the answers behind it are cleared and a quiet notice says so, with **Undo**: *Your answers to the skill-level and training questions were cleared because JMAN will build the reports.* **[Proposal; `answer()` returns the cleared question IDs, Undo is kept by the page]**
 
 #### The right rail while answering: "Your answers"
-- **Progress:** "7 of 22 questions answered" with a purple bar. 22 are asked at the start; the total moves as branches open or close.
+- **Progress:** "7 of 22 questions answered" with a purple bar. 20 are asked at the start; the total moves as branches open or close.
 - **State label** (see 3.6).
 - **Matters most, still open:** unanswered questions ordered by weight, highest first, each a link to the question. The weights only order the list; they are not shown. Needs a small engine addition **[section 6]**; weights are provisional **[B7]**.
 - **Start over**, and a note *Saved on this device.*
 
 ### 3.6 Shortlist
 
-**Heading:** Top 3 shortlist
+**Heading:** Best fit (was *Top 3 shortlist*; see section 16)
 **Lead:** Based on your answers, here is how the six tools compare for this client.
 
 The panel has four states, driven by how much of the visible question weight is answered **[Proposal, D6; evidence in section 13, row 8]**:
@@ -446,7 +446,7 @@ Each step is usable alone and can be reviewed in the marketplace preview **[A4]*
 | "Why we ask" help text, one line per question (26) | Two exist in the Flow (Q06's instruction and Q10's branch note) and are used | To write the other 24 |
 | Section names and descriptions for the five sections | this draft | To approve [D2] |
 | Tool profiles (6) as data | Deck slides 10 to 15 | Extracted to `data/deck/profiles.json`; Tableau's typical features withheld (the slide repeats Power BI's) |
-| Decision matrix text (14 criteria by 6 tools) with the deck's "leads" markers | Deck slides 7, 9 | Extracted to `data/deck/matrix.json` |
+| Decision matrix text (14 criteria by 6 tools); the deck's "leads" markers are not shown | Deck slides 7, 9 | Extracted to `data/deck/matrix.json` |
 | Criterion-to-question mapping (for "Relevant to your answers") | `src/page/playbook.js` | First version built [A14]; SME review |
 | Migration data: feasibility, effort, challenges | Deck slides 16, 17, 18, 28, 29 | Extracted to `data/deck/migration.json`; the 30 cards agree with the deck's own grid |
 | Scenarios, fast path, deployment, integration | Deck slides 19 to 22 | Extracted to `data/deck/reference.json`; slide 22 corrected on the page with vendor sources; slide 21 shown as text only |
@@ -476,6 +476,7 @@ Each shows a recommendation. None is applied unless stated.
 - **D15. Final-recommendation fields.** The Flow names "normalized score" and "delivery risk" **[Flow]** and the deck names "trade-offs" **[Deck s3]**. *Recommended: the mapping in 3.10: score in a details drawer, risk as watch-outs.*
 - **D20. Dock, quiet countdown, icons.** Requested by the owner on 2026-11-18: the top three became a background-free dock (leader in colour, second 25% grey, third 40% grey), the visible countdown became the progress bar, the countdown fell from 5 to 3.2 seconds, the area-complete card lost its shadow, the popup grew and its neighbours moved outside it, and all arrows and close buttons became line icons (section 15).
 - **D19. Pages and a question carousel.** Decided by the owner on 2026-11-18, replacing the one-page scroll [D17]: five pages, a landing page like the Data Engineering Playbook's, questions one at a time in a centred container with arrows, a close button, auto-advance, an area-complete card and a live top three (section 15).
+- **D21. Known gaps closed.** Decided by the owner on 2026-11-18: proposed scores for the three missing answers [A21]; Q17 and Q20 follow existing reporting [B2]; the six drafts approved [B4]; weights accepted [B5]; the deck's profiles and tables accepted with the corrections already marked, so the page no longer says they are unverified; the *known gaps* panel removed. Still open: B3 (deck source defects, one of them, the Tableau feature list, withheld on the page), B6 (the one-line guides remain proposed wording [A17]), B7 (one mandatory filter) and B8 (shell confirmations).
 - **D18. Double-click clears an answer.** Requested by the owner on 2026-11-18. A double-click on a chosen answer removes it (a single answer becomes unanswered); on a phone, use *Clear*. Because the page redraws after each change, the browser does not report a double-click on a checkbox, so the page reads two changes to the same answer within 450 ms as one. Checked with real mouse events in the in-app browser.
 - **D17. One page, not tabs.** Decided by the owner on 2026-11-18, replacing the draft's one-section-per-tab design: all nine sections scroll as one page, the tab row and "On this page" jump to a section and follow the reader's position, and an answer redraws only the sections that depend on answers so the reader keeps their place. Whether the marketplace shell can host this is [A1, A2].
 - **D16. Q12 answers.** The Flow offers "Limited upskilling capacity" and "No capacity for change"; the model offers "Can upskill". *Recommended: the Flow's four answers, with SME scores for the two missing ones.* [B1]
@@ -503,11 +504,11 @@ Compared question by question on 2026-11-17 **[Measured]**.
 | Answer the model offers that the Flow lacks: Q12 "Can upskill" | Offered | Open [D16] |
 
 ## 11. Blocking items before the page can ship
-- **B1. Three answers from the Flow are not offered**, because they have no SME scores: Q06 "Data residency requirement", Q12 "Limited upskilling capacity", Q12 "No capacity for change". A client with a residency requirement or no capacity for change cannot record it.
-- **B2. Q17 and Q20 presuppose a migration** yet are asked of every client; clients with nothing to migrate must answer questions about "existing content" and "migration constraints" [D12].
+- **B1. Closed 2026-11-18.** The three answers that had no scores (Q06 "Data residency requirement", Q12 "Limited upskilling capacity" and "No capacity for change") now have proposed scores and reasons, taken from the deck's data-residency and ease-of-adoption rows, and are offered **[A21]**. They are marked *Proposed* in the workbook's Score basis column for a later expert review.
+- **B2. Closed 2026-11-18.** On the owner's decision, Q17 ("How complex is the existing content?") and Q20 ("What are the migration constraints?") are asked only when the client has existing reporting, as follow-ups of Q13 beside Q14 and Q15 **[D21]**. This departs from the Flow, which asks them of everyone.
 - **B3. Deck source problems:** the Tableau profile repeats Power BI's typical features (withheld on the page); slide 21's colour markers contradict its legend in 6 cells and it omits two tools (text only is shown); slide 22 says Looker and ThoughtSpot have no on-premises option (corrected on the page with vendor sources); slide 25 was written for four tools (shown as pending). The owner should correct the deck.
-- **B4. Draft scores:** six questions (Q21 to Q26) carry scores derived from the deck heatmap, awaiting SME review. Sigma's score for "critical" presentation quality in Q21 is flagged as likely too high; with it, Tableau and Sigma tie.
-- **B5. Weights are provisional** and the confidence thresholds depend on them [A10].
+- **B4. Closed 2026-11-18.** The owner approved the six questions that were Draft (Q21 to Q26); no question is a draft. Their scores still come from the deck heatmap. Sigma's score for "critical" presentation quality in Q21 was flagged as likely too high; with it, Tableau and Sigma tie, which the page reports as too close to call.
+- **B5. Closed 2026-11-18.** The weights are accepted as the current set. The confidence thresholds were measured with them [A10] and must be re-measured if a weight changes.
 - **B6. Help text:** only two of the 26 "Why we ask" lines exist (Q06 and Q10, from the Flow).
 - **B7. Mandatory filters:** only one of the Flow's filter categories is implemented [D14].
 - **B8. Three confirmations about the shell** [A1, A2, A4].
@@ -531,6 +532,8 @@ Compared question by question on 2026-11-17 **[Measured]**.
 | A14 | The criterion-to-question mapping behind "Relevant to your answers" (which questions bear on which of the 14 criteria) | SME review |
 | A15 | The final summary lists the answers to Q05, Q06, Q20 and Q26 as the client's own constraints | Owner review |
 | A16 | The preview shell is only a stand-in: the module needs four page elements (content, rail, "On this page", and a tab row driving `go()`) and the data files, nothing else | Marketplace owner |
+| A22 | The live ranking in the carousel is shown while answering although the recommendation is held back until every question is answered | Owner |
+| A21 | The proposed scores for Q06 "Data residency requirement" (3, 2, 4, 2, 3, 4 for Power BI, Looker, Tableau, ThoughtSpot, Sigma, Qlik), Q12 "Limited upskilling capacity" (4, 2, 3, 4, 4, 2) and Q12 "No capacity for change" (3, 1, 3, 3, 4, 2), written from deck slides 7 and 22 | Expert review |
 | A17 | The one-line guide under each of the 26 questions (it restates the question and makes no claim about any tool) | Owner review |
 | A18 | "About 5 to 10 minutes" is the owner's estimate for the questionnaire; it has not been timed with users | Time a few real sessions |
 | A19 | The owner first gave 5 seconds, then 4 and 5 in different places, and on 2026-11-18 asked for 3.2 seconds. 3.2 is used for both the question and the area-complete countdowns, in two constants (`QUESTION_SECONDS`, `SECTION_SECONDS`) | Owner |
@@ -656,6 +659,21 @@ Only the page's grouping changed. Which questions are asked, their scores, weigh
 
 **Verified in the in-app browser:** landing page; Client discovery page; opening the carousel with a real click; a real click on an answer, the countdown, auto-advance to the next question, the live logos, the popup, a follow-up opening inside its parent, the area-complete card; a phone-width layout with no sideways overflow. **Not verified:** other browsers, screen readers, keyboard-only use in a real browser, the marketplace shell.
 
+## 16. Four pages, one best fit, a locked recommendation, a matrix (revision 2026-11-19)
+Owner feedback of 2026-11-19, decided in conversation. **This section supersedes the page list and the shortlist, tool-details and comparison descriptions in sections 3 and 15.**
+
+**Four pages.** Overview, Compare tools, Client discovery, Recommendation. The Guidelines page no longer exists: its content sits on the Overview page, after the introduction, in this order: *Who is this for?*, *How to navigate* (cards for the three other pages), *Purpose* (when to use it, what it helps you decide, what it does not replace), *What we ask about*, *Guiding principles* and *How the recommendation is made*. **What we ask about** is the playbook's basic criteria: the five areas of questions (business context and goals; data, security and governance; skills and change readiness; data landscape and delivery; existing reporting and migration), each with its one-line description. The earlier "Who it is for" purpose card was dropped as a duplicate of *Who is this for?*.
+
+**One best fit.** The shortlist is now called *Best fit*. Under the lead sentence, the lead-strength scale and any note about the edge of the group, the leader gets the one full card (rank, logo, fit bar, why it fits, watch-outs). Every other tool that is not ruled out is a grey logo beside it; hovering shows its name and rank, and clicking swaps the full card to that tool, with a link back to the best fit, so no reasons are hidden. The card always shows exactly one tool, as the owner chose. When tools tie, the card shows the first of them alphabetically with rank *=1* and the lead sentence says they fit equally well and that a proof of concept should separate them; the others stay one click away. The migration analysis and the summary still use the three best-ranked tools.
+
+**The recommendation is locked until every question asked now has an answer** (an answer such as *To be confirmed* counts; skipping does not). Until then the Recommendation page, in all three of its tabs, shows how many questions are open and links to them; the tool profiles stop marking the best fit; and the carousel's last card says how many questions are still open, with a button to the first one, instead of the winner. The live dock in the carousel still shows the provisional top three while answering, as the owner asked earlier **[A22]**. Opening the recommendation by answering everything works as before: the winner appears, then flies to the page.
+
+**Compare tools has four tabs.** *Tool profiles* (all six, alphabetical, with logos), *Matrix*, *1 v 1* and *Deployment and scenarios*.
+- **Matrix:** the deck's 14 criteria in their groups as rows, the six tools as columns (alphabetical, with logos), each cell the deck's short headline, rows relevant to the client's answers marked. The deck's "leads" markers are removed everywhere, because they implied a winner the questionnaire does not support. The old combined table moved out of Reference.
+- **1 v 1:** two tools picked from two lists (the same tool cannot be picked twice), every criterion side by side with the full headline and detail, then a Deployment group (primary deployment, on-premises option, data residency control; the vendor-sourced corrections for Looker and ThoughtSpot apply). It opens on the best fit once the recommendation is unlocked.
+
+**[A22]** Showing a live ranking while the client answers is the owner's choice and can lead people to answer towards a favourite; the recommendation itself is held back until the end.
+
 ---
 
 ## Appendix: question inventory
@@ -672,18 +690,18 @@ Generated from `data/questions.json` by `scripts/check_docs.py --write` (26 ques
 | Q02 | Who are the primary consumers of the reports/dashboards? | several | Always | C-suite / Executive leadership; Finance; Operational teams and business managers; Sales and commercial teams; Board members / Investors; Private equity / Exit stakeholders; External vendors / Partners; Other / Not yet defined *(not scored)* |
 | Q03 | Are delays, low trust in data, inconsistent metrics, or poor access hurting the business? | one | Always | No; Maybe; Yes |
 | Q04 | Which enterprise ecosystem do you primarily operate within? | one | Always | Microsoft; Google Cloud; Salesforce; Databricks; Snowflake; Hybrid; None / Not yet defined *(not scored)* |
-| Q21 | How important are polished, presentation-quality dashboards and data storytelling? **[draft]** | one | Always | Critical: executive or board-grade bespoke visuals; Important: clean, professional standard dashboards; Not a priority: functional reporting is enough *(not scored)* |
-| Q22 | Is AI-assisted or natural-language analytics a priority? **[draft]** | one | Always | AI-first: business users should ask questions in plain English; AI-assisted: useful for report building and Q&A; Not a priority *(not scored)* |
-| Q23 | How much does licensing cost drive the decision? **[draft]** | one | Always | Tight budget: cost reduction is the main driver; Balanced: will pay for clear capability; Cost is not the main factor *(not scored)* |
-| Q25 | How many people will use the dashboards? **[draft]** | one | Always | 1-10 users *(not scored)*; 11-50 users *(not scored)*; 51-100 users; More than 100 users; To be confirmed *(not scored)* |
+| Q21 | How important are polished, presentation-quality dashboards and data storytelling? | one | Always | Critical: executive or board-grade bespoke visuals; Important: clean, professional standard dashboards; Not a priority: functional reporting is enough *(not scored)* |
+| Q22 | Is AI-assisted or natural-language analytics a priority? | one | Always | AI-first: business users should ask questions in plain English; AI-assisted: useful for report building and Q&A; Not a priority *(not scored)* |
+| Q23 | How much does licensing cost drive the decision? | one | Always | Tight budget: cost reduction is the main driver; Balanced: will pay for clear capability; Cost is not the main factor *(not scored)* |
+| Q25 | How many people will use the dashboards? | one | Always | 1-10 users *(not scored)*; 11-50 users *(not scored)*; 51-100 users; More than 100 users; To be confirmed *(not scored)* |
 
 **Section 2 Data, security and governance**
 
 | # | Question | Select | Asked | Options |
 |---|---|---|---|---|
 | Q05 | Do you have strict governance or compliance requirements? | one | Always | Yes; No; To be confirmed *(not scored)* |
-| Q06 | What are your security and access requirements? | several | Always | Basic access; Role-based access / RLS; Enterprise security (SSO and granular controls); External access; To be confirmed *(not scored)* |
-| Q26 | Is a vendor-hosted (SaaS) BI platform acceptable? **[draft]** | one | Always | Yes: vendor-hosted SaaS is acceptable *(not scored)*; No: must run on-premises or on client-controlled infrastructure *(rules out sigma)*; To be confirmed *(not scored)* |
+| Q06 | What are your security and access requirements? | several | Always | Basic access; Role-based access / RLS; Enterprise security (SSO and granular controls); External access; Data residency requirement; To be confirmed *(not scored)* |
+| Q26 | Is a vendor-hosted (SaaS) BI platform acceptable? | one | Always | Yes: vendor-hosted SaaS is acceptable *(not scored)*; No: must run on-premises or on client-controlled infrastructure *(rules out sigma)*; To be confirmed *(not scored)* |
 | Q07 | Do you have a defined data model or semantic layer in existing reporting? | one | Always | Yes; Partial; No |
 | Q08 | How mature is the current reporting governance process? | one | Always | No formal governance; Partially governed; Fully governed |
 | Q09 | Are there any AI governance concerns to be aware of? | one | Always | Yes; Maybe; No |
@@ -694,8 +712,8 @@ Generated from `data/questions.json` by `scripts/check_docs.py --write` (26 ques
 |---|---|---|---|---|
 | Q10 | Who will build the reports? | one | Always | JMAN; Client team; Joint delivery |
 | Q11 | What is the delivery team's technical skill level (SQL, DAX, modelling)? | one | Only if "Who will build the reports" is "Client team" or "Joint delivery" | Beginner; Intermediate; Advanced |
-| Q12 | How much training and change management can the client support? | one | Only if "Who will build the reports" is "Client team" or "Joint delivery" | Full support for upskilling; Can upskill; No training required |
-| Q24 | How important is a large talent pool and partner ecosystem for the chosen platform? **[draft]** | one | Always | Critical: must be easy to hire for and to staff; Important: a clear advantage; Not a factor *(not scored)* |
+| Q12 | How much training and change management can the client support? | one | Only if "Who will build the reports" is "Client team" or "Joint delivery" | Full support for upskilling; Limited upskilling capacity; Can upskill; No training required; No capacity for change |
+| Q24 | How important is a large talent pool and partner ecosystem for the chosen platform? | one | Always | Critical: must be easy to hire for and to staff; Important: a clear advantage; Not a factor *(not scored)* |
 
 **Section 4 Existing reporting**
 
@@ -710,9 +728,9 @@ Generated from `data/questions.json` by `scripts/check_docs.py --write` (26 ques
 | # | Question | Select | Asked | Options |
 |---|---|---|---|---|
 | Q16 | What is the data estate? | several (assumed) | Always | Cloud warehouse ready; Hybrid / on-premises; Fragmented sources / no warehouse; High-volume / rapidly growing |
-| Q17 | How complex is the existing content? | several (assumed) | Always | Standard dashboards / simple calculations; Complex calculations / semantic models; Custom visuals / extensions; Write-back / planning / complex dependencies |
+| Q17 | How complex is the existing content? | several (assumed) | Only if "Does the client have an active reporting suite" is "Yes" or "Partial / Departmental only" | Standard dashboards / simple calculations; Complex calculations / semantic models; Custom visuals / extensions; Write-back / planning / complex dependencies |
 | Q18 | What are the refresh and performance requirements? | several (assumed) | Always | Scheduled / daily batch; Near-real-time / live query; High concurrency / strict SLA; Offline / on-premises operation |
 | Q19 | Is embedded or external reporting required? | several (assumed) | Always | Internal reporting only; Controlled external sharing; Embedded customer-facing analytics; Pixel-perfect export / scheduled distribution |
-| Q20 | What are the migration constraints? | several (assumed) | Always | Aggressive timeline; Limited delivery or change capacity; Risk-minimized parallel run; No material constraints / TBC *(not scored)* |
+| Q20 | What are the migration constraints? | several (assumed) | Only if "Does the client have an active reporting suite" is "Yes" or "Partial / Departmental only" | Aggressive timeline; Limited delivery or change capacity; Risk-minimized parallel run; No material constraints / TBC *(not scored)* |
 
 <!-- APPENDIX:END -->

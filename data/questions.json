@@ -9,14 +9,7 @@
       0,
       5
     ],
-    "draftQuestions": [
-      "Q21",
-      "Q22",
-      "Q23",
-      "Q25",
-      "Q26",
-      "Q24"
-    ],
+    "draftQuestions": [],
     "draftsIncluded": true,
     "tieBreak": [
       {
@@ -925,7 +918,7 @@
     {
       "id": "Q21",
       "order": 5,
-      "status": "draft",
+      "status": "approved",
       "reference": "neutral",
       "section": "S1",
       "text": "How important are polished, presentation-quality dashboards and data storytelling?",
@@ -1033,7 +1026,7 @@
     {
       "id": "Q22",
       "order": 6,
-      "status": "draft",
+      "status": "approved",
       "reference": "neutral",
       "section": "S1",
       "text": "Is AI-assisted or natural-language analytics a priority?",
@@ -1141,7 +1134,7 @@
     {
       "id": "Q23",
       "order": 7,
-      "status": "draft",
+      "status": "approved",
       "reference": "neutral",
       "section": "S1",
       "text": "How much does licensing cost drive the decision?",
@@ -1249,7 +1242,7 @@
     {
       "id": "Q25",
       "order": 8,
-      "status": "draft",
+      "status": "approved",
       "reference": "neutral",
       "section": "S1",
       "text": "How many people will use the dashboards?",
@@ -1624,6 +1617,32 @@
           }
         },
         {
+          "id": "data_residency_requirement",
+          "label": "Data residency requirement",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 2,
+            "tableau": 4,
+            "thoughtspot": 2,
+            "sigma": 3,
+            "qlik": 4
+          },
+          "scoreBasis": "Proposed 2026-11-18, awaiting SME review. From the deck's data residency row (slide 22): Power BI regional Azure data centers; Tableau choose region or self-host; Looker tied to Google Cloud region; ThoughtSpot limited region choice; Qlik full control if on-prem/hybrid; Sigma tied to warehouse region.",
+          "rationale": {
+            "summary": "Strong fit: Tableau, Qlik. Good fit: Power BI, Sigma. Suitable: Looker, ThoughtSpot. Why the leaders: Tableau: The region can be chosen, or the platform can be self-hosted with Tableau Server, so it can follow most residency rules. Qlik: Full control when run on-premises or hybrid, which is why it suits regulated clients with strict residency rules.",
+            "tools": {
+              "powerbi": "Data stays in a chosen regional Azure data centre, with Power BI Report Server on-premises for stricter rules; confirm the exact region for the client.",
+              "looker": "Cloud-only and tied to the chosen Google Cloud region, so residency is met only where Google Cloud offers a suitable region.",
+              "tableau": "The region can be chosen, or the platform can be self-hosted with Tableau Server, so it can follow most residency rules.",
+              "thoughtspot": "Cloud-only with limited region choice, so a strict residency rule may not be met; validate before committing.",
+              "sigma": "Cloud-only, but data stays in the client's own warehouse region, which usually satisfies residency; confirm where Sigma's own metadata sits.",
+              "qlik": "Full control when run on-premises or hybrid, which is why it suits regulated clients with strict residency rules."
+            }
+          }
+        },
+        {
           "id": "tbc",
           "label": "To be confirmed",
           "unknown": true,
@@ -1650,26 +1669,26 @@
         }
       ],
       "baseline": {
-        "looker": 2.75,
-        "powerbi": 3.5,
-        "qlik": 3.5,
+        "looker": 2.6,
+        "powerbi": 3.4,
+        "qlik": 3.6,
         "sigma": 3.0,
-        "tableau": 3.5,
-        "thoughtspot": 3.5
+        "tableau": 3.6,
+        "thoughtspot": 3.2
       },
       "variance": {
-        "looker": 1.1875,
-        "powerbi": 0.25,
-        "qlik": 0.25,
-        "sigma": 0.5,
-        "tableau": 0.25,
-        "thoughtspot": 0.25
+        "looker": 1.04,
+        "powerbi": 0.24,
+        "qlik": 0.24,
+        "sigma": 0.4,
+        "tableau": 0.24,
+        "thoughtspot": 0.56
       }
     },
     {
       "id": "Q26",
       "order": 11,
-      "status": "draft",
+      "status": "approved",
       "reference": "neutral",
       "section": "S2",
       "text": "Is a vendor-hosted (SaaS) BI platform acceptable?",
@@ -2355,6 +2374,32 @@
           }
         },
         {
+          "id": "limited_upskilling_capacity",
+          "label": "Limited upskilling capacity",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 4,
+            "looker": 2,
+            "tableau": 3,
+            "thoughtspot": 4,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "scoreBasis": "Proposed 2026-11-18, awaiting SME review. Placed between 'Can upskill' and 'No training required', using the deck's ease-of-adoption row (slide 7).",
+          "rationale": {
+            "summary": "Strong fit: Power BI, ThoughtSpot, Sigma. Good fit: Tableau. Suitable: Looker, Qlik. Why the leaders: Power BI: Familiar Microsoft and Excel habits keep the learning load light; advanced DAX still needs someone with time to learn it. ThoughtSpot: Natural-language search has a low learning curve for business users; whoever maintains the model still needs some training. Sigma: A spreadsheet-style interface is quick to pick up; warehouse governance needs a little training.",
+            "tools": {
+              "powerbi": "Familiar Microsoft and Excel habits keep the learning load light; advanced DAX still needs someone with time to learn it.",
+              "looker": "LookML has a learning curve and the model-first workflow needs training time that is in short supply.",
+              "tableau": "An intuitive interface helps analysts, but advanced visuals take experience that limited training time may not build.",
+              "thoughtspot": "Natural-language search has a low learning curve for business users; whoever maintains the model still needs some training.",
+              "sigma": "A spreadsheet-style interface is quick to pick up; warehouse governance needs a little training.",
+              "qlik": "The associative model takes time to learn, which limited training capacity may not allow."
+            }
+          }
+        },
+        {
           "id": "can_upskill",
           "label": "Can upskill",
           "unknown": false,
@@ -2403,29 +2448,55 @@
               "qlik": "Without training, associative modeling and Section Access are a support risk even if dashboards are consumable."
             }
           }
+        },
+        {
+          "id": "no_capacity_for_change",
+          "label": "No capacity for change",
+          "unknown": false,
+          "excludes": [],
+          "scores": {
+            "powerbi": 3,
+            "looker": 1,
+            "tableau": 3,
+            "thoughtspot": 3,
+            "sigma": 4,
+            "qlik": 2
+          },
+          "scoreBasis": "Proposed 2026-11-18, awaiting SME review. Stricter than 'No training required': the client cannot absorb a new way of working at all. Based on the deck's ease-of-adoption row (slide 7).",
+          "rationale": {
+            "summary": "Strong fit: Sigma. Good fit: Power BI, Tableau, ThoughtSpot. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: Sigma: The closest to a spreadsheet, so the smallest change in how people already work.",
+            "tools": {
+              "powerbi": "Familiar Microsoft and Excel habits ease adoption, but moving reporting to a new tool still asks for change the client says it cannot absorb.",
+              "looker": "A new modelling workflow (LookML, Git) is a large change, a poor fit when there is no capacity for change.",
+              "tableau": "The interface is intuitive for analysts, but a new tool still changes how reports are built and governed.",
+              "thoughtspot": "Search is easy for business users, but curated models and a new way of asking questions still need change management.",
+              "sigma": "The closest to a spreadsheet, so the smallest change in how people already work.",
+              "qlik": "The associative approach is a new way of working that needs guided change."
+            }
+          }
         }
       ],
       "baseline": {
-        "looker": 2.666666667,
-        "powerbi": 3.666666667,
-        "qlik": 3.0,
-        "sigma": 3.666666667,
-        "tableau": 3.333333333,
-        "thoughtspot": 3.666666667
+        "looker": 2.2,
+        "powerbi": 3.6,
+        "qlik": 2.6,
+        "sigma": 3.8,
+        "tableau": 3.2,
+        "thoughtspot": 3.6
       },
       "variance": {
-        "looker": 1.555555556,
-        "powerbi": 0.222222222,
-        "qlik": 0.666666667,
-        "sigma": 0.222222222,
-        "tableau": 0.222222222,
-        "thoughtspot": 0.222222222
+        "looker": 1.36,
+        "powerbi": 0.24,
+        "qlik": 0.64,
+        "sigma": 0.16,
+        "tableau": 0.16,
+        "thoughtspot": 0.24
       }
     },
     {
       "id": "Q24",
       "order": 18,
-      "status": "draft",
+      "status": "approved",
       "reference": "neutral",
       "section": "S3",
       "text": "How important is a large talent pool and partner ecosystem for the chosen platform?",
@@ -3101,7 +3172,15 @@
       "type": "multi",
       "stage": "discovery",
       "weight": 3,
-      "showIf": [],
+      "showIf": [
+        {
+          "q": "Q13",
+          "in": [
+            "yes",
+            "partial"
+          ]
+        }
+      ],
       "options": [
         {
           "id": "standard_dashboards_simple_calculations",
@@ -3491,7 +3570,15 @@
       "type": "multi",
       "stage": "discovery",
       "weight": 4,
-      "showIf": [],
+      "showIf": [
+        {
+          "q": "Q13",
+          "in": [
+            "yes",
+            "partial"
+          ]
+        }
+      ],
       "options": [
         {
           "id": "aggressive_timeline",

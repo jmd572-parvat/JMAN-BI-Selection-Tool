@@ -14,7 +14,8 @@ test('a new session asks the questions that are not behind a branch, in asking o
   assert.equal(ids[0], 'Q01');
   assert.ok(!ids.includes('Q11') && !ids.includes('Q12'), 'skills questions wait for Q10');
   assert.ok(!ids.includes('Q14') && !ids.includes('Q15'), 'migration questions wait for Q13');
-  assert.ok(ids.includes('Q16') && ids.includes('Q20'), 'Q16-Q20 are asked of everyone');
+  assert.ok(ids.includes('Q16') && ids.includes('Q18') && ids.includes('Q19'), 'the data-estate, refresh and embedding questions are asked of everyone');
+  assert.ok(!ids.includes('Q17') && !ids.includes('Q20'), 'content complexity and migration constraints wait for existing reporting');
   const orders = s.visible().map((q) => q.order);
   assert.deepEqual(orders, orders.slice().sort((a, b) => a - b));
 });
@@ -90,7 +91,9 @@ test('a mandatory filter lists the excluded tool with the answer that excluded i
 });
 
 test('draft questions that influenced the result are reported so the page can say so', () => {
-  const s = new Session(model());
+  const m = model();
+  m.questions.find((q) => q.id === 'Q23').status = 'draft';
+  const s = new Session(m);
   s.answer('Q04', ['microsoft']);
   assert.deepEqual(s.result().usesDraftQuestions, []);
   s.answer('Q23', ['tight_budget']);

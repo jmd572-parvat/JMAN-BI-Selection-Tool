@@ -30,7 +30,7 @@ from bi_model import (SCORE_MAX, calibration, dominates, load_model, random_answ
                       visible_questions)
 
 # ----------------------------------------------------------------------------- thresholds
-MIN_PATH_COVERAGE = 0.75      # every branch path must keep >= 75% of total question weight
+MIN_PATH_COVERAGE = 0.70        # a client with nothing to migrate whose reports JMAN builds is asked 14 of 26 questions' worth of weight (owner decision 2026-11-18: Q17 and Q20 only follow existing reporting)
 MAX_THEME_SHARE = 0.25        # no single theme should carry > 25% of total weight
 NEUTRAL_MEAN_TOL = 0.05       # |mean z| under uninformative answers must be below this for every tool
 NEUTRAL_SD_RATIO = 1.25       # max/min stdev of z across tools under uninformative answers
@@ -190,9 +190,10 @@ def main():
         check(3, f"topic reachable on every path: {topic}", "FAIL" if blind else "PASS",
               f"{len(blind)} path(s) cannot reach a scored option, e.g. {blind[0]}" if blind else "")
     # semantic check: gated questions that are not about the existing suite
-    gated_general = [q["id"] for q in Q if any(c["q"] == "Q13" for c in q["showIf"]) and q["id"] not in ("Q14", "Q15")]
-    check(3, "only migration-specific questions (Q14, Q15) are gated on Q13", "FAIL" if gated_general else "PASS",
-          f"also gated: {gated_general} (Flow sheet says ask Q14-Q20 for everyone)" if gated_general else "")
+    gated_general = [q["id"] for q in Q if any(c["q"] == "Q13" for c in q["showIf"]) and q["id"] not in ("Q14", "Q15", "Q17", "Q20")]
+    check(3, "only migration-specific questions (Q14, Q15, Q17, Q20) are gated on Q13", "FAIL" if gated_general else "PASS",
+          f"also gated: {gated_general} (the data-estate, refresh and embedding questions are about every client)" if gated_general else
+          "Q17 and Q20 follow existing reporting by the owner's decision of 2026-11-18; the Flow sheet asks them of everyone")
 
     print("\n4. ENGINE")
     a = {"Q10": ["client_team"], "Q11": ["beginner"], "Q04": ["microsoft"]}

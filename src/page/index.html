@@ -30,22 +30,6 @@
 
 <nav class="pv-tabs" aria-label="Playbook sections"><ul id="pv-tablist"></ul></nav>
 
-<div class="pv-gaps">
-  <details>
-    <summary><strong>About this preview: known gaps</strong></summary>
-    <ul>
-      <li>Three answers listed in the Flow are not offered yet because they have no expert scores: data residency (security question), and limited upskilling capacity and no capacity for change (training question).</li>
-      <li>Two questions, &ldquo;How complex is the existing content?&rdquo; and &ldquo;What are the migration constraints?&rdquo;, are worded for migrations but asked of every client. They now come last, with the other migration questions.</li>
-      <li>Logos come from the deck (slide 26), which has none for Qlik and Sigma: those two show a neutral monogram until the files are added.</li>
-      <li>Question weights are provisional. Scores for questions tagged Draft are awaiting expert review. Result confidence lines depend on the weights and will be set again after the weighting session.</li>
-      <li>Only one answer rules a tool out today (a client that cannot use a vendor-hosted tool rules out Sigma). The Flow lists more categories of mandatory filter.</li>
-      <li>&ldquo;Why we ask&rdquo; help text exists for two of the questions. The one-line guide under every question is proposed wording awaiting owner review, as are the two extra &ldquo;Don&rsquo;t&rdquo; lines in the guiding principles and the migration note on the overview.</li>
-      <li>Reference content comes from the deck and has not been re-verified. Corrections are marked where a vendor source contradicts it.</li>
-    </ul>
-    <p>See <code>docs/page-design.md</code>, sections 11 and 12.</p>
-  </details>
-</div>
-
 <div class="pv-layout">
   <main id="pb-main" tabindex="-1" aria-live="off"><p>Loading the playbook&hellip;</p></main>
   <aside class="pv-rail" aria-label="Page navigation and your answers">
@@ -93,7 +77,7 @@
         var a = e.target.closest('a[data-toc]'); if (!a) return;
         e.preventDefault(); var el = document.getElementById(a.getAttribute('data-toc')); if (el) el.scrollIntoView({ block: 'start' });
       });
-      if (cfg.draftToggle) {
+      if (cfg.draftToggle && d[0].meta.draftQuestions && d[0].meta.draftQuestions.length) {      // only while some question is still a draft
         var box = document.getElementById('pv-draft'); document.getElementById('pv-draftbox').hidden = false;
         box.checked = ctl.showDrafts; box.addEventListener('change', function () { ctl.setShowDrafts(box.checked); });
       }

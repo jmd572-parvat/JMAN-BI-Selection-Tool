@@ -43,7 +43,7 @@ Both are UMD: `require('./src/engine/session.js')` in Node, or plain script tags
 | `adjustedByDominance[]` | Tools ranked below one that fits at least as well on every answer, although their z is higher. Explain it in the UI. |
 | `excluded[]` | Tools removed by a mandatory filter, with the question and answer that removed them. |
 | `countedQuestions`, `visibleQuestions` | How many answers actually shaped the result. Show it: z is relative to a no-information client. |
-| `usesDraftQuestions[]` | Draft questions that influenced the result. Show a banner while any are in use. |
+| `usesDraftQuestions[]` | Draft questions that influenced the result (none at the moment, since the owner approved all six). Show a banner while any are in use. |
 | `raw` | The engine output (z, rank, per-question contributions) for anything custom. |
 
 `explain(toolId, n)` returns `strengths` and `concerns`: the questions that moved that tool most, each with the client's answer and the SME's
@@ -64,7 +64,7 @@ The engine reads `data/questions.json`, produced by `python scripts/excel_to_jso
 
 ## Tests
 ```
-npm test                 # 76 tests: parity with Python, bias properties, session behaviour, browser-global loading, page logic, the page module, both site builds
+npm test                 # 83 tests: parity with Python, bias properties, session behaviour, browser-global loading, page logic, the page module, both site builds
 npm run parity:update    # after ANY change to the workbook, bi_model.py or the converter
 python scripts/validate_model.py   # model-level checks (neutrality N1-N8, scenarios, branching)
 python scripts/calibrate_thresholds.py   # re-derive the lead and coverage thresholds (after any weight change)

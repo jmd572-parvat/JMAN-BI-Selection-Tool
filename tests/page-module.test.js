@@ -34,12 +34,12 @@ function load(storage, opts, modelOverride) {
   const rail = { innerHTML: '', addEventListener() {} };
   const toc = { innerHTML: '', addEventListener() {} };
   const deck = { profiles: json('data/deck/profiles.json'), matrix: json('data/deck/matrix.json'), migration: json('data/deck/migration.json'), reference: json('data/deck/reference.json') };
-  const api = ctx.Playbook.mount({ container, rail, toc, overlay, model: modelOverride || json('data/questions.json'), deck, config: Object.assign({ preview: true, showDrafts: true }, opts || {}) });
+  const api = ctx.Playbook.mount({ container, rail, toc, overlay, model: modelOverride || json('data/questions.json'), deck, config: Object.assign({ preview: true, showDrafts: true, lockUntilComplete: false }, opts || {}) });   // most tests look at results after one answer; the lock has its own tests
   return { api, container, overlay, rail, toc, ctx, timers, listeners, setChecked: (inputs) => { ctxChecked = inputs; } };
 }
 const memoryStorage = () => { const m = {}; return { m, getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: (k) => { delete m[k]; } }; };
-const PAGES = ['home', 'guidelines', 'compare', 'discovery', 'recommendation'];
-const SECTIONS = ['overview', 'purpose', 'principles', 'scoring', 'discovery', 'shortlist', 'migration', 'tools', 'final', 'reference'];
+const PAGES = ['home', 'compare', 'discovery', 'recommendation'];
+const SECTIONS = ['overview', 'purpose', 'criteria', 'principles', 'scoring', 'tools', 'matrix', 'versus', 'reference', 'discovery', 'shortlist', 'migration', 'final'];
 const BAD = /undefined|NaN|\[object|null</;
 
 /** The html of one section: goes to it first (a section lives on a page, and a page shows only itself). */
@@ -92,7 +92,7 @@ test('the module runs on the production data (no draft questions) at every answe
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'pb-prod-')), 'q.json');
   execFileSync('python', ['-X', 'utf8', 'scripts/excel_to_json.py', '--exclude-draft', '--out', out], { cwd: root, stdio: 'pipe' });
   const prod = JSON.parse(fs.readFileSync(out, 'utf8'));
-  assert.equal(prod.questions.length, 20);
+  assert.equal(prod.questions.length, 26, 'no draft is left to leave out');
   const h = load(memoryStorage(), { showDrafts: false, preview: false }, prod);
   let all = renderAll(h);
   for (const t of SECTIONS) assert.ok(!BAD.test(all[t]), `${t} (no answers): ${(all[t].match(BAD) || [])[0]}`);
@@ -102,7 +102,7 @@ test('the module runs on the production data (no draft questions) at every answe
   all = renderAll(h);
   for (const t of [...SECTIONS, 'overlay']) assert.ok(!BAD.test(all[t]), `${t} (answered): ${(all[t].match(BAD) || [])[0]}`);
   assert.ok(!/Draft/.test(all.overlay) && !/Draft/.test(all.discovery) && !/draft questions/i.test(all.shortlist), 'no draft wording in production');
-  assert.match(all.overlay, /Question 1 of 4/);
+  assert.match(all.overlay, /Question 1 of 8/);
   assert.match(all.final, /INTERNAL USE ONLY/);
 });
 
@@ -141,7 +141,7 @@ test('a clear answer produces one clear leader with reasons and fit words', () =
   assert.match(html, /Why it fits/);
   assert.match(html, /pb-pill tier-(strong|good)/, 'fit words are shown beside each reason');
   assert.match(html, /Provisional/);
-  assert.match(html, /Based on 1 of 22 questions/);
+  assert.match(html, /Based on 1 of 20 questions/);
 });
 
 test('a ruled-out tool is explained with the answer, the deck deployment facts and the expert rationale', () => {
@@ -193,7 +193,7 @@ test('the final summary names the status and is marked internal', () => {
   const h = load(memoryStorage());
   h.api.answer('Q04', ['microsoft']);
   assert.match(sec(h, 'final'), /INTERNAL USE ONLY/);
-  assert.match(sec(h, 'final'), /Status: Provisional, based on 1 of 22 questions/);
+  assert.match(sec(h, 'final'), /Status: Provisional, based on 1 of 20 questions/);
   assert.match(h.api.summary(), /Best fit so far: /);
   for (let i = 0; i < 40 && h.api.session().openQuestions().length; i++) {      // answer everything: no more hedge
     const q = h.api.session().visible().find((v) => !v.answered);
@@ -206,28 +206,32 @@ test('the final summary names the status and is marked internal', () => {
 
 // ------------------------------------------------------------------ pages
 
-test('the playbook is five pages; a page shows only itself, and a section opens on its page', () => {
+test('the playbook is four pages; a page shows only itself, and a section opens on its page', () => {
   const h = load(memoryStorage());
   assert.deepEqual([...h.api.tabs.map((t) => t.id)], PAGES);
-  assert.deepEqual([...h.api.tabs.map((t) => t.label)], ['Overview', 'Guidelines', 'Compare tools', 'Client discovery', 'Recommendation']);
+  assert.deepEqual([...h.api.tabs.map((t) => t.label)], ['Overview', 'Compare tools', 'Client discovery', 'Recommendation']);
   const blocksOn = () => [...h.container.innerHTML.matchAll(/<div class="pb-block" id="sec-(\w+)"/g)].map((m) => m[1]);
   assert.equal(h.api.tab, 'home');
-  assert.deepEqual(blocksOn(), ['overview']);
-  h.api.go('guidelines');
-  assert.deepEqual(blocksOn(), ['purpose', 'principles', 'scoring']);
+  assert.deepEqual([...blocksOn()], ['overview', 'purpose', 'criteria', 'principles', 'scoring'], 'the guidelines are part of the overview page');
+  h.api.go('principles');
+  assert.equal(h.api.tab, 'home');
   h.api.go('shortlist');
   assert.equal(h.api.tab, 'recommendation');
-  assert.deepEqual(blocksOn(), ['shortlist'], 'one tab of the recommendation at a time');
+  assert.deepEqual([...blocksOn()], ['shortlist'], 'one tab of the recommendation at a time');
   h.api.go('final');
-  assert.deepEqual(blocksOn(), ['final']);
-  h.api.go('reference');
+  assert.deepEqual([...blocksOn()], ['final']);
+  h.api.go('matrix');
   assert.equal(h.api.tab, 'compare');
-  assert.deepEqual(blocksOn(), ['reference']);
+  assert.deepEqual([...blocksOn()], ['matrix']);
+  h.api.go('versus');
+  assert.deepEqual([...blocksOn()], ['versus']);
+  h.api.go('reference');
+  assert.deepEqual([...blocksOn()], ['reference']);
   h.api.go('discovery');
-  assert.deepEqual(blocksOn(), ['discovery']);
+  assert.deepEqual([...blocksOn()], ['discovery']);
 });
 
-test('the overview is a short introduction, who it is for, and four cards that open the four pages', () => {
+test('the overview holds the introduction and the guidelines: who it is for, three more pages, purpose, the five areas, principles and how it works', () => {
   const h = load(memoryStorage());
   const html = sec(h, 'overview');
   assert.match(html, /helps JMAN teams choose and justify the right BI tool/);
@@ -235,9 +239,16 @@ test('the overview is a short introduction, who it is for, and four cards that o
   assert.match(html, /Who is this for\?/);
   assert.match(html, /How to navigate/);
   const cards = [...html.matchAll(/class="pb-chapter" data-action="go" data-tab="(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(cards, ['guidelines', 'compare', 'discovery', 'recommendation']);
+  assert.deepEqual([...cards], ['compare', 'discovery', 'recommendation']);
   assert.match(html, /About 5 to 10 minutes/);
-  assert.match(h.toc.innerHTML, /data-toc="home-who"/);
+  const crit = sec(h, 'criteria');
+  assert.match(crit, /What we ask about/);
+  assert.equal((crit.match(/class="pb-criterion"/g) || []).length, 5, 'the five areas are the basic criteria');
+  for (const t of ['Business context and goals', 'Data, security and governance', 'Skills and change readiness', 'Data landscape and delivery', 'Existing reporting and migration']) assert.ok(crit.includes(t), t);
+  assert.match(sec(h, 'purpose'), /What it does not replace/);
+  assert.match(sec(h, 'principles'), /Guiding principles/);
+  assert.match(sec(h, 'scoring'), /How the recommendation is made/);
+  for (const t of ['home-who', 'home-nav', 'sec-purpose', 'sec-criteria', 'sec-principles', 'sec-scoring']) assert.ok(h.toc.innerHTML.includes(`data-toc="${t}"`), t);
 });
 
 test('the discovery page lists the five areas and opens the carousel', () => {
@@ -321,18 +332,20 @@ test('follow-up questions open inside the card of the question that triggers the
   assert.deepEqual(seen, ['Q10', 'Q24']);
 });
 
-test('migration questions come last, with their follow-ups inside the existing-reporting question', () => {
+test('migration questions come last, all as follow-ups inside the existing-reporting question', () => {
   const h = load(memoryStorage());
+  h.api.openDiscovery('5');
+  const only = () => { const o = []; for (let i = 0; i < 10 && h.api.step().kind === 'q'; i++) { o.push(h.api.step().qid); h.api.move(1); } return o; };
+  assert.deepEqual(only(), ['Q13'], 'with nothing answered, only the gate question is asked');
   h.api.answer('Q13', ['yes']);
   h.api.openDiscovery('5');
-  const order = [];
-  for (let i = 0; i < 10 && h.api.step().kind === 'q'; i++) { order.push(h.api.step().qid); h.api.move(1); }
-  assert.deepEqual(order, ['Q13', 'Q17', 'Q20']);
+  assert.deepEqual(only(), ['Q13'], 'every migration question is a follow-up of it, never a card of its own');
   h.api.openDiscovery('Q13');
   const q13 = fieldset(h.overlay.innerHTML, 'Q13');
-  assert.ok(q13.includes('id="q-Q14"') && q13.includes('id="q-Q15"'), 'tools in use and migration scale are follow-ups of the existing-reporting question');
-  assert.equal(h.api.step().section, '5');
-  // data landscape (Q16, Q18, Q19) is asked before the migration area
+  for (const id of ['Q14', 'Q15', 'Q17', 'Q20']) assert.ok(q13.includes(`id="q-${id}"`), `${id} sits inside the existing-reporting card`);
+  h.api.answer('Q13', ['no']);
+  assert.ok(!/id="q-Q17"/.test(h.overlay.innerHTML) && !/id="q-Q20"/.test(h.overlay.innerHTML), 'a client with nothing to migrate is not asked them');
+  // data landscape (Q16, Q18, Q19) is asked before the migration area, of everyone
   h.api.openDiscovery('4');
   const area4 = [];
   for (let i = 0; i < 6 && h.api.step().kind === 'q'; i++) { area4.push(h.api.step().qid); h.api.move(1); }
@@ -470,16 +483,18 @@ test('logos come from the build when it has them, and a neutral monogram stands 
   assert.match(bare.overlay.innerHTML, /pb-mono[^>]*>T<\/span>/, 'a monogram, with no brand colour');
 });
 
-test('hiding draft questions removes them from the carousel and keeps their saved answers', () => {
+test('while a question is a draft it can be hidden, its saved answer is kept, and it returns when shown again', () => {
   const store = memoryStorage();
-  const h = load(store);
+  const withDraft = json('data/questions.json');
+  withDraft.questions.find((q) => q.id === 'Q21').status = 'draft';
+  const h = load(store, {}, withDraft);
   h.api.answer('Q21', ['critical']);
   h.api.answer('Q04', ['microsoft']);
   h.api.openDiscovery('1');
   assert.match(h.overlay.innerHTML, /Question 1 of 8/);
   h.api.setShowDrafts(false);
   h.api.openDiscovery('1');
-  assert.match(h.overlay.innerHTML, /Question 1 of 4/);
+  assert.match(h.overlay.innerHTML, /Question 1 of 7/);
   assert.ok(!('Q21' in h.api.session().answers));
   assert.deepEqual(JSON.parse(store.m['bi-playbook-v1']).answers.Q21, ['critical'], 'the hidden draft answer is kept');
   h.api.setShowDrafts(true);
@@ -582,14 +597,94 @@ test('after the last area the winner is shown alone in the middle before the rec
   assert.equal((html.match(/class="pb-winner-logo"/g) || []).length, 2, 'both co-leaders, never a single pick');
 });
 
-test('each shortlisted tool shows its logo beside its name, where the dock logos land', () => {
+test('the best fit is one full card with its logo, and the other tools are grey logos that swap the card when picked', () => {
   const h = load(memoryStorage(), { logos: { tableau: 'assets/logos/tableau.png' } });
   h.api.answer('Q04', ['salesforce']);
-  const html = sec(h, 'shortlist');
-  const cards = html.split('<article').slice(1);
-  assert.ok(cards.length >= 3);
-  for (const c of cards) assert.match(c, /<header><span class="pb-rank"[^>]*>[^<]*<\/span><span class="pb-card-logo">/, 'a logo slot in every card header');
-  assert.match(cards[0], /pb-card-logo"><img class="pb-logo " src="assets\/logos\/tableau\.png"/);
+  let html = sec(h, 'shortlist');
+  assert.equal((html.match(/<article/g) || []).length, 1, 'only the best fit gets a card');
+  assert.match(html, /<article class="pb-card pb-tool is-best" data-tool="tableau"><header><span class="pb-rank"[^>]*>1<\/span><span class="pb-card-logo"><img class="pb-logo " src="assets\/logos\/tableau\.png"/);
+  assert.match(html, /<span class="pb-bestflag">Best fit<\/span>/);
+  const side = [...html.matchAll(/class="pb-side-logo" data-action="short" data-tool="(\w+)"/g)].map((m) => m[1]);
+  assert.equal(side.length, 5, 'every other tool is a logo');
+  assert.ok(!side.includes('tableau'));
+  assert.match(html, /aria-label="Rank 2: [^"]+\. Show its reasons\."/);
+  assert.ok(!/Why it fits[\s\S]*Why it fits/.test(html), 'only one set of reasons');
+  h.listeners.click.forEach((fn) => fn({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'short', 'data-tool': side[0] }[k]) }) } }));
+  html = sec(h, 'shortlist');
+  assert.match(html, new RegExp(`<article class="pb-card pb-tool" data-tool="${side[0]}"`), 'picking a logo shows that tool');
+  assert.match(html, /Back to the best fit/);
+  assert.match(html, /class="pb-side-logo" data-action="short" data-tool="tableau"[^>]*aria-label="Best fit: Tableau/, 'the best fit stays one click away');
+});
+
+test('the recommendation stays closed until every question has an answer, here and on the carousel\'s last card', () => {
+  const h = load(memoryStorage(), { lockUntilComplete: true });
+  h.api.answer('Q04', ['salesforce']);
+  h.api.go('shortlist');
+  let html = h.container.innerHTML;
+  assert.match(html, /id="sec-locked"/);
+  assert.match(html, /The recommendation opens once every question has an answer/);
+  assert.match(html, /1 of 20<\/strong> questions answered\. 19 to go\./);
+  assert.ok(!/pb-tool|Best fit<\/h2>|pb-subtab/.test(html), 'no result, no tabs');
+  assert.match(html, /data-action="openq">Continue the questions/);
+  for (const id of ['migration', 'final']) { h.api.go(id); assert.match(h.container.innerHTML, /id="sec-locked"/, `${id} is closed too`); }
+  // the profiles do not give the answer away either
+  assert.ok(!/is-short/.test(sec(h, 'tools')), 'no best-fit marker in the profiles');
+  // the carousel's last card asks for what is missing instead of showing a winner
+  h.api.openDiscovery('1');
+  for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1);
+  html = h.overlay.innerHTML;
+  assert.match(html, /19 questions are still open/);
+  assert.ok(!/pb-winner|data-action="finish"/.test(html));
+  assert.match(html, /data-action="jump" data-qid="Q\d+">Go to the first open question/);
+  assert.ok(!h.timers.filter(Boolean).length || h.timers.filter(Boolean).every((t) => t.ms !== 7000), 'no countdown towards a recommendation');
+  // answering everything opens it
+  for (let i = 0; i < 60 && h.api.session().openQuestions().length; i++) {
+    const q = h.api.session().visible().find((v) => !v.answered);
+    h.api.answer(q.id, [q.options.find((o) => !o.unknown).id]);
+  }
+  h.api.go('shortlist');
+  assert.ok(!/id="sec-locked"/.test(h.container.innerHTML));
+  assert.match(h.container.innerHTML, /pb-tool is-best/);
+  h.api.openDiscovery('1');
+  for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1);
+  assert.match(h.overlay.innerHTML, /pb-winner/);
+});
+
+test('the matrix is one short line per tool for each of the 14 criteria, with no \"leads\" marker', () => {
+  const h = load(memoryStorage());
+  const html = sec(h, 'matrix');
+  const cols = [...html.matchAll(/<th scope="col"><span class="pb-colhead">[\s\S]*?<span>([^<]+)<\/span><\/span><\/th>/g)].map((m) => m[1]);
+  assert.deepEqual([...cols], ['Looker', 'Power BI', 'Qlik', 'Sigma', 'Tableau', 'ThoughtSpot'], 'alphabetical');
+  assert.equal((html.match(/<tr><th scope="row">/g) || []).length, 14, 'the deck\'s 14 criteria');
+  assert.equal((html.match(/class="pb-grouprow"/g) || []).length, json('data/deck/matrix.json').groups.length);
+  assert.match(html, /Fastest to adopt/);
+  assert.ok(!/Leads \(deck\)|pb-pill leads/.test(html), 'no leader markers');
+  assert.match(html, /data-sub="versus">Compare two tools in depth/);
+  assert.ok(!/Leads \(deck\)/.test(sec(h, 'reference')) && !/Decision matrix/.test(sec(h, 'reference')), 'and none left in the reference tab');
+});
+
+test('the 1 v 1 comparison puts two tools side by side on every criterion, then on deployment', () => {
+  const h = load(memoryStorage());
+  h.api.answer('Q04', ['salesforce']);
+  let html = sec(h, 'versus');
+  assert.match(html, /<select id="cmp-a"[\s\S]*value="tableau" selected/, 'it opens on the best fit');
+  const b = html.match(/<select id="cmp-b"[\s\S]*?<option value="(\w+)" selected/)[1];
+  assert.notEqual(b, 'tableau');
+  assert.equal((html.match(/<tr><th scope="row">[^<]*(?:<br>[\s\S]*?)?<\/th><td>/g) || []).length >= 14, true);
+  assert.match(html, /<th colspan="3" scope="colgroup">Deployment<\/th>/);
+  assert.match(html, /Data residency control/);
+  assert.ok(!/Leads \(deck\)/.test(html));
+  // two different tools only
+  assert.ok(!new RegExp(`<select id="cmp-a"[^>]*>[\\s\\S]*?value="${b}"[\\s\\S]*?</select><label>against`).test(html), 'the second tool is not offered as the first');
+  h.listeners.change.forEach((fn) => fn({ target: { matches: () => false, getAttribute: (k) => ({ 'data-action': 'cmp-b' }[k]), value: 'looker' } }));
+  html = sec(h, 'versus');
+  assert.match(html, /<select id="cmp-b"[\s\S]*value="looker" selected/);
+  assert.match(html, /Tableau compared with Looker/);
+  h.listeners.change.forEach((fn) => fn({ target: { matches: () => false, getAttribute: (k) => ({ 'data-action': 'cmp-a' }[k]), value: 'looker' } }));
+  html = sec(h, 'versus');
+  const [a2, b2] = [html.match(/<select id="cmp-a"[\s\S]*?<option value="(\w+)" selected/)[1], html.match(/<select id="cmp-b"[\s\S]*?<option value="(\w+)" selected/)[1]];
+  assert.equal(a2, 'looker');
+  assert.notEqual(b2, 'looker', 'choosing the same tool twice moves the other one');
 });
 
 test('the burger menu lists every area and question, marks answers and the current question, and jumps', () => {
