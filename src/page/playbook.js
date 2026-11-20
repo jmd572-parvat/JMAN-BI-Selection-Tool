@@ -42,11 +42,11 @@
    * (data/deck/matrix.json): it adds no claim. Proposed wording, awaiting owner review (docs/page-design.md A23).
    */
   var GROUP_SUMMARY = {
-    'Business Adoption': { looker: 'Slowest to onboard, most IT-dependent', powerbi: 'Fast to adopt, low IT effort', qlik: 'Slower to learn, moderate IT effort', sigma: 'Fastest for spreadsheet teams, easy to edit', tableau: 'Quick to learn, most flexible visuals', thoughtspot: 'Fastest overall, least IT effort' },
+    'Business Adoption': { looker: 'Slowest to onboard, most IT-dependent', powerbi: 'Fast to adopt, low IT effort, visuals need DAX', qlik: 'Slower to learn, moderate IT, visuals less flexible', sigma: 'Fastest for spreadsheet teams, easy to edit', tableau: 'Quick to learn, most flexible visuals, more IT-dependent', thoughtspot: 'Fastest overall, least IT effort, less polished storytelling' },
     'AI & Analytics': { looker: 'Narrower AI, forecasting needs extra', powerbi: 'Most integrated AI, strong forecasting', qlik: 'Solid AI, most turnkey predictive', sigma: 'Lighter AI, no native forecasting', tableau: 'Strong AI and forecasting', thoughtspot: 'AI is the core, not built for forecasting' },
     'Enterprise Readiness': { looker: 'Purpose-built semantic layer, needs the data team', powerbi: 'Fastest row-level security, capped by Fabric limits', qlik: 'Enterprise-grade scaling, complex security', sigma: 'Simplest security, relies on the warehouse', tableau: 'More security setup, less central metrics', thoughtspot: 'Built for concurrency, less mature row-level security' },
     'Technology & Integration': { looker: 'Best for Google Cloud, built for embedding', powerbi: 'Best for Microsoft shops', qlik: 'Fits hybrid IT, strong APIs', sigma: 'Cloud warehouse only, simple embeds', tableau: 'Fits almost any stack, broadest platforms', thoughtspot: 'Cloud-first only, low-code embedding' },
-    'Commercial & Business Value': { looker: 'Enterprise-only pricing, smaller talent pool', powerbi: 'Lowest entry cost, largest talent pool', qlik: 'Flexible licensing, established ecosystem', sigma: 'Low overhead, newest and smallest talent pool', tableau: 'Premium pricing, mature community', thoughtspot: 'Premium pricing, fastest path to an answer' }
+    'Commercial & Business Value': { looker: 'Enterprise-only pricing, smaller talent pool', powerbi: 'Lowest entry cost, largest talent pool', qlik: 'Flexible licensing, established ecosystem', sigma: 'Low overhead, newest and smallest talent pool', tableau: 'Premium pricing, mature community', thoughtspot: 'Premium pricing, fastest path to an answer, smaller community' }
   };
 
   /** The five areas of the questionnaire, in the order they are asked. The migration-related questions come last. */
@@ -124,6 +124,21 @@
     }
   };
 
+  /**
+   * Corrections to the tool profiles (deck slides 10 to 15) and one matrix cell, each checked against the vendor's own pages on 2026-11-20.
+   * `from` is the deck's exact text: a test fails if the deck changes, so a correction never lands on text it was not written for.
+   */
+  var TS_PRICING = 'https://www.thoughtspot.com/pricing';
+  var SIGMA_ASSISTANT = 'https://www.sigmacomputing.com/blog/introducing-sigma-assistant';
+  var PROFILE_FIX = {
+    thoughtspot: { costTier: [{ from: 'Team, Pro, Enterprise (custom pricing)', to: 'Essentials, Pro and Enterprise plans; Enterprise is custom-priced', url: TS_PRICING }] },
+    sigma: {
+      uniqueFeatures: [{ from: 'Ask Sigma enables natural language querying and AI-assisted data exploration', to: 'Sigma Assistant (the successor to Ask Sigma and AI Builder) enables natural language querying and AI-assisted data exploration', url: SIGMA_ASSISTANT }],
+      aiCapabilities: [{ from: 'Ask Sigma for conversational analytics and natural language querying', to: 'Sigma Assistant (the successor to Ask Sigma and AI Builder) for conversational analytics and natural language querying', url: SIGMA_ASSISTANT }]
+    }
+  };
+  var MATRIX_FIX = { sigma: { 'AI-Assisted & Conversational Analytics': { from: 'Ask Sigma covers the basics', to: 'Sigma Assistant (successor to Ask Sigma) covers the basics' } } };
+
   /** Line icons (24 px grid, drawn with the text colour): used for every arrow, close and tick so they centre exactly. */
   var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', up: '<path d="m6 14.5 6-6 6 6"/>', down: '<path d="m6 9.5 6 6 6-6"/>', expand: '<path d="M14 5h5v5M10 19H5v-5M19 5l-6 6M5 19l-6 6"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>', top: '<path d="M12 19V6M6.5 11.5 12 6l5.5 5.5"/>' };
   function icon(name) {
@@ -183,7 +198,7 @@
       var row = function (label, text) { return '<div><dt>' + esc(label) + '</dt><dd>' + esc(text) + '</dd></div>'; };
       return '<section class="pb-sec pb-home"><h2>Purpose</h2>' +
         '<p class="pb-lead">When a client asks us which BI tool to choose, we do not start with a favourite. We start with what they are trying to do.</p>' +
-        '<dl class="pb-facts">' +
+        '<dl class="pb-purpose">' +
         row('Who it is for', 'Sales and pre-sales, delivery teams and consultants.') +
         row('What it does', 'Compares ' + toolList + ', and gives us reasons we can stand behind.') +
         row('When we use it', 'In discovery and solution design, before we recommend a tool and before scope or pricing is final.') +
@@ -200,7 +215,7 @@
       };
       return '<section class="pb-sec"><h2>Contents</h2>' +
         '<ol class="pb-chapters">' +
-        chapter(1, 'Do’s and don’ts', 'The principles we hold ourselves to on every recommendation.', 'HOW WE WORK', 'home', 'sec-principles') +
+        chapter(1, 'Do’s and Don’ts', 'The principles we hold ourselves to on every recommendation.', 'HOW WE WORK', 'home', 'sec-principles') +
         chapter(2, 'Tools dictionary', 'What each tool is, what it does best and what it costs. One tool at a time.', toolIds.length + ' TOOLS · A TO Z', 'home', 'sec-dictionary') +
         chapter(3, 'Comparison matrix', 'All six side by side, a group of criteria at a time. Choose the tools to show, or put any two head to head.', '14 CRITERIA · ' + toolIds.length + ' TOOLS', 'home', 'sec-matrix') +
         chapter(4, 'Client discovery', 'Still deciding? Answer questions about the client and we recommend the best fit, with our reasons.', 'NEXT PAGE · ' + SECTIONS.length + ' AREAS · ' + base + ' TO ' + total + ' QUESTIONS', 'discovery') +
@@ -216,12 +231,12 @@
       var donts = ['We never declare a universal “best BI tool”. The right answer depends on the client.',
         'We do not hand the questions or the result to the client. They are internal working material.',
         'We do not quote pricing or feature claims without checking they are current.'];
-      var list = function (items, kind) { return '<ul class="pb-dd-list">' + items.map(function (t) { return '<li><span class="pb-mk pb-mk-' + kind + '" aria-hidden="true">' + icon(kind === 'do' ? 'check' : 'close') + '</span><span>' + esc(t) + '</span></li>'; }).join('') + '</ul>'; };
+      var list = function (items) { return '<ul class="pb-bullets pb-dd-list">' + items.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'; };
       var head = function (kind, text) { return '<h4><span class="pb-mk pb-mk-' + kind + ' pb-mk-lg" aria-hidden="true">' + icon(kind === 'do' ? 'check' : 'close') + '</span>' + text + '</h4>'; };
-      return '<section class="pb-sec"><h2>Do’s and don’ts</h2>' +
+      return '<section class="pb-sec"><h2>Do’s and Don’ts</h2>' +
         '<p class="pb-lead">The habits behind every recommendation we make.</p>' +
-        '<div class="pb-grid2 pb-dd"><div class="pb-card pb-do">' + head('do', 'What We Do') + list(dos, 'do') + '</div>' +
-        '<div class="pb-card pb-dont">' + head('dont', 'What We Don’t Do') + list(donts, 'dont') + '</div></div></section>';
+        '<div class="pb-grid2 pb-dd"><div class="pb-card pb-do">' + head('do', 'What We Do') + list(dos) + '</div>' +
+        '<div class="pb-card pb-dont">' + head('dont', 'What We Don’t Do') + list(donts) + '</div></div></section>';
     }
 
     /** The close of page 1: for the client who still cannot be placed, the way into the questions. */
@@ -638,7 +653,12 @@
       });
     }
 
-    function ul(items) { return '<ul>' + items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>'; }
+    function ul(items, fixes) {
+      return '<ul>' + items.map(function (x) {
+        var f = (fixes || []).filter(function (c) { return c.from === x; })[0];
+        return '<li>' + (f ? esc(f.to) + ' ' + pill('corr', 'Corrected') + ' <a href="' + f.url + '" rel="noopener" target="_blank">Source</a>' : esc(x)) + '</li>';
+      }).join('') + '</ul>';
+    }
 
     var DEPLOY_ROWS = ['Primary deployment', 'On-premises option', 'Data residency control'];
     function deployVal(k, id) {
@@ -650,7 +670,8 @@
     /** One tool's entry in the dictionary: everything the deck says about it, in one place. */
     function dictEntry(id) {
       var p = profileOf[id], M = D.migration;
-      var parts = [['Typical features', p.typicalFeatures], ['Unique features', p.uniqueFeatures], ['Benefits', p.benefits], ['AI capabilities', p.aiCapabilities], ['Cost tier', p.costTier]];
+      var fx = PROFILE_FIX[id] || {};
+      var parts = [['Typical features', p.typicalFeatures, fx.typicalFeatures], ['Unique features', p.uniqueFeatures, fx.uniqueFeatures], ['Benefits', p.benefits, fx.benefits], ['AI capabilities', p.aiCapabilities, fx.aiCapabilities], ['Cost tier', p.costTier, fx.costTier]];
       var integ = D.reference.integration;
       var integRows = integ.tools.indexOf(id) !== -1 ? integ.rows.filter(function (row) { return row.cells[id]; }).map(function (row) { return '<li><strong>' + esc(row.platform) + ':</strong> ' + esc(row.cells[id]) + '</li>'; }).join('') : '';
       return '<article class="pb-dict" id="dict-' + id + '"><header class="pb-dict-head">' + logoHtml(id, 'pb-logo-lg') + '<h3>' + esc(names[id]) + '</h3></header>' +
@@ -658,12 +679,12 @@
         '<p class="pb-dict-intro">' + esc(p.intro) + '</p>' +
         '<div class="pb-dict-grid">' + parts.map(function (x) {
           if (!x[1].length) return '<div class="pb-card pb-withheld"><h4>' + x[0] + '</h4><p class="pb-fine">Not shown yet. The source slide repeats another tool’s list and is awaiting correction.</p></div>';
-          return '<div class="pb-card"><h4>' + x[0] + '</h4>' + ul(x[1]) + '</div>';
+          return '<div class="pb-card"><h4>' + x[0] + '</h4>' + ul(x[1], x[2]) + '</div>';
         }).join('') +
         '<div class="pb-card"><h4>Deployment</h4><ul>' + DEPLOY_ROWS.map(function (k) { return '<li><strong>' + esc(k) + ':</strong> ' + esc(deployVal(k, id)) + '</li>'; }).join('') + '</ul></div>' +
         '<div class="pb-card"><h4>Integration</h4>' + (integRows ? '<ul>' + integRows + '</ul>' : '<p class="pb-fine">The deck’s integration table does not cover this tool yet.</p>') + '</div>' +
         (M.challenges && M.challenges[id] ? '<div class="pb-card"><h4>Moving to it</h4><p>' + esc(M.challenges[id]) + '</p></div>' : '') +
-        '</div><p class="pb-fine">Source: deck, ' + esc(p.source) + ', and slides 16 to 22.</p></article>';
+        '</div></article>';
     }
 
     /** The tool dictionary: one container with a tab for each tool; the tool chosen is shown in full. */
@@ -722,7 +743,8 @@
           }).join('') + '</tr>';
         return head + (open ? g.criteria.map(function (c, k) {
           return '<tr class="pb-childrow' + (k === g.criteria.length - 1 ? ' is-last' : '') + '"><th scope="row"><span class="pb-childname">' + esc(c.name) + '</span>' + relPill(c.name) + '</th>' + cols.map(function (id) {
-            var x = c.cells[id];
+            var x = c.cells[id], mf = MATRIX_FIX[id] && MATRIX_FIX[id][c.name];
+            if (mf && x.detail === mf.from) x = { headline: x.headline, detail: mf.to, leads: x.leads };
             return '<td class="' + (x.leads ? 'is-lead' : '') + '">' + (x.leads ? '<span class="pb-sr">Leads. </span>' : '') + '<strong>' + esc(x.headline) + '</strong>' + (detail && x.detail ? '<span class="pb-cell-d">' + esc(x.detail) + '</span>' : '') + '</td>';
           }).join('') + '</tr>';
         }).join('') : '');
@@ -731,7 +753,7 @@
         toolPicker(cols) +
         '<p class="pb-matrix-tools"><span class="pb-legend"><span class="pb-swatch" aria-hidden="true"></span>Leads</span> <button class="pb-link" data-action="mall" data-open="' + (allOpen ? '0' : '1') + '">' + (allOpen ? 'Collapse all groups' : 'Expand all groups') + '</button></p>' +
         '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Tool matrix across 14 criteria, ' + cols.length + ' tools shown</caption><thead><tr><th scope="col">Group and criterion</th>' + cols.map(function (id) { return colHead(id); }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>' +
-        '<p class="pb-fine">A tinted cell leads. In a group row, it is the tool that leads the most of the group’s criteria among the tools shown (tools that tie are all tinted). In a criterion row, it is a tool the deck marks as leading. The one-line summaries in the group rows restate the deck’s own headlines. With three tools or fewer, each cell also gives the deck’s detail line. Source: deck, slides 7 and 9. Criteria marked <em>Relevant to your answers</em> are the ones your answers bear on.</p></section>';
+        '<p class="pb-fine">A tinted cell leads. In a group row, it is the tool that leads the most of the group’s criteria among the tools shown (tools that tie are all tinted). In a criterion row, it is a tool the deck marks as leading. The one-line summaries in the group rows restate the deck’s own headlines. With three tools or fewer, each cell also gives the deck’s detail line (one, Sigma’s AI, is corrected: its assistant is now called Sigma Assistant). Source: deck, slides 7 and 9. Criteria marked <em>Relevant to your answers</em> are the ones your answers bear on.</p></section>';
     }
 
     // ------------------------------------------------------------------ FINAL RECOMMENDATION
@@ -809,14 +831,14 @@
     }
     function scoringHtml() {
       return '<ul class="pb-bullets pb-scoring">' +
-        '<li><strong>Where the scores come from.</strong> For every answer, subject-matter experts rated how well each tool fits, from 1 (possible but not ideal) to 4 (strong fit).</li>' +
+        '<li><strong>Where the scores come from.</strong> For most answers, subject-matter experts rated how well each tool fits, from 1 (possible but not ideal) to 4 (strong fit). For the priority questions (dashboard polish, AI, cost, users, talent) the scores were derived from the deck’s heatmap, and for three answers they are proposals; all of these await expert confirmation.</li>' +
         '<li><strong>Why the scores are not simply added up.</strong> Some tools score well on almost everything, so adding scores would put the same tool first whatever the client says. Instead each tool is compared with its own typical score. Only the difference an answer makes counts, so a tool gets no head start for being good in general.</li>' +
         '<li><strong>Stating a requirement.</strong> Questions about priorities (dashboard polish, AI, cost, users, talent, hosting) work the same way: a tool gains when it meets what you stated better than it usually meets such requirements. Answering more of them does not favour broad tools.</li>' +
         '<li><strong>The ranking score.</strong> The differences are weighted by how much each question matters, added up, and divided by how much that tool’s score can swing. A client who tells us nothing sees every tool tied.</li>' +
         '<li><strong>Ties and fairness.</strong> Ties are broken only by your answers (ecosystem fit, then governance and security, then delivery risk and cost) and otherwise shared. A tool never ranks above one that fits at least as well on every answer you gave. List order never matters.</li>' +
         '<li><strong>Ruling a tool out.</strong> Some answers rule a tool out before ranking. Today one does: a client that cannot use a vendor-hosted tool rules out Sigma.</li>' +
         '<li><strong>How sure to be.</strong> The page says whether the lead is clear, narrow or too close to call. Those lines come from simulations of the current weights. Treat the order as provisional until most questions are answered.</li>' +
-        '<li><strong>Limits.</strong> The scores and weights are the current agreed set and may be refined as the playbook is used. The tool supports judgment; it does not replace a proof of concept.</li>' + '</ul>';
+        '<li><strong>Limits.</strong> The scores and weights are the current set and may be refined as expert review finishes and as the playbook is used. The tool supports judgment; it does not replace a proof of concept.</li>' + '</ul>';
     }
 
     // ------------------------------------------------------------------ pages, navigation, rail
@@ -846,7 +868,7 @@
     function renderRail() { o.rail.innerHTML = ''; }          // progress now lives in the floating mini window
     /** "On this page": built from data, in the order of the story. */
     function tocItems() {
-      if (ui.page === 'home') return [['sec-overview', 'Purpose'], ['sec-navigate', 'Contents'], ['sec-principles', 'Do’s and don’ts'], ['sec-dictionary', 'Tools dictionary'], ['sec-matrix', 'Comparison matrix'], ['sec-cta', 'Still unable to pick?']];
+      if (ui.page === 'home') return [['sec-overview', 'Purpose'], ['sec-navigate', 'Contents'], ['sec-principles', 'Do’s and Don’ts'], ['sec-dictionary', 'Tools dictionary'], ['sec-matrix', 'Comparison matrix'], ['sec-cta', 'Still unable to pick?']];
       if (ui.page === 'discovery') return [['disc-about', 'Client discovery'], ['disc-areas', 'Areas we ask about'], ['disc-start', 'Start the questions'], ['sec-reco', 'Recommendation'], ['sec-scoring', 'How it is made']];
       return [];
     }

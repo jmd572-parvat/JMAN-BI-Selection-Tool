@@ -276,7 +276,7 @@ test('page 1 tells the story in the consultant’s voice: purpose, contents, do�
   assert.deepEqual([...cards], ['home#sec-principles', 'home#sec-dictionary', 'home#sec-matrix', 'discovery'], 'do’s and don’ts, dictionary, matrix, then page 2');
   assert.match(nav, /NEXT PAGE · 5 AREAS · 20 TO 26 QUESTIONS/, 'the count does not change as branches open');
   const pr = sec(h, 'principles');
-  assert.match(pr, /<h2>Do’s and don’ts<\/h2>/);
+  assert.match(pr, /<h2>Do’s and Don’ts<\/h2>/);
   assert.match(pr, /We start with the business problem/);
   assert.match(pr, /We never declare a universal “best BI tool”/);
   const cta = sec(h, 'cta');
@@ -284,7 +284,7 @@ test('page 1 tells the story in the consultant’s voice: purpose, contents, do�
   assert.match(cta, /5 to 10 minutes/);
   assert.match(cta, /data-action="go" data-tab="discovery">Start client discovery/);
   const page = h.container.innerHTML;
-  const order = ['<h2>Purpose', '<h2>Contents', 'Do’s and don’ts</h2>', 'Tools dictionary</h2>', 'Comparison matrix</h2>', 'Still unable to pick'].map((t) => page.indexOf(t));
+  const order = ['<h2>Purpose', '<h2>Contents', 'Do’s and Don’ts</h2>', 'Tools dictionary</h2>', 'Comparison matrix</h2>', 'Still unable to pick'].map((t) => page.indexOf(t));
   assert.ok(order.every((i, k) => i >= 0 && (k === 0 || i > order[k - 1])), `sections out of order: ${order}`);
   const toc = [...h.toc.innerHTML.matchAll(/data-toc="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual([...toc], ['sec-overview', 'sec-navigate', 'sec-principles', 'sec-dictionary', 'sec-matrix', 'sec-cta'], 'the contents list follows the page');
@@ -709,7 +709,7 @@ test('the matrix shows its groups closed with one short line for each tool, tint
   assert.ok(!/\d of \d<\/td>/.test(html), 'no "1 of 3" counts');
   const cells = [...html.matchAll(/<td class="pb-groupcell[^"]*">(?:<span class="pb-sr">Leads this group\. <\/span>)?([^<]+)<\/td>/g)].map((m) => m[1]);
   assert.equal(cells.length, groups.length * 6);
-  for (const c of cells) assert.ok(c.length <= 56, `short enough to sit in a cell: ${c}`);
+  for (const c of cells) assert.ok(c.length <= 62, `short enough to sit in a cell: ${c}`);
   assert.equal(new Set(cells).size, cells.length, 'no line repeats');
   const ba = html.slice(html.indexOf('Business Adoption</span>'), html.indexOf('AI &amp; Analytics</span>'));
   assert.match(ba, /pb-groupcell is-win"><span class="pb-sr">Leads this group\. <\/span>Fastest for spreadsheet teams, easy to edit/);
@@ -905,8 +905,8 @@ test('page 1 reads shorter: purpose as four labelled rows, no line under Content
   const pr = sec(h, 'principles');
   assert.match(pr, /What We Do<\/h4>/);
   assert.match(pr, /What We Don’t Do<\/h4>/);
-  assert.equal((pr.match(/pb-mk pb-mk-do[" ]/g) || []).length, 6 + 1);
-  assert.equal((pr.match(/pb-mk pb-mk-dont/g) || []).length, 3 + 1);
+  assert.equal((pr.match(/<li>/g) || []).length, 6 + 3, 'plain bullets, no marker on each point');
+  assert.equal((pr.match(/pb-mk /g) || []).length, 2, 'only the two headings carry an icon');
   const css = read('src/page/styles.css');
   assert.match(css, /\.pb-mk-dont \{[^}]*color: #D6293E;/, 'the cross is red');
   const rule = (name) => css.slice(css.indexOf('\n' + name + ' {')).split('}')[0];
@@ -915,6 +915,44 @@ test('page 1 reads shorter: purpose as four labelled rows, no line under Content
   assert.match(sec(h, 'dictionary'), /<h3>Looker<\/h3><\/header><p class="pb-bestsuited"><strong>Best suited for<\/strong>/);
   assert.match(sec(h, 'scoring'), /<ul class="pb-bullets pb-scoring"><li><strong>Where the scores come from\.<\/strong>/, 'the method as bullets');
   assert.match(css, /#sec-reco \.pb-link, #sec-reco a \{ text-decoration: none;/, 'links in the recommendation have no underline');
-  assert.match(css, /--font: "M PLUS 1", ui-sans-serif/, 'the site font first');
+  assert.match(css, /--font: "M PLUS 1", "M PLUS 1 Fallback", ui-sans-serif/, 'the site font first, with its fallback');
+  assert.match(css, /--text: #334155;/, 'body text in the marketplace slate');
+  assert.match(css, /\.pb-sec p, \.pb-sec li, \.pb-sec dd \{ line-height: 1\.75; \}/, 'and its line height');
   assert.match(read('src/page/index.html'), /fonts\.googleapis\.com\/css2\?family=M\+PLUS\+1/, 'the preview shell loads it');
+});
+
+test('content audit: the corrections apply to the deck’s exact text, carry a marker and a vendor source, and the scoring text says where scores come from', () => {
+  const deck = json('data/deck/profiles.json');
+  const matrix = json('data/deck/matrix.json');
+  const h = load(memoryStorage());
+  const tabHtml = (id) => { h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'dtab', 'data-tool': id }[k]) }) } }); return sec(h, 'dictionary'); };
+  // ThoughtSpot: the deck's "Team" edition no longer exists under that name
+  const ts = deck.tools.find((x) => x.id === 'thoughtspot');
+  assert.ok(ts.costTier.includes('Team, Pro, Enterprise (custom pricing)'), 'the correction is written for this exact deck text');
+  let html = tabHtml('thoughtspot');
+  assert.match(html, /Essentials, Pro and Enterprise plans; Enterprise is custom-priced <span class="pb-pill corr">Corrected<\/span> <a href="https:\/\/www\.thoughtspot\.com\/pricing"/);
+  assert.ok(!/Team, Pro, Enterprise/.test(html), 'the superseded wording is not shown');
+  // Sigma: Ask Sigma is now part of Sigma Assistant
+  const sg = deck.tools.find((x) => x.id === 'sigma');
+  assert.ok(sg.uniqueFeatures.includes('Ask Sigma enables natural language querying and AI-assisted data exploration'));
+  assert.ok(sg.aiCapabilities.includes('Ask Sigma for conversational analytics and natural language querying'));
+  html = tabHtml('sigma');
+  assert.equal((html.match(/Sigma Assistant \(the successor to Ask Sigma and AI Builder\)/g) || []).length, 2);
+  assert.equal((html.match(/pb-pill corr">Corrected/g) || []).length, 2 + 0, 'one marker for each corrected line');
+  assert.ok(!/<li>Ask Sigma/.test(html));
+  // and one matrix cell
+  assert.equal(matrix.groups[1].criteria[0].cells.sigma.detail, 'Ask Sigma covers the basics');
+  h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'mall', 'data-open': '1' }[k]) }) } });
+  for (const t of ['powerbi', 'qlik', 'tableau', 'thoughtspot', 'looker']) h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'mtool', 'data-tool': t }[k]) }) } });
+  const m = sec(h, 'matrix');
+  assert.match(m, /Sigma Assistant \(successor to Ask Sigma\) covers the basics/);
+  assert.ok(!/Ask Sigma covers the basics/.test(m));
+  assert.match(m, /Sigma’s AI, is corrected/);
+  // the scoring text is straight about its inputs
+  const sc = sec(h, 'scoring');
+  assert.match(sc, /For most answers, subject-matter experts rated/);
+  assert.match(sc, /derived from the deck’s heatmap, and for three answers they are proposals; all of these await expert confirmation/);
+  assert.ok(!/For every answer, subject-matter experts/.test(sc));
+  // the dictionary has no source line
+  assert.ok(!/Source: deck/.test(tabHtml('looker')), 'no source sentence under a tool');
 });
