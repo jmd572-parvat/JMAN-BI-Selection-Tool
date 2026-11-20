@@ -694,6 +694,8 @@ Owner request: when the reader leaves the questions before finishing, the contai
 ## 18. Two pages, told as a story (revision 2026-11-20, third)
 Owner request: the playbook should read as a story, in words that make clear the authors are consultants, and be two pages instead of four. This section supersedes the page list in section 16, the Compare tools landing, the 1 v 1 view and the width paragraph there.
 
+**Superseded in part by section 20:** no tab row, the questions are a subpage reached from the last button of page 1, the areas are a card grid, nothing moves on by itself, and the reference section is gone.
+
 **Page 1, Tools overview.** In this order: *Purpose* (we do not start with a favourite; who the playbook is for; when we use it, what it helps us decide, what it does not replace); *Contents* (cards for Do's and Don'ts, Tools dictionary, Comparison matrix, and Client discovery on the next page); *Do's and Don'ts* (the earlier principles, now in the first person: *We start with…*, *We never declare…*); *Tools dictionary*; *Comparison matrix*; a closed *More reference* disclosure (scenarios, fast path, deployment, integration, the pending "why these six" note); and the closing call to action *Still unable to pick a BI tool?* with *Spend just 5 to 10 minutes on a few questions about the client…* and a *Start client discovery* button. The page's own list (*On this page*) follows the same order. It is wider (1200 px) so the matrix fits without sideways scrolling at a normal laptop width.
 
 **Tools dictionary.** One container with a tab for each tool (logo and name, A to Z); the tool chosen is shown in full below the tabs: logo, best-suited-for line, introduction, typical and unique features, benefits, AI capabilities, cost tier, deployment, integration and the migration note, with the same corrections and gaps as before (the Tableau feature list stays withheld). Arrow keys, Home and End move between tabs. The first tool is shown to start with.
@@ -733,6 +735,25 @@ Owner request: check that everything the page says is true. Method: every number
 - Cost-tier and licensing sentences in all six profiles other than ThoughtSpot's, which change often.
 
 **Still true from earlier:** the Tableau typical-features list is withheld (the deck repeats Power BI's); the integration table covers four tools; the "why these six tools" slide is pending; the one-line question guides are proposed wording (A17); the matrix summaries are proposed wording (A23).
+
+## 20. A single page and a subpage, areas as cards, no timers (revision 2026-11-21)
+Owner request. This section supersedes sections 15 and 17 where they describe the countdowns, the "area complete" card and how the questions open, and section 18 where it describes the tab row, the Contents card for client discovery, the reference section and the tips.
+
+**One page and a subpage.** The tab row is gone. Page 1 (Tools overview) is the whole of the playbook proper; *client discovery* is a subpage, reached only from the last button of page 1 (*Start client discovery*). The Contents list no longer has a card for it. The subpage opens with a way back (*Tools overview*). The page address still follows the page (`#/home`, `#/discovery`). The preview strip at the very top of the preview shell is separate and is stripped from the production build.
+
+**Areas as cards.** The five areas are a grid of cards (three across, two on a tablet, one on a phone), each with its number, title, description, how many questions are answered and an action (*Start*, *Continue*, *Review*). The area to do next is outlined and tagged (*Start here*, then *Up next*). The sixth and last card, *Download your answers*, saves the answers and notes as a file. Under the grid is one button: *Start the questions*, *Continue the questions*, or *See the recommendation* when everything is answered. The list of tips under it is gone; the keys are shown inside the questions instead.
+
+**An area opens from its card.** A card grows into the question container; when the area is done the container shrinks back into its card (which now shows a tick), and the card of the next area that has an open question grows in turn. After the last open question the container shows the winner; Enter opens the recommendation, flying the logos there as before. With reduced motion the animations are skipped and the steps happen at once. Closing the questions before they are finished still shrinks them into the corner window.
+
+**The queue of open questions.** *Enter* goes to the next open question in the area, wrapping round to any that were skipped, and finishes the area when none is open. If the only open question is the one on screen, a line says so and Enter stays put. A question with an unanswered follow-up counts as open. The arrow keys, and the arrow buttons, move to the previous or next question in order (past the last one they behave like Enter). The arrow keys work while an answer has focus, which means an answer can no longer be changed with them: use the mouse or Space. While one area is closing into its card and the next is opening, keys do nothing.
+
+**No timers.** The 3.2 second auto-advance, the "area complete" card and its countdown, the sweep drawn in the progress bar and the 7 second winner countdown are all removed. Nothing moves on by itself.
+
+**Review.** An area with every question answered opens as a review: all its questions together, one below the other, answers editable in place, with a *Done* button; Enter closes it unless an answer has focus. If everything is answered, *See the recommendation* goes straight to the recommendation without walking through the questions.
+
+**Removed.** *More reference* (scenarios, fast path, deployment, integration), every "Source: deck, slide…" line and wording that cites the deck, and the tips under the start button. *How the recommendation is made* is rewritten as four short paragraphs in plain sentences, and says that most ratings are expert ratings, that some come from our comparison table and three answers are proposals, and that all of those await confirmation.
+
+**Published page.** `site/` is committed (it is the page hosted from the repository) and is rebuilt with `python scripts/build_site.py --production --with-font`.
 
 ---
 

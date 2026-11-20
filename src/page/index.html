@@ -32,8 +32,6 @@
   </div>
 </header>
 
-<nav class="pv-tabs" aria-label="Playbook sections"><ul id="pv-tablist"></ul></nav>
-
 <div class="pv-layout">
   <main id="pb-main" tabindex="-1" aria-live="off"><p>Loading the playbook&hellip;</p></main>
   <aside class="pv-rail" aria-label="Page navigation and your answers">
@@ -56,24 +54,12 @@
   var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
   Promise.all([get('data/questions.json?v={{VERSION}}'), get('data/deck/profiles.json?v={{VERSION}}'), get('data/deck/matrix.json?v={{VERSION}}'), get('data/deck/migration.json?v={{VERSION}}'), get('data/deck/reference.json?v={{VERSION}}')])
     .then(function (d) {
-      var tabsEl = document.getElementById('pv-tablist');
-      var buttons = {};
-      function setActive(id) {
-        Object.keys(buttons).forEach(function (k) { if (k === id) buttons[k].setAttribute('aria-current', 'page'); else buttons[k].removeAttribute('aria-current'); });
-        if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id);
-        var cur = buttons[id]; if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });   // keep the current tab visible on narrow screens
-      }
+      function setActive(id) { if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id); }   // the page address follows the page; there is no tab row
       var ctl = Playbook.mount({
         container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'), overlay: document.getElementById('pb-overlay'),
         model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: setActive
       });
-      ctl.tabs.forEach(function (t) {
-        var li = document.createElement('li'); var b = document.createElement('button');
-        b.className = 'pv-tab'; b.type = 'button'; b.textContent = t.label;
-        b.addEventListener('click', function () { ctl.go(t.id); });   // scrolls to the section: the playbook is one page
-        li.appendChild(b); tabsEl.appendChild(li); buttons[t.id] = b;
-      });
-      function route() { var id = location.hash.replace('#/', ''); if (buttons[id] || ctl.knows(id)) ctl.go(id); else setActive(ctl.tab); }   // pages only (the earlier four-page ids land on the matching section): the carousel is never a web address
+      function route() { var id = location.hash.replace('#/', ''); if (ctl.knows(id)) ctl.go(id); else setActive(ctl.tab); }   // pages only (the earlier four-page ids land on the matching section): the questions are never a web address
       window.addEventListener('hashchange', route);
       route();
       document.getElementById('pb-toc').addEventListener('click', function (e) {

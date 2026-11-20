@@ -41,8 +41,17 @@ function load(storage, opts, modelOverride, docExtra, ctxExtra) {
 }
 const memoryStorage = () => { const m = {}; return { m, getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: (k) => { delete m[k]; } }; };
 const PAGES = ['home', 'discovery'];
-const SECTIONS = ['overview', 'navigate', 'principles', 'dictionary', 'matrix', 'reference', 'cta', 'discovery', 'scoring', 'shortlist', 'migration', 'final'];
+const SECTIONS = ['overview', 'navigate', 'principles', 'dictionary', 'matrix', 'cta', 'discovery', 'scoring', 'shortlist', 'migration', 'final'];
 const BAD = /undefined|NaN|\[object|null</;
+/** Answer every question that is asked now (the first scored option of each), except the ids listed. */
+const answerAll = (h, except = []) => {
+  for (let i = 0; i < 80; i++) {
+    const q = h.api.session().visible().find((v) => !v.answered && !except.includes(v.id));
+    if (!q) break;
+    h.api.answer(q.id, [q.options.find((o) => !o.unknown).id]);
+  }
+};
+const press = (h, k, target) => h.listeners.keydown.forEach((fn) => fn({ key: k, target: target || { tagName: 'DIV' }, preventDefault() {} }));
 
 /** The html of one section: goes to it first (a section lives on a page, and a page shows only itself). */
 function sec(h, id) {
@@ -146,13 +155,13 @@ test('a clear answer produces one clear leader with reasons and fit words', () =
   assert.match(html, /Based on 1 of 20 questions/);
 });
 
-test('a ruled-out tool is explained with the answer, the deck deployment facts and the expert rationale', () => {
+test('a ruled-out tool is explained with the answer, the deployment facts and the expert rationale', () => {
   const h = load(memoryStorage());
   h.api.answer('Q26', ['no_self_hosted']);
   h.api.answer('Q04', ['snowflake']);
   const html = sec(h, 'shortlist');
   assert.match(html, /Ruled out by your answers/);
-  assert.match(html, /Sigma deployment \(deck, slide 22\): Cloud-only \(SaaS\)\. On-premises option: No\./);
+  assert.match(html, /Sigma deployment: Cloud-only \(SaaS\)\. On-premises option: No\./);
   assert.match(html, /Is a vendor-hosted \(SaaS\) BI platform acceptable\?/);
   assert.ok(!/data-tool="sigma"/.test(html), 'a ruled-out tool is not ranked');
 });
@@ -170,7 +179,7 @@ test('the migration section follows the answers: gate, none, tools in use', () =
   assert.match(sec(h, 'migration'), /Effort by dimension/);
 });
 
-test('the dictionary is one container with a tab for each tool, A to Z, and shows one tool at a time with every detail the deck holds', () => {
+test('the dictionary is one container with a tab for each tool, A to Z, and shows one tool at a time with every detail we hold', () => {
   const h = load(memoryStorage());
   let html = sec(h, 'dictionary');
   assert.match(html, /Tools dictionary/);
@@ -190,8 +199,8 @@ test('the dictionary is one container with a tab for each tool, A to Z, and show
     seen[id] = html;
   }
   assert.match(seen.looker, /Primary deployment:<\/strong> Looker \(Google Cloud core\)/, 'the vendor-sourced corrections apply');
-  assert.ok(Object.values(seen).some((x) => /The deck’s integration table does not cover this tool yet/.test(x)), 'and the gaps are said');
-  assert.match(seen.tableau, /Not shown yet\. The source slide repeats another tool/);
+  assert.ok(Object.values(seen).some((x) => /Integration details for this tool are not available yet/.test(x)), 'and the gaps are said');
+  assert.match(seen.tableau, /Not shown yet\. This list is being corrected\./);
   assert.ok(!/Semantic data modeling with DAX/.test(seen.tableau), 'the Power BI feature list is not shown under the Tableau entry');
   assert.ok(Object.values(seen).filter((x) => /<h4>Moving to it<\/h4>/.test(x)).length >= 4, 'migration notes where the deck has them');
   // the arrow keys move between tabs
@@ -214,14 +223,15 @@ test('the old page ids still land on the new pages', () => {
   assert.equal(h.api.tab, 'home');
 });
 
-test('the reference section marks corrections and shows deployment cells for every tool', () => {
+test('there is no reference section, and nothing on the page cites the deck as a source', () => {
   const h = load(memoryStorage());
-  const html = sec(h, 'reference');
-  assert.match(html, /Corrected/);
-  assert.match(html, /Looker \(original\)/);
-  assert.match(html, /ThoughtSpot Software/);
-  assert.match(html, /Pending update/);
-  assert.ok(!/How scoring works/.test(html), 'scoring moved to the Guidelines page');
+  h.api.answer('Q13', ['yes']); h.api.answer('Q14', ['looker']); h.api.answer('Q04', ['snowflake']);
+  for (const id of ['overview', 'dictionary', 'matrix', 'discovery', 'shortlist', 'migration', 'final']) {
+    h.api.go(id);
+    assert.ok(!/More reference|Source: deck|Source: Deck|\(deck, slide|deck’s own|the deck/i.test(h.container.innerHTML), `${id}: no deck sourcing`);
+  }
+  h.api.go('home');
+  assert.ok(!/sec-reference|More reference/.test(h.container.innerHTML));
 });
 
 test('the final summary names the status and is marked internal', () => {
@@ -247,7 +257,7 @@ test('the playbook is two pages; a page shows its own sections in the order of t
   assert.deepEqual([...h.api.tabs.map((t) => t.label)], ['Tools overview', 'Client discovery']);
   const blocksOn = () => [...h.container.innerHTML.matchAll(/<div class="pb-block" id="sec-(\w+)"/g)].map((m) => m[1]);
   assert.equal(h.api.tab, 'home');
-  assert.deepEqual([...blocksOn()], ['overview', 'navigate', 'principles', 'dictionary', 'matrix', 'reference', 'cta'], 'purpose, contents, do’s and don’ts, the dictionary, the matrix, then the way to page 2');
+  assert.deepEqual([...blocksOn()], ['overview', 'navigate', 'principles', 'dictionary', 'matrix', 'cta'], 'purpose, contents, do’s and don’ts, the dictionary, the matrix, then the way to the questions');
   h.api.go('principles');
   assert.equal(h.api.tab, 'home');
   h.api.go('discovery');
@@ -258,7 +268,7 @@ test('the playbook is two pages; a page shows its own sections in the order of t
   assert.deepEqual([...blocksOn()], ['discovery', 'final', 'scoring']);
   const page = h.container.innerHTML;
   assert.ok(page.indexOf('id="sec-discovery"') < page.indexOf('id="sec-reco"') && page.indexOf('id="sec-reco"') < page.indexOf('id="sec-scoring"'));
-  assert.ok(page.indexOf('Areas we ask about') < page.indexOf('Start the questions') , 'the areas come before the start');
+  assert.ok(page.indexOf('Areas we ask about') < page.indexOf('Start the questions'), 'the areas come before the start button');
 });
 
 test('page 1 tells the story in the consultant’s voice: purpose, contents, do’s and don’ts, then it ends by asking who is still unsure', () => {
@@ -273,8 +283,8 @@ test('page 1 tells the story in the consultant’s voice: purpose, contents, do�
   const nav = sec(h, 'navigate');
   assert.match(nav, /<h2>Contents<\/h2>/);
   const cards = [...nav.matchAll(/data-action="go" data-tab="(\w+)"(?: data-anchor="([\w-]+)")?/g)].map((m) => `${m[1]}${m[2] ? '#' + m[2] : ''}`);
-  assert.deepEqual([...cards], ['home#sec-principles', 'home#sec-dictionary', 'home#sec-matrix', 'discovery'], 'do’s and don’ts, dictionary, matrix, then page 2');
-  assert.match(nav, /NEXT PAGE · 5 AREAS · 20 TO 26 QUESTIONS/, 'the count does not change as branches open');
+  assert.deepEqual([...cards], ['home#sec-principles', 'home#sec-dictionary', 'home#sec-matrix'], 'do’s and don’ts, dictionary, matrix: the questions are reached only from the button at the end');
+  assert.ok(!/discovery/.test(nav));
   const pr = sec(h, 'principles');
   assert.match(pr, /<h2>Do’s and Don’ts<\/h2>/);
   assert.match(pr, /We start with the business problem/);
@@ -291,20 +301,52 @@ test('page 1 tells the story in the consultant’s voice: purpose, contents, do�
   assert.match(sec(h, 'scoring'), /How the recommendation is made/);
   assert.match(sec(h, 'scoring'), /<details/, 'how it is made is a closed disclosure');
   h.api.go('discovery');
-  assert.deepEqual([...h.toc.innerHTML.matchAll(/data-toc="([^"]+)"/g)].map((m) => m[1]), ['disc-about', 'disc-areas', 'disc-start', 'sec-reco', 'sec-scoring']);
+  assert.deepEqual([...h.toc.innerHTML.matchAll(/data-toc="([^"]+)"/g)].map((m) => m[1]), ['disc-about', 'disc-areas', 'sec-reco', 'sec-scoring']);
 });
 
-test('the discovery page lists the five areas and opens the carousel', () => {
+test('the discovery page shows the five areas and a download card as a grid of cards, with one button to start', () => {
   const h = load(memoryStorage());
   const html = sec(h, 'discovery');
   assert.match(html, /The client’s answers decide the tool, not our preferences/);
   assert.match(html, /It takes about 5 to 10 minutes\./);
-  assert.match(html, /Start the questions/);
-  const areas = [...html.matchAll(/class="pb-area[^"]*" data-action="openq" data-section="(\d)"/g)].map((m) => m[1]);
-  assert.deepEqual(areas, ['1', '2', '3', '4', '5']);
+  const cards = [...html.matchAll(/<button class="pb-area[^"]*" data-action="(\w+)"(?: data-section="(\d)")?/g)].map((m) => m[1] + (m[2] ? ':' + m[2] : ''));
+  assert.deepEqual(cards, ['openq:1', 'openq:2', 'openq:3', 'openq:4', 'openq:5', 'download'], 'the five areas, then the download card last');
+  assert.match(html, /<strong class="pb-area-title">Download your answers<\/strong>/);
   assert.ok(html.indexOf('Existing reporting and migration') > html.indexOf('Data landscape and delivery'), 'migration is the last area');
+  assert.match(html, /class="pb-area is-next" data-action="openq" data-section="1"[\s\S]*Start here/, 'the first card says where to begin');
+  assert.match(html, /data-action="openq">Start the questions/);
+  assert.ok(!/pb-tips|moves on by itself|Double-click an answer/.test(html), 'no list of tips under the start button');
+  assert.ok(!/Start the questions<\/h3>/.test(html));
+  assert.match(html, /data-action="go" data-tab="home">[\s\S]*Tools overview/, 'a way back to page 1');
   h.api.answer('Q04', ['microsoft']);
-  assert.match(sec(h, 'discovery'), /Continue the questions/);
+  const again = sec(h, 'discovery');
+  assert.match(again, /Continue the questions/);
+  assert.match(again, /1 of 8 answered/, 'a card shows how far its area is');
+  assert.match(again, /Up next/);
+});
+
+test('there is no tab row: the questions are reached from the last button of page 1, and the page 1 contents no longer lists them', () => {
+  const h = load(memoryStorage());
+  assert.match(sec(h, 'cta'), /data-action="go" data-tab="discovery">Start client discovery/);
+  assert.ok(!/data-tab="discovery"/.test(sec(h, 'navigate')));
+  assert.ok(!/pv-tab/.test(read('src/page/index.html')) && !/pv-tabs/.test(read('src/page/styles.css')), 'the preview shell has no tab row');
+  h.api.go('discovery');
+  assert.equal(h.api.tab, 'discovery');
+});
+
+test('the download card saves the answers and notes as a file', () => {
+  const h = load(memoryStorage());
+  h.api.answer('Q04', ['microsoft']); h.api.setNote('Q04', 'a note');
+  const saved = [];
+  const a = { click() { saved.push(a.download); }, set href(v) { a._h = v; } };
+  h.ctx.Blob = function (parts) { saved.push(parts.join('')); };
+  h.ctx.URL = { createObjectURL: () => 'blob:x', revokeObjectURL() {} };
+  h.container.ownerDocument.createElement = () => a;
+  h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'download' }[k]) }) } });
+  const file = JSON.parse(saved[0]);
+  assert.deepEqual(file.answers.Q04, ['microsoft']);
+  assert.equal(file.notes.Q04, 'a note');
+  assert.equal(saved[1], 'bi-playbook-answers.json');
 });
 
 // ------------------------------------------------------------------ the question carousel
@@ -314,7 +356,7 @@ test('opening an area shows one question in a dialog with the area title, a prog
   h.api.openDiscovery('2');
   assert.ok(h.api.overlayOpen());
   const html = h.overlay.innerHTML;
-  assert.ok(!/data-action="prev"[^>]*disabled/.test(html), 'the earlier area is behind it');
+  assert.match(html, /data-action="prev"[^>]*disabled/, 'the first question of an area has nothing before it');
   assert.match(html, /role="dialog" aria-modal="true"/);
   assert.match(html, /<h2 id="pb-ovl-title">Data, security and governance<\/h2>/);
   assert.match(html, /Area 2 of 5/);
@@ -371,104 +413,162 @@ test('follow-up questions open inside the card of the question that triggers the
   // the steps never list a follow-up question on its own
   h.api.answer('Q10', ['joint_delivery']);
   h.api.openDiscovery('3');
-  const seen = [];
-  for (let i = 0; i < 6 && h.api.step().kind === 'q'; i++) { seen.push(h.api.step().qid); h.api.move(1); }
-  assert.deepEqual(seen, ['Q10', 'Q24']);
+  assert.equal(h.api.step().count, 2, 'the area has two questions of its own');
+  assert.equal(h.api.step().qid, 'Q10');
+  h.api.move(1);
+  assert.equal(h.api.step().qid, 'Q24');
 });
 
 test('migration questions come last, all as follow-ups inside the existing-reporting question', () => {
   const h = load(memoryStorage());
   h.api.openDiscovery('5');
-  const only = () => { const o = []; for (let i = 0; i < 10 && h.api.step().kind === 'q'; i++) { o.push(h.api.step().qid); h.api.move(1); } return o; };
-  assert.deepEqual(only(), ['Q13'], 'with nothing answered, only the gate question is asked');
+  assert.equal(h.api.step().count, 1, 'with nothing answered, only the gate question is asked');
   h.api.answer('Q13', ['yes']);
-  h.api.openDiscovery('5');
-  assert.deepEqual(only(), ['Q13'], 'every migration question is a follow-up of it, never a card of its own');
   h.api.openDiscovery('Q13');
+  assert.equal(h.api.step().count, 1, 'every migration question is a follow-up of it, never a card of its own');
   const q13 = fieldset(h.overlay.innerHTML, 'Q13');
   for (const id of ['Q14', 'Q15', 'Q17', 'Q20']) assert.ok(q13.includes(`id="q-${id}"`), `${id} sits inside the existing-reporting card`);
   h.api.answer('Q13', ['no']);
   assert.ok(!/id="q-Q17"/.test(h.overlay.innerHTML) && !/id="q-Q20"/.test(h.overlay.innerHTML), 'a client with nothing to migrate is not asked them');
   // data landscape (Q16, Q18, Q19) is asked before the migration area, of everyone
   h.api.openDiscovery('4');
-  const area4 = [];
-  for (let i = 0; i < 6 && h.api.step().kind === 'q'; i++) { area4.push(h.api.step().qid); h.api.move(1); }
+  const area4 = [h.api.step().qid];
+  h.api.move(1); area4.push(h.api.step().qid);
+  h.api.move(1); area4.push(h.api.step().qid);
   assert.deepEqual(area4, ['Q16', 'Q18', 'Q19']);
 });
 
-test('finishing an area shows an "area complete" card with what comes next and a countdown; the last card leads to the recommendation', () => {
+test('Enter goes to the next open question; skipped ones come round again; an area is finished only when none is open', () => {
   const h = load(memoryStorage());
-  h.api.openDiscovery('3');
-  h.api.move(1); h.api.move(1);                       // past Q10 and Q24
-  assert.equal(h.api.step().kind, 'done');
-  let html = h.overlay.innerHTML;
-  assert.match(html, /Skills and change readiness is complete/);
-  assert.match(html, /Next: <strong>Data landscape and delivery<\/strong>/);
-  assert.match(html, /pb-prog-sweep/, 'the countdown runs inside the progress bar');
-  assert.ok(!/Moving on in|seconds/.test(html), 'and shows no text');
-  const timer = h.timers.filter(Boolean).pop();
-  assert.equal(timer.ms, 3200, '3.2 seconds');
-  timer.fn();                                          // time passes
-  assert.equal(h.api.step().kind, 'q');
-  assert.equal(h.api.step().section, '4');
-  for (let i = 0; i < 80 && h.api.step().kind !== 'end'; i++) h.api.move(1);
+  h.api.openDiscovery('1');
+  assert.equal(h.api.step().qid, 'Q01');
+  h.api.advance();                                    // Q01 is open: Enter skips it
+  assert.equal(h.api.step().qid, 'Q02', 'on to the next open question');
+  h.api.answer('Q02', ['finance']);
+  h.api.advance();
+  assert.equal(h.api.step().qid, 'Q03');
+  for (const [id, a] of [['Q03', 'no'], ['Q04', 'microsoft'], ['Q21', 'important'], ['Q22', 'ai_assisted'], ['Q23', 'balanced']]) { h.api.openDiscovery(id); h.api.answer(id, [a]); }
+  h.api.openDiscovery('Q25'); h.api.answer('Q25', ['u_51_100']);
+  // everything but the skipped Q01 is answered: from the last question Enter wraps round to it
+  h.api.openDiscovery('Q25');
+  h.api.advance();
+  assert.equal(h.api.step().qid, 'Q01', 'the skipped question is queued again');
+  // the only open question: Enter says so and stays
+  h.api.advance();
+  assert.equal(h.api.step().qid, 'Q01');
+  assert.match(h.overlay.innerHTML, /This is the last open question in this area/);
+  h.api.answer('Q01', ['self_service_analytics_and_reporting']);
+  assert.ok(!/This is the last open question/.test(h.overlay.innerHTML), 'the hint goes with the answer');
+  h.api.advance();                                    // area 1 is complete: on to the next area that has open questions
+  assert.equal(h.api.step().section, '2');
+  assert.equal(h.api.step().qid, 'Q05');
+});
+
+test('finishing an area closes it into its card and opens the next one; the last area shows the winner, and Enter opens the recommendation', () => {
+  const h = load(memoryStorage());
+  answerAll(h, ['Q13']);
+  h.api.openDiscovery('Q13');
+  h.api.advance();                                    // Q13 is open and alone
+  assert.equal(h.api.step().qid, 'Q13');
+  h.api.answer('Q13', ['no']);
+  h.api.advance();                                    // nothing is open any more
   assert.equal(h.api.step().kind, 'end');
-  html = h.overlay.innerHTML;
+  let html = h.overlay.innerHTML;
+  assert.match(html, /class="pb-winner"/);
   assert.match(html, /All areas are complete/);
   assert.match(html, /data-action="finish"/);
-  h.timers.filter(Boolean).pop().fn();                 // the countdown on the last card
+  assert.ok(!h.timers.filter(Boolean).length, 'no countdown: it waits for the reader');
+  h.api.advance();                                    // Enter on the winner
   assert.equal(h.api.overlayOpen(), false);
   assert.equal(h.api.tab, 'discovery', 'the recommendation is further down the same page');
+  // two areas open: finishing the first goes straight to the second
+  const g = load(memoryStorage());
+  answerAll(g, ['Q05', 'Q06', 'Q26', 'Q07', 'Q08', 'Q09', 'Q16', 'Q18', 'Q19']);
+  g.api.openDiscovery('2');
+  assert.equal(g.api.step().section, '2');
+  for (const id of ['Q05', 'Q06', 'Q26', 'Q07', 'Q08', 'Q09']) { g.api.openDiscovery(id); g.api.answer(id, [g.api.session().visible().find((v) => v.id === id).options.find((o) => !o.unknown).id]); }
+  g.api.advance();
+  assert.equal(g.api.step().section, '4', 'area 2 is done, area 3 was answered already: on to area 4');
 });
 
-test('after a click, 3.2 seconds without another moves to the next question, shown only as the progress bar filling ahead; an unanswered question or an open follow-up does not', () => {
+test('nothing moves on by itself: there are no countdowns, and answering only waits for Enter or the arrows', () => {
   const h = load(memoryStorage());
-  const counting = () => /pb-prog-sweep/.test(h.overlay.innerHTML);
-  h.api.openDiscovery('1');
-  assert.ok(!counting(), 'no countdown before any answer');
   h.api.openDiscovery('Q04');
   h.api.answer('Q04', ['microsoft']);
-  assert.ok(counting());
-  assert.ok(!/Next question in|Stay here/.test(h.overlay.innerHTML), 'no countdown text and no extra row');
-  assert.match(h.overlay.innerHTML, /pb-prog-sweep" style="--a:50%;--b:63%;animation-duration:3\.2s/, 'it fills from this question to the next one');
-  const t = h.timers.filter(Boolean).pop();
-  assert.equal(t.ms, 3200);
-  h.timers[h.timers.indexOf(t)] = null; t.fn();          // time passes: this countdown is over
-  assert.equal(h.api.step().qid, 'Q21', 'moved on to the next question');
-  // another click restarts the clock: only the last timer is live
-  h.api.answer('Q21', ['critical']);
-  h.api.answer('Q21', ['important']);
-  assert.equal(h.timers.filter(Boolean).length, 1, 'the earlier countdown was cancelled');
-  // a question that opened follow-ups waits until they are answered
+  assert.ok(!h.timers.filter(Boolean).length, 'no timer after an answer');
+  assert.ok(!/pb-prog-sweep/.test(h.overlay.innerHTML));
+  assert.equal(h.api.step().qid, 'Q04', 'still on the same question');
+  assert.match(h.overlay.innerHTML, /class="pb-keys pb-keys-bar"><kbd>Enter<\/kbd> next question/, 'the keys are said on screen');
   h.api.openDiscovery('Q10');
   h.api.answer('Q10', ['client_team']);
-  assert.ok(!counting(), 'no countdown while follow-ups are open');
-  assert.match(h.overlay.innerHTML, /Answer the follow-up questions, or press next to skip them/);
-  h.api.answer('Q11', ['intermediate']);
-  assert.ok(!counting(), 'Q12 is still open');
-  h.api.answer('Q12', ['can_upskill']);
-  assert.ok(counting());
-  // clearing an answer cancels the countdown
-  h.api.clearOption('Q12', 'can_upskill');
-  assert.ok(!counting());
-  // typing a note cancels it too
-  h.api.answer('Q12', ['can_upskill']);
-  assert.ok(counting());
-  h.listeners.input.forEach((fn) => fn({ target: { matches: () => true, getAttribute: () => 'Q12', value: 'x' } }));
-  assert.ok(!counting() || h.timers.filter(Boolean).length === 0, 'the countdown was cancelled');
+  assert.match(h.overlay.innerHTML, /Answer the follow-up questions, or press Enter to skip them/);
+  assert.ok(!h.timers.filter(Boolean).length);
+  const src = read('src/page/playbook.js');
+  assert.ok(!/QUESTION_SECONDS|SECTION_SECONDS|WINNER_SECONDS|armQuestionTimer/.test(src), 'the countdown code is gone');
 });
 
-test('moving back and forth walks the same list of steps, and the arrows stop at the ends', () => {
+test('Enter, the arrow keys and the arrow buttons move between questions; arrows stop at the first question', () => {
   const h = load(memoryStorage());
   h.api.openDiscovery('1');
   assert.match(h.overlay.innerHTML, /data-action="prev"[^>]*disabled/);
   assert.match(h.overlay.innerHTML, /<svg class="pb-ico pb-ico-left"/);
-  h.api.move(1);
-  assert.equal(h.api.step().qid, 'Q02');
-  h.api.move(-1);
+  press(h, 'ArrowRight', { tagName: 'INPUT', type: 'checkbox' });
+  assert.equal(h.api.step().qid, 'Q02', 'the arrow keys work even when an answer has focus');
+  press(h, 'ArrowLeft');
   assert.equal(h.api.step().qid, 'Q01');
-  for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1);
-  assert.match(h.overlay.innerHTML, /data-action="next"[^>]*disabled/);
+  press(h, 'ArrowLeft');
+  assert.equal(h.api.step().qid, 'Q01', 'nothing before the first question');
+  press(h, 'Enter', { tagName: 'INPUT', type: 'radio' });
+  assert.equal(h.api.step().qid, 'Q02', 'Enter on an answer goes on to the next open question');
+  press(h, 'Enter', { tagName: 'TEXTAREA' });
+  assert.equal(h.api.step().qid, 'Q02', 'Enter in a note is a new line, not a move');
+  press(h, 'ArrowRight', { tagName: 'TEXTAREA' });
+  assert.equal(h.api.step().qid, 'Q02', 'and so are the arrows');
+  press(h, 'Enter', { tagName: 'BUTTON' });
+  assert.equal(h.api.step().qid, 'Q02', 'a focused button does its own job');
+});
+
+test('an area with every question answered opens as a review: all its questions together; Start goes straight to the recommendation when everything is answered', () => {
+  const h = load(memoryStorage());
+  answerAll(h);
+  const html0 = sec(h, 'discovery');
+  assert.match(html0, /data-action="openq">See the recommendation/);
+  h.api.openDiscovery();                              // the Start button
+  assert.equal(h.api.overlayOpen(), false, 'no walk through the questions');
+  assert.equal(h.api.tab, 'discovery');
+  h.api.openDiscovery('1');                           // a card of a finished area
+  assert.equal(h.api.step().kind, 'review');
+  const html = h.overlay.innerHTML;
+  assert.match(html, /Review · Area 1 of 5/);
+  assert.equal((html.match(/<fieldset class="pb-q/g) || []).length, 8, 'all eight questions at once');
+  assert.match(html, /Question 1 of 8/);
+  assert.match(html, /Question 8 of 8/);
+  assert.match(html, /data-action="prev"[^>]*disabled/);
+  assert.match(html, /data-action="next"[^>]*disabled/);
+  assert.ok(!/pb-keys-bar/.test(html));
+  // an answer can be changed in the review
+  h.api.answer('Q03', ['yes']);
+  assert.match(h.overlay.innerHTML, /id="o-Q03-yes"[^>]*checked/);
+  assert.equal(h.api.step().kind, 'review', 'it stays a review');
+  press(h, 'Enter', { tagName: 'INPUT', type: 'radio' });
+  assert.equal(h.api.overlayOpen(), true, 'Enter on an answer does not close a review');
+  press(h, 'Enter');
+  assert.equal(h.api.overlayOpen(), false, 'Enter closes it');
+});
+
+test('a started area opens at its first open question, not at the top', () => {
+  const h = load(memoryStorage());
+  h.api.answer('Q01', ['self_service_analytics_and_reporting']);
+  h.api.answer('Q02', ['finance']);
+  h.api.openDiscovery('1');
+  assert.equal(h.api.step().kind, 'q');
+  assert.equal(h.api.step().qid, 'Q03');
+  h.api.closeDiscovery();
+  h.api.openDiscovery();                              // Start: the first area that has an open question
+  assert.equal(h.api.step().section, '1');
+  answerAll(h, ['Q10', 'Q24']);
+  h.api.openDiscovery();
+  assert.equal(h.api.step().section, '3', 'the first area that still has something open');
 });
 
 test('the live top three: sized by rank, a name on hover, and a popup with the reasons and the tools ranked either side', () => {
@@ -602,43 +702,27 @@ test('a quick second change to the same checkbox is a double-click and clears it
   assert.equal(JSON.stringify(h.api.session().answers.Q01), JSON.stringify([A]), 'a click two seconds later is a normal toggle');
 });
 
-test('Escape closes the carousel (or the popup first), and the arrow keys move between questions', () => {
+test('Escape closes the questions (or the popup first)', () => {
   const h = load(memoryStorage());
   h.api.openDiscovery('Q04');
   h.api.answer('Q04', ['salesforce']);
-  const key = (k, t) => h.listeners.keydown.forEach((fn) => fn({ key: k, target: t || { tagName: 'DIV' }, preventDefault() {} }));
   h.api.showTool('tableau');
-  key('Escape');
+  press(h, 'Escape');
   assert.ok(!/pb-pop-wrap/.test(h.overlay.innerHTML) && h.api.overlayOpen(), 'the first Escape puts the popup away');
-  key('ArrowRight', { tagName: 'INPUT', type: 'radio' });
-  assert.equal(h.api.step().qid, 'Q04', 'arrow keys on an answer choose answers, not questions');
-  key('ArrowRight');
-  assert.equal(h.api.step().qid, 'Q21');
-  key('ArrowLeft');
-  assert.equal(h.api.step().qid, 'Q04');
-  key('Escape');
+  press(h, 'Escape');
   assert.equal(h.api.overlayOpen(), false);
 });
 
-test('after the last area the winner is shown alone in the middle before the recommendation opens; a tie shows every co-leader', () => {
-  const toEnd = (h) => { h.api.openDiscovery('1'); for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1); };
+test('after the last open question the winner is shown alone in the middle, and the reader opens the recommendation', () => {
   const h = load(memoryStorage());
-  h.api.answer('Q04', ['salesforce']);
-  toEnd(h);
-  let html = h.overlay.innerHTML;
+  answerAll(h, ['Q13']);
+  h.api.openDiscovery('Q13'); h.api.answer('Q13', ['no']); h.api.advance();
+  const html = h.overlay.innerHTML;
   assert.match(html, /class="pb-winner"/);
-  assert.match(html, /Best fit so far/);
-  assert.match(html, /<h3 tabindex="-1">Tableau<\/h3>/);
+  assert.match(html, /<p class="pb-winner-kicker">Best fit<\/p>/);
   assert.equal((html.match(/class="pb-winner-logo"/g) || []).length, 1, 'the winner alone');
   assert.match(html, /All areas are complete/);
-  assert.equal(h.timers.filter(Boolean).pop().ms, 7000, 'it stays long enough to take in');
-  const tie = load(memoryStorage());
-  tie.api.answer('Q03', ['no']);
-  toEnd(tie);
-  html = tie.overlay.innerHTML;
-  assert.match(html, /Too close to call/);
-  assert.match(html, /<h3 tabindex="-1">Sigma and Tableau<\/h3>/);
-  assert.equal((html.match(/class="pb-winner-logo"/g) || []).length, 2, 'both co-leaders, never a single pick');
+  assert.ok(!h.timers.filter(Boolean).length, 'it stays until the reader moves on');
 });
 
 test('the best fit is one full card with its logo, and the other tools are grey logos that swap the card when picked', () => {
@@ -660,7 +744,7 @@ test('the best fit is one full card with its logo, and the other tools are grey 
   assert.match(html, /class="pb-side-logo" data-action="short" data-tool="tableau"[^>]*aria-label="Best fit: Tableau/, 'the best fit stays one click away');
 });
 
-test('the recommendation stays closed until every question has an answer, here and on the carousel\'s last card', () => {
+test('the recommendation stays closed until every question has an answer', () => {
   const h = load(memoryStorage(), { lockUntilComplete: true });
   h.api.answer('Q04', ['salesforce']);
   h.api.go('shortlist');
@@ -672,13 +756,7 @@ test('the recommendation stays closed until every question has an answer, here a
   assert.match(html, /data-action="openq">Continue the questions/);
   for (const id of ['migration', 'final']) { h.api.go(id); assert.match(h.container.innerHTML, /id="sec-locked"/, `${id} is closed too`); }
   // the carousel's last card asks for what is missing instead of showing a winner
-  h.api.openDiscovery('1');
-  for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1);
-  html = h.overlay.innerHTML;
-  assert.match(html, /19 questions are still open/);
-  assert.ok(!/pb-winner|data-action="finish"/.test(html));
-  assert.match(html, /data-action="jump" data-qid="Q\d+">Go to the first open question/);
-  assert.ok(!h.timers.filter(Boolean).length || h.timers.filter(Boolean).every((t) => t.ms !== 7000), 'no countdown towards a recommendation');
+  assert.match(h.container.innerHTML, /data-action="openq">Continue the questions/);
   // answering everything opens it
   for (let i = 0; i < 60 && h.api.session().openQuestions().length; i++) {
     const q = h.api.session().visible().find((v) => !v.answered);
@@ -687,9 +765,6 @@ test('the recommendation stays closed until every question has an answer, here a
   h.api.go('shortlist');
   assert.ok(!/id="sec-locked"/.test(h.container.innerHTML));
   assert.match(h.container.innerHTML, /pb-tool is-best/);
-  h.api.openDiscovery('1');
-  for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1);
-  assert.match(h.overlay.innerHTML, /pb-winner/);
 });
 
 test('the matrix shows its groups closed with one short line for each tool, tints the leaders, and shows the criteria as children when a group is opened', () => {
@@ -732,7 +807,6 @@ test('the matrix shows its groups closed with one short line for each tool, tint
   assert.match(html, /Collapse all groups/);
   click({ 'data-action': 'mall', 'data-open': '0' });
   assert.equal((sec(h, 'matrix').match(/pb-childrow/g) || []).length, 0);
-  assert.ok(!/Leads \(deck\)/.test(sec(h, 'reference')) && !/Decision matrix/.test(sec(h, 'reference')), 'and none left in the reference tab');
 });
 
 test('the matrix takes the place of the 1 v 1 view: pick the tools to show, at least two stay, and with three or fewer each cell gives its detail', () => {
@@ -913,7 +987,11 @@ test('page 1 reads shorter: purpose as four labelled rows, no line under Content
   assert.ok(!/max-width/.test(rule('.pb-lead')) && !/max-width/.test(rule('.pb-intro')), 'paragraphs are not cut short');
   assert.ok(!/\.pb-dict-intro \{[^}]*max-width/.test(css) && !/\.pb-intro-sm \{[^}]*max-width/.test(css));
   assert.match(sec(h, 'dictionary'), /<h3>Looker<\/h3><\/header><p class="pb-bestsuited"><strong>Best suited for<\/strong>/);
-  assert.match(sec(h, 'scoring'), /<ul class="pb-bullets pb-scoring"><li><strong>Where the scores come from\.<\/strong>/, 'the method as bullets');
+  const how = sec(h, 'scoring');
+  const prose = how.slice(how.indexOf('pb-prose'), how.indexOf('</details>'));
+  assert.equal((prose.match(/<p>/g) || []).length, 4, 'four short paragraphs, in plain sentences');
+  assert.ok(!/<strong>|<ul|<li>/.test(prose), 'no bold labels and no bullet pattern');
+  assert.match(how, /We don’t just add the ratings up/);
   assert.match(css, /#sec-reco \.pb-link, #sec-reco a \{ text-decoration: none;/, 'links in the recommendation have no underline');
   assert.match(css, /--font: "M PLUS 1", "M PLUS 1 Fallback", ui-sans-serif/, 'the site font first, with its fallback');
   assert.match(css, /--text: #334155;/, 'body text in the marketplace slate');
@@ -950,8 +1028,8 @@ test('content audit: the corrections apply to the deck’s exact text, carry a m
   assert.match(m, /Sigma’s AI, is corrected/);
   // the scoring text is straight about its inputs
   const sc = sec(h, 'scoring');
-  assert.match(sc, /For most answers, subject-matter experts rated/);
-  assert.match(sc, /derived from the deck’s heatmap, and for three answers they are proposals; all of these await expert confirmation/);
+  assert.match(sc, /Most of those ratings come from our experts/);
+  assert.match(sc, /took them from our comparison table, and three answers are our own proposals\. Those are all still waiting for an expert to confirm them/);
   assert.ok(!/For every answer, subject-matter experts/.test(sc));
   // the dictionary has no source line
   assert.ok(!/Source: deck/.test(tabHtml('looker')), 'no source sentence under a tool');
