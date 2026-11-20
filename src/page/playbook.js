@@ -125,7 +125,7 @@
   };
 
   /** Line icons (24 px grid, drawn with the text colour): used for every arrow, close and tick so they centre exactly. */
-  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', up: '<path d="m6 14.5 6-6 6 6"/>', down: '<path d="m6 9.5 6 6 6-6"/>', expand: '<path d="M14 5h5v5M10 19H5v-5M19 5l-6 6M5 19l-6 6"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>' };
+  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', up: '<path d="m6 14.5 6-6 6 6"/>', down: '<path d="m6 9.5 6 6 6-6"/>', expand: '<path d="M14 5h5v5M10 19H5v-5M19 5l-6 6M5 19l-6 6"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>', top: '<path d="M12 19V6M6.5 11.5 12 6l5.5 5.5"/>' };
   function icon(name) {
     return '<svg class="pb-ico pb-ico-' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICON_PATHS[name] + '</svg>';
   }
@@ -180,14 +180,14 @@
     // ------------------------------------------------------------------ PAGE 1: purpose, contents, principles, dictionary, matrix, then the way to page 2
     function renderOverview() {
       var toolList = L.listJoin(L.sortNames(toolIds.map(function (i) { return names[i]; })));
+      var row = function (label, text) { return '<div><dt>' + esc(label) + '</dt><dd>' + esc(text) + '</dd></div>'; };
       return '<section class="pb-sec pb-home"><h2>Purpose</h2>' +
-        '<p class="pb-lead">When a client asks us which BI tool to choose, we do not start with a favourite. We start with what they are trying to do, and we let that decide.</p>' +
-        '<p class="pb-intro">This playbook is how we do it at JMAN. It is for the sales and pre-sales teams scoping an engagement, the delivery teams choosing the platform, and the consultants who have to justify the recommendation. It lets us compare ' + esc(toolList) + ', and it gives us reasons we can stand behind in front of the client.</p>' +
-        '<div class="pb-grid3">' +
-        card('When we use it', 'During discovery and solution design, before we recommend a tool and before scope or pricing is final. We use it again at renewal, expansion and migration conversations.') +
-        card('What it helps us decide', 'Which BI tool to recommend for a specific client, and how to justify that choice with a clear comparison instead of a sales pitch.') +
-        card('What it does not replace', 'A hands-on proof of concept, a licensing or contract negotiation, or a formal RFP response. It is a starting point for our judgment.') + '</div>' +
-        '</section>';
+        '<p class="pb-lead">When a client asks us which BI tool to choose, we do not start with a favourite. We start with what they are trying to do.</p>' +
+        '<dl class="pb-facts">' +
+        row('Who it is for', 'Sales and pre-sales, delivery teams and consultants.') +
+        row('What it does', 'Compares ' + toolList + ', and gives us reasons we can stand behind.') +
+        row('When we use it', 'In discovery and solution design, before we recommend a tool and before scope or pricing is final.') +
+        row('What it does not replace', 'A proof of concept, a licensing negotiation or a formal RFP response.') + '</dl></section>';
     }
 
     /** The contents: where the rest of the page goes, in the order we work. */
@@ -199,7 +199,6 @@
           '<span class="pb-chapter-go" aria-hidden="true">' + icon('right') + '</span></button></li>';
       };
       return '<section class="pb-sec"><h2>Contents</h2>' +
-        '<p class="pb-lead">The page follows the order we work in: how we think, the tools, how they compare, and then the client.</p>' +
         '<ol class="pb-chapters">' +
         chapter(1, 'Do’s and don’ts', 'The principles we hold ourselves to on every recommendation.', 'HOW WE WORK', 'home', 'sec-principles') +
         chapter(2, 'Tools dictionary', 'What each tool is, what it does best and what it costs. One tool at a time.', toolIds.length + ' TOOLS · A TO Z', 'home', 'sec-dictionary') +
@@ -217,11 +216,12 @@
       var donts = ['We never declare a universal “best BI tool”. The right answer depends on the client.',
         'We do not hand the questions or the result to the client. They are internal working material.',
         'We do not quote pricing or feature claims without checking they are current.'];
-      var li = function (t) { return '<li>' + esc(t) + '</li>'; };
+      var list = function (items, kind) { return '<ul class="pb-dd-list">' + items.map(function (t) { return '<li><span class="pb-mk pb-mk-' + kind + '" aria-hidden="true">' + icon(kind === 'do' ? 'check' : 'close') + '</span><span>' + esc(t) + '</span></li>'; }).join('') + '</ul>'; };
+      var head = function (kind, text) { return '<h4><span class="pb-mk pb-mk-' + kind + ' pb-mk-lg" aria-hidden="true">' + icon(kind === 'do' ? 'check' : 'close') + '</span>' + text + '</h4>'; };
       return '<section class="pb-sec"><h2>Do’s and don’ts</h2>' +
         '<p class="pb-lead">The habits behind every recommendation we make.</p>' +
-        '<div class="pb-grid2"><div class="pb-card pb-do"><h4><span aria-hidden="true">✓</span> What we do</h4><ul>' + dos.map(li).join('') + '</ul></div>' +
-        '<div class="pb-card pb-dont"><h4><span aria-hidden="true">✗</span> What we don’t do</h4><ul>' + donts.map(li).join('') + '</ul></div></div></section>';
+        '<div class="pb-grid2 pb-dd"><div class="pb-card pb-do">' + head('do', 'What We Do') + list(dos, 'do') + '</div>' +
+        '<div class="pb-card pb-dont">' + head('dont', 'What We Don’t Do') + list(donts, 'dont') + '</div></div></section>';
     }
 
     /** The close of page 1: for the client who still cannot be placed, the way into the questions. */
@@ -653,8 +653,8 @@
       var parts = [['Typical features', p.typicalFeatures], ['Unique features', p.uniqueFeatures], ['Benefits', p.benefits], ['AI capabilities', p.aiCapabilities], ['Cost tier', p.costTier]];
       var integ = D.reference.integration;
       var integRows = integ.tools.indexOf(id) !== -1 ? integ.rows.filter(function (row) { return row.cells[id]; }).map(function (row) { return '<li><strong>' + esc(row.platform) + ':</strong> ' + esc(row.cells[id]) + '</li>'; }).join('') : '';
-      return '<article class="pb-dict" id="dict-' + id + '"><header class="pb-dict-head">' + logoHtml(id, 'pb-logo-lg') + '<div><h3>' + esc(names[id]) + '</h3>' +
-        '<p class="pb-bestsuited"><strong>Best suited for:</strong> ' + esc(p.bestSuited.replace(/^.*? is best suited for /i, '').replace(/^\w/, function (c) { return c.toUpperCase(); })) + '</p></div></header>' +
+      return '<article class="pb-dict" id="dict-' + id + '"><header class="pb-dict-head">' + logoHtml(id, 'pb-logo-lg') + '<h3>' + esc(names[id]) + '</h3></header>' +
+        '<p class="pb-bestsuited"><strong>Best suited for</strong> ' + esc(p.bestSuited.replace(/^.*? is best suited for /i, '').replace(/^\w/, function (c) { return c.toUpperCase(); })) + '</p>' +
         '<p class="pb-dict-intro">' + esc(p.intro) + '</p>' +
         '<div class="pb-dict-grid">' + parts.map(function (x) {
           if (!x[1].length) return '<div class="pb-card pb-withheld"><h4>' + x[0] + '</h4><p class="pb-fine">Not shown yet. The source slide repeats another tool’s list and is awaiting correction.</p></div>';
@@ -695,8 +695,7 @@
       return '<div class="pb-picker" role="group" aria-label="Tools shown in the matrix"><span class="pb-picker-l">Tools shown</span>' + toolIds.map(function (id) {
         var on = cols.indexOf(id) !== -1, keep = on && cols.length <= 2;
         return '<button type="button" class="pb-chip' + (on ? ' on' : '') + '" data-action="mtool" data-tool="' + id + '" aria-pressed="' + on + '"' + (keep ? ' aria-disabled="true" title="Keep at least two tools to compare"' : '') + '>' + logoHtml(id, 'pb-logo-xs') + '<span>' + esc(names[id]) + '</span></button>';
-      }).join('') + (cols.length < toolIds.length ? '<button type="button" class="pb-link" data-action="mall-tools">Show all ' + toolIds.length + '</button>' : '') + '</div>' +
-        '<p class="pb-fine pb-picker-note">' + (two ? '<strong>Head to head: ' + esc(names[cols[0]]) + ' and ' + esc(names[cols[1]]) + '.</strong> ' : '') + 'Choose the tools to show; at least two stay on. With three or fewer, each cell also gives its detail.</p>';
+      }).join('') + (cols.length < toolIds.length ? '<button type="button" class="pb-link" data-action="mall-tools">Show all ' + toolIds.length + '</button>' : '') + '</div>';
     }
 
     /**
@@ -732,7 +731,7 @@
         toolPicker(cols) +
         '<p class="pb-matrix-tools"><span class="pb-legend"><span class="pb-swatch" aria-hidden="true"></span>Leads</span> <button class="pb-link" data-action="mall" data-open="' + (allOpen ? '0' : '1') + '">' + (allOpen ? 'Collapse all groups' : 'Expand all groups') + '</button></p>' +
         '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Tool matrix across 14 criteria, ' + cols.length + ' tools shown</caption><thead><tr><th scope="col">Group and criterion</th>' + cols.map(function (id) { return colHead(id); }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>' +
-        '<p class="pb-fine">A tinted cell leads. In a group row, it is the tool that leads the most of the group’s criteria among the tools shown (tools that tie are all tinted). In a criterion row, it is a tool the deck marks as leading. The one-line summaries in the group rows restate the deck’s own headlines. Source: deck, slides 7 and 9. Criteria marked <em>Relevant to your answers</em> are the ones your answers bear on.</p></section>';
+        '<p class="pb-fine">A tinted cell leads. In a group row, it is the tool that leads the most of the group’s criteria among the tools shown (tools that tie are all tinted). In a criterion row, it is a tool the deck marks as leading. The one-line summaries in the group rows restate the deck’s own headlines. With three tools or fewer, each cell also gives the deck’s detail line. Source: deck, slides 7 and 9. Criteria marked <em>Relevant to your answers</em> are the ones your answers bear on.</p></section>';
     }
 
     // ------------------------------------------------------------------ FINAL RECOMMENDATION
@@ -809,15 +808,15 @@
         sec('ref-integ', 'Technology integration', integT) + sec('ref-why', 'Why these six tools', why) + '</details></section>';
     }
     function scoringHtml() {
-      return '<div class="pb-prose">' +
-        '<p><strong>Where the scores come from.</strong> For every answer, subject-matter experts rated how well each tool fits, from 1 (possible but not ideal) to 4 (strong fit).</p>' +
-        '<p><strong>Why the scores are not simply added up.</strong> Some tools score well on almost everything, so adding scores would put the same tool first whatever the client says. Instead each tool is compared with its own typical score. Only the difference an answer makes counts, so a tool gets no head start for being good in general.</p>' +
-        '<p><strong>Stating a requirement.</strong> Questions about priorities (dashboard polish, AI, cost, users, talent, hosting) work the same way: a tool gains when it meets what you stated better than it usually meets such requirements. Answering more of them does not favour broad tools.</p>' +
-        '<p><strong>The ranking score.</strong> The differences are weighted by how much each question matters, added up, and divided by how much that tool’s score can swing. A client who tells us nothing sees every tool tied.</p>' +
-        '<p><strong>Ties and fairness.</strong> Ties are broken only by your answers (ecosystem fit, then governance and security, then delivery risk and cost) and otherwise shared. A tool never ranks above one that fits at least as well on every answer you gave. List order never matters.</p>' +
-        '<p><strong>Ruling a tool out.</strong> Some answers rule a tool out before ranking. Today one does: a client that cannot use a vendor-hosted tool rules out Sigma.</p>' +
-        '<p><strong>How sure to be.</strong> The page says whether the lead is clear, narrow or too close to call. Those lines come from simulations of the current weights. Treat the order as provisional until most questions are answered.</p>' +
-        '<p><strong>Limits.</strong> The scores and weights are the current agreed set and may be refined as the playbook is used. The tool supports judgment; it does not replace a proof of concept.</p></div>';
+      return '<ul class="pb-bullets pb-scoring">' +
+        '<li><strong>Where the scores come from.</strong> For every answer, subject-matter experts rated how well each tool fits, from 1 (possible but not ideal) to 4 (strong fit).</li>' +
+        '<li><strong>Why the scores are not simply added up.</strong> Some tools score well on almost everything, so adding scores would put the same tool first whatever the client says. Instead each tool is compared with its own typical score. Only the difference an answer makes counts, so a tool gets no head start for being good in general.</li>' +
+        '<li><strong>Stating a requirement.</strong> Questions about priorities (dashboard polish, AI, cost, users, talent, hosting) work the same way: a tool gains when it meets what you stated better than it usually meets such requirements. Answering more of them does not favour broad tools.</li>' +
+        '<li><strong>The ranking score.</strong> The differences are weighted by how much each question matters, added up, and divided by how much that tool’s score can swing. A client who tells us nothing sees every tool tied.</li>' +
+        '<li><strong>Ties and fairness.</strong> Ties are broken only by your answers (ecosystem fit, then governance and security, then delivery risk and cost) and otherwise shared. A tool never ranks above one that fits at least as well on every answer you gave. List order never matters.</li>' +
+        '<li><strong>Ruling a tool out.</strong> Some answers rule a tool out before ranking. Today one does: a client that cannot use a vendor-hosted tool rules out Sigma.</li>' +
+        '<li><strong>How sure to be.</strong> The page says whether the lead is clear, narrow or too close to call. Those lines come from simulations of the current weights. Treat the order as provisional until most questions are answered.</li>' +
+        '<li><strong>Limits.</strong> The scores and weights are the current agreed set and may be refined as the playbook is used. The tool supports judgment; it does not replace a proof of concept.</li>' + '</ul>';
     }
 
     // ------------------------------------------------------------------ pages, navigation, rail
@@ -840,9 +839,7 @@
     };
     /** The disclaimers, once, at the bottom of every page. */
     function noticesHtml() {
-      return '<aside class="pb-notices" aria-label="Notices"><p><strong>Internal use only.</strong> This playbook is written for the consultant, not for the client to read.</p>' +
-        '<p><strong>Check before you quote.</strong> Platform features and pricing change often. Verify current details with the vendor before quoting a client.</p>' +
-        '<p><strong>Private.</strong> Answers and notes stay in this browser. Nothing is sent anywhere.</p></aside>';
+      return '<aside class="pb-notices" aria-label="Notices"><p>Internal use only.</p><p>Check before you quote pricing.</p></aside>';
     }
     function pageHtml() { return '<div class="pb-page" data-page="' + ui.page + '">' + PAGE_BLOCKS[ui.page]() + noticesHtml() + '</div>'; }
 
@@ -874,6 +871,30 @@
       var target = anchor || ANCHOR[id] || (PAGE_IDS.indexOf(id) === -1 ? 'sec-' + id : null);
       var el = target ? o.container.querySelector('#' + target) : null;
       if (el) { if (el.tagName === 'DETAILS') el.open = true; if (el.scrollIntoView) el.scrollIntoView(instant ? { block: 'start', behavior: 'instant' } : { block: 'start' }); }
+    }
+
+    // ------------------------------------------------------------------ the "back to top" button
+    var topBtn = null;
+    /** Shown once the reader has scrolled a screen or so. Hidden by the stylesheet while the questions are open (html.pb-lock) and lifted above the corner window. */
+    function updateTop() {
+      if (!topBtn) return;
+      var d = doc(), y = root.pageYOffset || (d && d.documentElement && d.documentElement.scrollTop) || 0;
+      topBtn.classList.toggle('is-on', y > 500);
+    }
+    function ensureTopButton() {
+      if (topBtn) return topBtn;
+      var d = doc();
+      if (!(d && d.createElement && d.body)) return null;
+      topBtn = d.createElement('button');
+      topBtn.type = 'button'; topBtn.className = 'pb-top'; topBtn.setAttribute('aria-label', 'Back to top'); topBtn.innerHTML = icon('top');
+      topBtn.addEventListener('click', function () {
+        if (root.scrollTo) { try { root.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' }); } catch (e) { root.scrollTo(0, 0); } }
+        if (o.container.focus) o.container.focus({ preventScroll: true });          // the button hides itself at the top: keep keyboard focus on the page
+      });
+      d.body.appendChild(topBtn);
+      if (root.addEventListener) root.addEventListener('scroll', updateTop, { passive: true });
+      updateTop();
+      return topBtn;
     }
 
     // ------------------------------------------------------------------ the question carousel: open, move, close
@@ -1310,6 +1331,7 @@
     };
     (function () { var p = session.progress(); ui.minimized = p.answered > 0 && p.remaining > 0; ui.miniFresh = false; })();     // a started, unfinished questionnaire keeps its corner window
     render();
+    ensureTopButton();
     return api;
   }
 

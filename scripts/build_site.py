@@ -63,6 +63,7 @@ def main():
     if a.production:   # the preview strip is for reviewers, not for the published page
         import re
         html = re.sub(r'<div class="pv-preview".*?</div>\n', "", html, flags=re.S)
+        html = re.sub(r'<!-- Preview only: the marketplace already loads M PLUS 1.*?-->\n(?:<link[^>]*fonts\.g[^>]*>\n)+', "", html, flags=re.S)   # the marketplace supplies the font
     (out / "index.html").write_text(html, encoding="utf-8")
     q = json.loads((out / "data" / "questions.json").read_text(encoding="utf-8"))
     total = sum(f.stat().st_size for f in out.rglob("*") if f.is_file())

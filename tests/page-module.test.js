@@ -15,10 +15,11 @@ const root = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 const json = (p) => JSON.parse(read(p));
 
-function load(storage, opts, modelOverride) {
+function load(storage, opts, modelOverride, docExtra, ctxExtra) {
   const timers = [];
   const ctx = { console, JSON, Date, Math, Object, Array, String, Number, Promise };
   ctx.self = ctx;
+  Object.assign(ctx, ctxExtra || {});
   ctx.localStorage = storage;
   ctx.confirm = () => true;
   ctx.setTimeout = (fn, ms) => { timers.push({ fn, ms }); return timers.length; };      // the test decides when time passes
@@ -29,7 +30,7 @@ function load(storage, opts, modelOverride) {
   const listeners = {};
   let ctxChecked = [];
   const mkHost = () => ({ innerHTML: '', hidden: true, contains: () => true, querySelectorAll: () => ctxChecked, querySelector: () => null, addEventListener(type, fn) { (listeners[type] = listeners[type] || []).push(fn); } });
-  const container = Object.assign(mkHost(), { ownerDocument: { activeElement: { id: 'o-Q04-microsoft' }, documentElement: { setAttribute() {}, removeAttribute() {} } } });
+  const container = Object.assign(mkHost(), { ownerDocument: Object.assign({ activeElement: { id: 'o-Q04-microsoft' }, documentElement: { setAttribute() {}, removeAttribute() {} } }, docExtra) });
   const overlay = mkHost();
   const mini = mkHost();
   const rail = { innerHTML: '', addEventListener() {} };
@@ -745,7 +746,7 @@ test('the matrix takes the place of the 1 v 1 view: pick the tools to show, at l
   for (const t of ['powerbi', 'qlik', 'sigma', 'thoughtspot']) click({ 'data-action': 'mtool', 'data-tool': t });
   assert.deepEqual([...shown()], ['Looker', 'Tableau'], 'two tools left, still alphabetical');
   html = sec(h, 'matrix');
-  assert.match(html, /Head to head: Looker and Tableau\./);
+  assert.ok(!/Choose the tools to show|Head to head/.test(html), 'no explanatory line under the switches');
   assert.equal((html.match(/aria-disabled="true"/g) || []).length, 2, 'the last two cannot be switched off');
   click({ 'data-action': 'mtool', 'data-tool': 'looker' });
   assert.deepEqual([...shown()], ['Looker', 'Tableau'], 'a third cannot be dropped');
@@ -848,9 +849,10 @@ test('the disclaimers appear once, at the bottom of every page, and nowhere in t
     const body = page.slice(0, page.indexOf('<aside class="pb-notices"'));
     assert.ok(!/Check before you quote|Verify current platform details|Nothing is sent anywhere/.test(body), `${id}: not repeated above`);
   }
-  assert.match(h.container.innerHTML, /Internal use only\.<\/strong> This playbook is written for the consultant/);
-  assert.match(h.container.innerHTML, /Verify current details with the vendor before quoting a client/);
-  assert.match(h.container.innerHTML, /Answers and notes stay in this browser/);
+  const notes = h.container.innerHTML.slice(h.container.innerHTML.indexOf('<aside class="pb-notices"'));
+  assert.match(notes, /<p>Internal use only\.<\/p><p>Check before you quote pricing\.<\/p><\/aside>/, 'two short lines');
+  assert.ok(!/<strong>/.test(notes), 'not bold');
+  assert.match(read('src/page/styles.css'), /\.pb-notices \{[^}]*opacity: \.55;[^}]*font-weight: 400;/, 'translucent and regular weight');
 });
 
 test('page 1 is wide enough for the matrix, and the contents list follows each page', () => {
@@ -864,4 +866,55 @@ test('page 1 is wide enough for the matrix, and the contents list follows each p
   const css = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src/page/styles.css'), 'utf8');
   assert.match(css, /\.pb-page\[data-page="home"\], \.pb-page\[data-page="home"\] \.pb-sec \{ max-width: 1200px; \}/, 'the tools page uses the wider measure');
   assert.ok(/pv-layout:has\(\.pv-toc\[hidden\]\)/.test(css), 'a page without a contents list still gives the column back');
+});
+
+test('a back-to-top button sits at the bottom right, appears after a screen of scrolling, scrolls up, and stays clear of the questions and the corner window', () => {
+  const made = [];
+  const mk = () => { const cls = new Set(); const el = { className: '', innerHTML: '', attrs: {}, listeners: {}, classList: { toggle: (c, on) => { on ? cls.add(c) : cls.delete(c); }, contains: (c) => cls.has(c), add: (c) => cls.add(c), remove: (c) => cls.delete(c) }, setAttribute(k, v) { el.attrs[k] = v; }, addEventListener(t, fn) { el.listeners[t] = fn; }, appendChild() {}, focus() {}, hidden: false, style: {} }; made.push(el); return el; };
+  const scrolls = [];
+  const scrollListeners = [];
+  const doc = { createElement: mk, body: { appendChild() {} } };
+  const h = load(memoryStorage(), null, null, doc, { pageYOffset: 0, addEventListener: (t, fn) => { if (t === 'scroll') scrollListeners.push(fn); }, scrollTo: (a) => scrolls.push(a) });
+  const btn = made.find((e) => e.className === 'pb-top');
+  assert.ok(btn, 'the button exists');
+  assert.equal(btn.attrs['aria-label'], 'Back to top');
+  assert.match(btn.innerHTML, /pb-ico-top/);
+  assert.equal(scrollListeners.length, 1, 'it listens for scrolling');
+  assert.equal(btn.classList.contains('is-on'), false, 'hidden at the top of the page');
+  h.ctx.pageYOffset = 900; scrollListeners[0]();
+  assert.equal(btn.classList.contains('is-on'), true, 'shown once the reader has scrolled');
+  btn.listeners.click();
+  assert.equal(scrolls.length, 1);
+  assert.equal(scrolls[0].top, 0);
+  h.ctx.pageYOffset = 10; scrollListeners[0]();
+  assert.equal(btn.classList.contains('is-on'), false, 'and gone again at the top');
+  // the stylesheet keeps it away from the questions (html.pb-lock is set while they are open) and above the corner window
+  const css = read('src/page/styles.css');
+  assert.match(css, /\.pb-top \{ position: fixed; right: 22px; bottom: 22px; z-index: 180;/);
+  assert.match(css, /html\.pb-lock \.pb-top \{ display: none; \}/, 'hidden while the questions are open');
+  assert.match(css, /body:has\(\.pb-mini:not\(\[hidden\]\)\) \.pb-top \{ bottom: 106px; \}/, 'lifted above the corner window');
+  assert.ok(/\.pb-overlay \{ position: fixed; inset: 0; z-index: 200;/.test(css) && /\.pb-mini \{ position: fixed; right: 22px; bottom: 22px; z-index: 190;/.test(css), 'and below both of them in the stacking order');
+});
+
+test('page 1 reads shorter: purpose as four labelled rows, no line under Contents, do’s and don’ts with a red cross, a dictionary header that does not cut its text, links without underline in the recommendation, the site font', () => {
+  const h = load(memoryStorage());
+  const purpose = sec(h, 'overview');
+  assert.equal((purpose.match(/<dt>/g) || []).length, 4);
+  assert.ok(!/<p class="pb-intro">/.test(purpose), 'no long paragraph');
+  assert.ok(!/<p class="pb-lead">/.test(sec(h, 'navigate')), 'nothing between the Contents heading and its cards');
+  const pr = sec(h, 'principles');
+  assert.match(pr, /What We Do<\/h4>/);
+  assert.match(pr, /What We Don’t Do<\/h4>/);
+  assert.equal((pr.match(/pb-mk pb-mk-do[" ]/g) || []).length, 6 + 1);
+  assert.equal((pr.match(/pb-mk pb-mk-dont/g) || []).length, 3 + 1);
+  const css = read('src/page/styles.css');
+  assert.match(css, /\.pb-mk-dont \{[^}]*color: #D6293E;/, 'the cross is red');
+  const rule = (name) => css.slice(css.indexOf('\n' + name + ' {')).split('}')[0];
+  assert.ok(!/max-width/.test(rule('.pb-lead')) && !/max-width/.test(rule('.pb-intro')), 'paragraphs are not cut short');
+  assert.ok(!/\.pb-dict-intro \{[^}]*max-width/.test(css) && !/\.pb-intro-sm \{[^}]*max-width/.test(css));
+  assert.match(sec(h, 'dictionary'), /<h3>Looker<\/h3><\/header><p class="pb-bestsuited"><strong>Best suited for<\/strong>/);
+  assert.match(sec(h, 'scoring'), /<ul class="pb-bullets pb-scoring"><li><strong>Where the scores come from\.<\/strong>/, 'the method as bullets');
+  assert.match(css, /#sec-reco \.pb-link, #sec-reco a \{ text-decoration: none;/, 'links in the recommendation have no underline');
+  assert.match(css, /--font: "M PLUS 1", ui-sans-serif/, 'the site font first');
+  assert.match(read('src/page/index.html'), /fonts\.googleapis\.com\/css2\?family=M\+PLUS\+1/, 'the preview shell loads it');
 });
