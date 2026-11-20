@@ -1,0 +1,534 @@
+{
+ "source": "deck slides 7 and 9 (gold = the deck's 'leads on this criterion' marker; ties are marked on every tied tool)",
+ "groups": [
+  {
+   "name": "Business Adoption",
+   "criteria": [
+    {
+     "name": "Ease of Adoption",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Fastest to adopt",
+       "detail": "if already on Microsoft 365",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "Quick to learn",
+       "detail": "no coding needed for basics",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Slowest to onboard",
+       "detail": "needs LookML built first",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Fastest overall",
+       "detail": "zero training, plain-English search",
+       "leads": true
+      },
+      "qlik": {
+       "headline": "Slower than most",
+       "detail": "new associative model to learn",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Fastest for spreadsheet teams",
+       "detail": "feels like Excel already",
+       "leads": true
+      }
+     }
+    },
+    {
+     "name": "Self-Service Analytics (IT Effort)",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Low IT effort",
+       "detail": "Copilot + Power Query cut backlog",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "More IT-dependent",
+       "detail": "needs curated sources from IT",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Most IT-dependent",
+       "detail": "new reports need data-team changes",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Least IT effort",
+       "detail": "ask in plain English, no queue",
+       "leads": true
+      },
+      "qlik": {
+       "headline": "Moderate IT effort",
+       "detail": "flexible, user-driven exploration",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Very low IT effort",
+       "detail": "no extracts needed, works live",
+       "leads": true
+      }
+     }
+    },
+    {
+     "name": "Visualization & Storytelling",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Needs DAX to customize",
+       "detail": "pairs best with a skilled team",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Most flexible visuals",
+       "detail": "best with a dedicated analyst",
+       "leads": true
+      },
+      "looker": {
+       "headline": "Less flexible than Tableau",
+       "detail": "changes route through LookML",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Built for exploration",
+       "detail": "not polished storytelling",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Strong but less flexible",
+       "detail": "than Tableau, moderate skill needed",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Easiest to self-edit",
+       "detail": "spreadsheet-style, fast iteration",
+       "leads": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "AI & Analytics",
+   "criteria": [
+    {
+     "name": "AI-Assisted & Conversational Analytics",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Most integrated AI",
+       "detail": "Copilot: NL Q&A + DAX help",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "Strong AI support",
+       "detail": "Tableau Agent builds from a prompt",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Narrower AI scope",
+       "detail": "Gemini grounded in governed LookML",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "AI is the core product",
+       "detail": "Spotter — deepest search of the six",
+       "leads": true
+      },
+      "qlik": {
+       "headline": "Solid AI support",
+       "detail": "Qlik Answers grounded in your data",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Lighter AI support",
+       "detail": "Ask Sigma covers the basics",
+       "leads": false
+      }
+     }
+    },
+    {
+     "name": "Predictive & Advanced Analytics (Forecasting)",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Strong forecasting",
+       "detail": "AutoML via Microsoft Fabric",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Strong forecasting",
+       "detail": "Einstein Discovery adds predictive power",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Needs extra investment",
+       "detail": "predictive workflows via Vertex AI",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Not built for forecasting",
+       "detail": "flags anomalies, not full models",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Most turnkey predictive tool",
+       "detail": "AutoML built into higher tiers",
+       "leads": true
+      },
+      "sigma": {
+       "headline": "No native forecasting",
+       "detail": "best paired with warehouse ML tools",
+       "leads": false
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Enterprise Readiness",
+   "criteria": [
+    {
+     "name": "Governance & Security (incl. Row-Level Security)",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Fastest RLS setup",
+       "detail": "backed by Microsoft Entra ID",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "More setup effort",
+       "detail": "row-level security via user filters",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Needs the data team",
+       "detail": "access rules defined in LookML",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Less mature RLS tooling",
+       "detail": "governed self-service exploration",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Powerful but complex",
+       "detail": "Section Access has a steeper curve",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Simplest security model",
+       "detail": "inherits directly from the warehouse",
+       "leads": true
+      }
+     }
+    },
+    {
+     "name": "Semantic Layer (Shared Metric Definitions)",
+     "slide": 7,
+     "cells": {
+      "powerbi": {
+       "headline": "Centralized metrics",
+       "detail": "DAX measures reused across reports",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Less centralized",
+       "detail": "than a dedicated modelling layer",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Purpose-built for this",
+       "detail": "LookML is a dedicated semantic layer",
+       "leads": true
+      },
+      "thoughtspot": {
+       "headline": "Governed layer built in",
+       "detail": "metrics stay consistent in ad hoc search",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Depends on app design",
+       "detail": "consistency isn't enforced automatically",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Relies on the warehouse",
+       "detail": "for metric governance",
+       "leads": false
+      }
+     }
+    },
+    {
+     "name": "Scalability & Performance",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Capped by Fabric limits",
+       "detail": "scales within your capacity tier",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Scales with investment",
+       "detail": "flexible performance architecture",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Scales with your warehouse",
+       "detail": "no caching layer to manage",
+       "leads": true
+      },
+      "thoughtspot": {
+       "headline": "Built for high concurrency",
+       "detail": "optimized for cloud warehouses",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Enterprise-grade scaling",
+       "detail": "hybrid & multi-cloud ready",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Elastic, warehouse-native",
+       "detail": "scales automatically with usage",
+       "leads": false
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Technology & Integration",
+   "criteria": [
+    {
+     "name": "Technology Ecosystem Fit",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Best for Microsoft shops",
+       "detail": "maximizes existing 365/Azure investment",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "Fits almost any stack",
+       "detail": "vendor-neutral, no lock-in",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Best for Google Cloud shops",
+       "detail": "optimized for BigQuery",
+       "leads": true
+      },
+      "thoughtspot": {
+       "headline": "Cloud-first only",
+       "detail": "fits modern warehouse-centric setups",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Fits diverse hybrid IT",
+       "detail": "works alongside legacy systems",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Cloud-warehouse only",
+       "detail": "best for Snowflake/BigQuery/Databricks",
+       "leads": false
+      }
+     }
+    },
+    {
+     "name": "Cloud Data Platform Integration",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Deepest with Azure data",
+       "detail": "optimized for fast queries",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Broadest platform support",
+       "detail": "live or extract, many platforms",
+       "leads": true
+      },
+      "looker": {
+       "headline": "Always queries live",
+       "detail": "no extracts to keep in sync",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Built for modern warehouses",
+       "detail": "real-time querying",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Hybrid connectivity",
+       "detail": "supports on-prem and cloud together",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Minimal data movement",
+       "detail": "direct warehouse queries",
+       "leads": false
+      }
+     }
+    },
+    {
+     "name": "Embedded Analytics & Extensibility",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Rich developer ecosystem",
+       "detail": "strong API & SDK support",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Strong developer APIs",
+       "detail": "wide extension library",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Purpose-built for embedding",
+       "detail": "composable, API-first architecture",
+       "leads": true
+      },
+      "thoughtspot": {
+       "headline": "Low-code embedding",
+       "detail": "fast to add to an app",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Strong automation & APIs",
+       "detail": "extensive extension marketplace",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Good for simple embeds",
+       "detail": "operational reporting use cases",
+       "leads": false
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Commercial & Business Value",
+   "criteria": [
+    {
+     "name": "Licensing & Total Cost of Ownership (TCO)",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Lowest entry cost",
+       "detail": "best TCO inside Microsoft estates",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "Premium pricing",
+       "detail": "justified for advanced analytics",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Enterprise-only pricing",
+       "detail": "best value if already on GCP",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Premium, AI-focused pricing",
+       "detail": "paying for the search-first experience",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Flexible licensing",
+       "detail": "scales cost with usage",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Minimal infrastructure overhead",
+       "detail": "no separate BI server to run",
+       "leads": false
+      }
+     }
+    },
+    {
+     "name": "Business Value & Time to Insight",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Fast for Microsoft teams",
+       "detail": "short time to first dashboard",
+       "leads": false
+      },
+      "tableau": {
+       "headline": "Fast visual discovery",
+       "detail": "strong for analytical storytelling",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Slower to first dashboard",
+       "detail": "investment pays off at scale",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Fastest path to an answer",
+       "detail": "insight in seconds, not days",
+       "leads": true
+      },
+      "qlik": {
+       "headline": "Good for open exploration",
+       "detail": "accelerates discovery via associative search",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Cuts reporting turnaround",
+       "detail": "fast, collaborative iteration",
+       "leads": false
+      }
+     }
+    },
+    {
+     "name": "Community & Partner Support",
+     "slide": 9,
+     "cells": {
+      "powerbi": {
+       "headline": "Largest talent pool",
+       "detail": "easiest to staff and support",
+       "leads": true
+      },
+      "tableau": {
+       "headline": "Mature global community",
+       "detail": "strong enterprise partner support",
+       "leads": false
+      },
+      "looker": {
+       "headline": "Smaller talent pool",
+       "detail": "tied to the Google Cloud ecosystem",
+       "leads": false
+      },
+      "thoughtspot": {
+       "headline": "Smaller, growing community",
+       "detail": "fewer implementation partners available",
+       "leads": false
+      },
+      "qlik": {
+       "headline": "Established global ecosystem",
+       "detail": "solid enterprise support network",
+       "leads": false
+      },
+      "sigma": {
+       "headline": "Newest, smallest talent pool",
+       "detail": "rapidly growing ecosystem",
+       "leads": false
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

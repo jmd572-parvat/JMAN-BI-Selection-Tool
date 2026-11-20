@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BI Tools Selection Playbook</title>
+<meta name="description" content="A guide for choosing and justifying the right BI tool for each client engagement.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="styles.css?v=592c5e5369">
+</head>
+<body>
+<!-- PREVIEW SHELL. The marketplace provides the hero, tab row, "On this page", helpfulness row and Q&A (docs/page-design.md, A1).
+     Everything inside <main id="pb-main"> and the "Your answers" rail is the content module (playbook.js). -->
+
+<header class="pv-hero">
+  <div class="pv-hero-in">
+    <div>
+      <div class="pv-crumb">Playbook &rsaquo; BI Tools Selection Playbook</div>
+      <h1>BI Tools Selection Playbook</h1>
+      <p>A guide for choosing and justifying the right BI tool for each client engagement: Looker, Power BI, Qlik, Sigma, Tableau or ThoughtSpot.</p>
+      <div class="pv-meta"><span>v1 draft</span><span>Updated 2026-11-20</span><span class="pv-badge">Internal use only</span><span>Owner: to be confirmed</span></div>
+    </div>
+    <button class="pv-ask" type="button" disabled title="Provided by the marketplace">Ask a question</button>
+  </div>
+</header>
+
+<nav class="pv-tabs" aria-label="Playbook sections"><ul id="pv-tablist"></ul></nav>
+
+<div class="pv-layout">
+  <main id="pb-main" tabindex="-1" aria-live="off"><p>Loading the playbook&hellip;</p></main>
+  <aside class="pv-rail" aria-label="Page navigation and your answers">
+    <nav class="pv-toc pb-rail-card" id="pb-toc" aria-label="On this page"></nav>
+    <div id="pb-rail"></div>
+  </aside>
+</div>
+
+
+<div id="pb-overlay" class="pb-overlay" hidden></div>
+<script>window.PLAYBOOK_CONFIG = {"preview": false, "showDrafts": false, "draftToggle": false, "storageKey": "bi-playbook-v1", "logos": {"looker": "assets/logos/looker.png", "powerbi": "assets/logos/powerbi.png", "qlik": "assets/logos/qlik.png", "sigma": "assets/logos/sigma.jpeg", "tableau": "assets/logos/tableau.png", "thoughtspot": "assets/logos/thoughtspot.png"}};</script>
+<script src="engine.js?v=592c5e5369"></script>
+<script src="session.js?v=592c5e5369"></script>
+<script src="lib.js?v=592c5e5369"></script>
+<script src="playbook.js?v=592c5e5369"></script>
+<script>
+(function () {
+  var cfg = window.PLAYBOOK_CONFIG;
+  var main = document.getElementById('pb-main');
+  var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
+  Promise.all([get('data/questions.json?v=592c5e5369'), get('data/deck/profiles.json?v=592c5e5369'), get('data/deck/matrix.json?v=592c5e5369'), get('data/deck/migration.json?v=592c5e5369'), get('data/deck/reference.json?v=592c5e5369')])
+    .then(function (d) {
+      var tabsEl = document.getElementById('pv-tablist');
+      var buttons = {};
+      function setActive(id) {
+        Object.keys(buttons).forEach(function (k) { if (k === id) buttons[k].setAttribute('aria-current', 'page'); else buttons[k].removeAttribute('aria-current'); });
+        if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id);
+        var cur = buttons[id]; if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });   // keep the current tab visible on narrow screens
+      }
+      var ctl = Playbook.mount({
+        container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'), overlay: document.getElementById('pb-overlay'),
+        model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: setActive
+      });
+      ctl.tabs.forEach(function (t) {
+        var li = document.createElement('li'); var b = document.createElement('button');
+        b.className = 'pv-tab'; b.type = 'button'; b.textContent = t.label;
+        b.addEventListener('click', function () { ctl.go(t.id); });   // scrolls to the section: the playbook is one page
+        li.appendChild(b); tabsEl.appendChild(li); buttons[t.id] = b;
+      });
+      function route() { var id = location.hash.replace('#/', ''); if (buttons[id] || ctl.knows(id)) ctl.go(id); else setActive(ctl.tab); }   // pages only (the earlier four-page ids land on the matching section): the carousel is never a web address
+      window.addEventListener('hashchange', route);
+      route();
+      document.getElementById('pb-toc').addEventListener('click', function (e) {
+        var a = e.target.closest('a[data-toc]'); if (!a) return;
+        e.preventDefault(); var el = document.getElementById(a.getAttribute('data-toc')); if (el) el.scrollIntoView({ block: 'start' });
+      });
+      if (cfg.draftToggle && d[0].meta.draftQuestions && d[0].meta.draftQuestions.length) {      // only while some question is still a draft
+        var box = document.getElementById('pv-draft'); document.getElementById('pv-draftbox').hidden = false;
+        box.checked = ctl.showDrafts; box.addEventListener('change', function () { ctl.setShowDrafts(box.checked); });
+      }
+      window.__playbook = ctl;   // for inspection while previewing
+    })
+    .catch(function (err) { main.innerHTML = '<div class="pb-card"><p><strong>The playbook data could not be loaded.</strong> ' + String(err.message).replace(/[<>&]/g, '') + '</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; });
+})();
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ Assemble the static site into site/ (no bundler, no dependencies; every file is 
 
     python scripts/build_site.py                 # preview: draft questions included, with a toggle
     python scripts/build_site.py --production    # draft questions excluded, no toggle, no preview notes
+    python scripts/build_site.py --production --with-font   # as above, keeping the M PLUS 1 font link (for hosting the page on its own, e.g. GitHub Pages)
 
 Inputs: src/engine/*.js, src/page/*, data/questions.json (rebuilt with --exclude-draft for production), data/deck/*.json.
 The marketplace shell is assumed to provide the hero, tabs and feedback (docs/page-design.md A1); src/page/index.html is only a stand-in.
@@ -26,6 +27,7 @@ DECK = ["profiles", "matrix", "migration", "reference"]
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--production", action="store_true")
+    ap.add_argument("--with-font", action="store_true", help="keep the Google Fonts link for M PLUS 1 in a production build")
     ap.add_argument("--out", default=str(OUT_DEFAULT))
     a = ap.parse_args()
     out = Path(a.out)
@@ -63,7 +65,10 @@ def main():
     if a.production:   # the preview strip is for reviewers, not for the published page
         import re
         html = re.sub(r'<div class="pv-preview".*?</div>\n', "", html, flags=re.S)
-        html = re.sub(r'<!-- Preview only: the marketplace already loads M PLUS 1.*?-->\n(?:<link[^>]*fonts\.g[^>]*>\n)+', "", html, flags=re.S)   # the marketplace supplies the font
+        if not a.with_font:   # the marketplace supplies the font; --with-font keeps the link for a page hosted on its own
+            html = re.sub(r'<!-- Preview only: the marketplace already loads M PLUS 1.*?-->\n(?:<link[^>]*fonts\.g[^>]*>\n)+', "", html, flags=re.S)
+        else:
+            html = re.sub(r'<!-- Preview only: the marketplace already loads M PLUS 1.*?-->\n', "", html, flags=re.S)
     (out / "index.html").write_text(html, encoding="utf-8")
     q = json.loads((out / "data" / "questions.json").read_text(encoding="utf-8"))
     total = sum(f.stat().st_size for f in out.rglob("*") if f.is_file())
