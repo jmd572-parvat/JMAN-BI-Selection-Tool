@@ -33,14 +33,14 @@ function load(storage, opts, modelOverride) {
   const overlay = mkHost();
   const mini = mkHost();
   const rail = { innerHTML: '', addEventListener() {} };
-  const toc = { innerHTML: '', addEventListener() {} };
+  const toc = { innerHTML: '', hidden: false, addEventListener() {} };
   const deck = { profiles: json('data/deck/profiles.json'), matrix: json('data/deck/matrix.json'), migration: json('data/deck/migration.json'), reference: json('data/deck/reference.json') };
   const api = ctx.Playbook.mount({ container, rail, toc, overlay, mini, model: modelOverride || json('data/questions.json'), deck, config: Object.assign({ preview: true, showDrafts: true, lockUntilComplete: false }, opts || {}) });   // most tests look at results after one answer; the lock has its own tests
   return { api, container, overlay, mini, rail, toc, ctx, timers, listeners, setChecked: (inputs) => { ctxChecked = inputs; } };
 }
 const memoryStorage = () => { const m = {}; return { m, getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: (k) => { delete m[k]; } }; };
-const PAGES = ['home', 'compare', 'discovery', 'recommendation'];
-const SECTIONS = ['overview', 'purpose', 'criteria', 'principles', 'scoring', 'tools', 'matrix', 'versus', 'reference', 'discovery', 'shortlist', 'migration', 'final'];
+const PAGES = ['home', 'discovery'];
+const SECTIONS = ['overview', 'navigate', 'principles', 'dictionary', 'matrix', 'reference', 'cta', 'discovery', 'scoring', 'shortlist', 'migration', 'final'];
 const BAD = /undefined|NaN|\[object|null</;
 
 /** The html of one section: goes to it first (a section lives on a page, and a page shows only itself). */
@@ -169,15 +169,48 @@ test('the migration section follows the answers: gate, none, tools in use', () =
   assert.match(sec(h, 'migration'), /Effort by dimension/);
 });
 
-test('tool profiles list all six tools alphabetically and withhold the Tableau features copied from Power BI', () => {
+test('the dictionary is one container with a tab for each tool, A to Z, and shows one tool at a time with every detail the deck holds', () => {
   const h = load(memoryStorage());
-  h.api.answer('Q04', ['salesforce']);
-  const html = sec(h, 'tools');
-  const tabs = [...html.matchAll(/data-action="tooltab" data-tool="([a-z]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(tabs, ['looker', 'powerbi', 'qlik', 'sigma', 'tableau', 'thoughtspot'], 'alphabetical, whatever the ranking');
-  assert.match(html, /pb-tab2 on is-short[^>]*id="tt-tableau"/, 'the top tool opens first and the shortlist is marked');
-  assert.match(html, /Not shown yet\. The source slide repeats another tool/);
-  assert.ok(!/Semantic data modeling with DAX/.test(html), 'the Power BI feature list is not shown under the Tableau profile');
+  let html = sec(h, 'dictionary');
+  assert.match(html, /Tools dictionary/);
+  const tabs = [...html.matchAll(/role="tab" id="dtab-(\w+)" aria-selected="(\w+)"/g)].map((m) => [m[1], m[2]]);
+  assert.deepEqual(tabs.map((t) => t[0]), ['looker', 'powerbi', 'qlik', 'sigma', 'tableau', 'thoughtspot'], 'alphabetical');
+  assert.deepEqual(tabs.filter((t) => t[1] === 'true').map((t) => t[0]), ['looker'], 'the first tool is shown to start with');
+  assert.equal((html.match(/<article class="pb-dict"/g) || []).length, 1, 'one tool at a time');
+  assert.match(html, /id="dpanel" role="tabpanel" aria-labelledby="dtab-looker"/);
+  const click = (attrs) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => attrs[k] }) } });
+  const seen = {};
+  for (const [id] of tabs) {
+    click({ 'data-action': 'dtab', 'data-tool': id });
+    html = sec(h, 'dictionary');
+    assert.match(html, new RegExp(`<article class="pb-dict" id="dict-${id}"`), `${id} is shown`);
+    assert.match(html, new RegExp(`id="dtab-${id}" aria-selected="true"`));
+    for (const part of ['Typical features', 'Unique features', 'Benefits', 'AI capabilities', 'Cost tier', 'Deployment', 'Integration']) assert.match(html, new RegExp(`<h4>${part}</h4>`), `${part} for ${id}`);
+    seen[id] = html;
+  }
+  assert.match(seen.looker, /Primary deployment:<\/strong> Looker \(Google Cloud core\)/, 'the vendor-sourced corrections apply');
+  assert.ok(Object.values(seen).some((x) => /The deck’s integration table does not cover this tool yet/.test(x)), 'and the gaps are said');
+  assert.match(seen.tableau, /Not shown yet\. The source slide repeats another tool/);
+  assert.ok(!/Semantic data modeling with DAX/.test(seen.tableau), 'the Power BI feature list is not shown under the Tableau entry');
+  assert.ok(Object.values(seen).filter((x) => /<h4>Moving to it<\/h4>/.test(x)).length >= 4, 'migration notes where the deck has them');
+  // the arrow keys move between tabs
+  const key = (k, tool) => h.listeners.keydown.forEach((fn) => fn({ key: k, target: { closest: () => ({ getAttribute: () => tool }) }, preventDefault() {} }));
+  key('ArrowRight', 'thoughtspot');
+  assert.match(sec(h, 'dictionary'), /id="dtab-looker" aria-selected="true"/, 'it wraps round to the first');
+  key('ArrowLeft', 'looker');
+  assert.match(sec(h, 'dictionary'), /id="dtab-thoughtspot" aria-selected="true"/);
+});
+
+test('the old page ids still land on the new pages', () => {
+  const h = load(memoryStorage());
+  for (const [old, page] of [['compare', 'home'], ['comparehome', 'home'], ['versus', 'home'], ['recommendation', 'discovery'], ['matrix', 'home'], ['shortlist', 'discovery']]) {
+    assert.ok(h.api.knows(old), old);
+    h.api.go(old);
+    assert.equal(h.api.tab, page, `${old} opens ${page}`);
+  }
+  assert.equal(h.api.knows('nonsense'), false);
+  h.api.go('home');
+  assert.equal(h.api.tab, 'home');
 });
 
 test('the reference section marks corrections and shows deployment cells for every tool', () => {
@@ -207,55 +240,64 @@ test('the final summary names the status and is marked internal', () => {
 
 // ------------------------------------------------------------------ pages
 
-test('the playbook is four pages; a page shows only itself, and a section opens on its page', () => {
+test('the playbook is two pages; a page shows its own sections in the order of the story, and a section opens on its page', () => {
   const h = load(memoryStorage());
   assert.deepEqual([...h.api.tabs.map((t) => t.id)], PAGES);
-  assert.deepEqual([...h.api.tabs.map((t) => t.label)], ['Overview', 'Compare tools', 'Client discovery', 'Recommendation']);
+  assert.deepEqual([...h.api.tabs.map((t) => t.label)], ['Tools overview', 'Client discovery']);
   const blocksOn = () => [...h.container.innerHTML.matchAll(/<div class="pb-block" id="sec-(\w+)"/g)].map((m) => m[1]);
   assert.equal(h.api.tab, 'home');
-  assert.deepEqual([...blocksOn()], ['overview', 'purpose', 'criteria', 'principles', 'scoring'], 'the guidelines are part of the overview page');
+  assert.deepEqual([...blocksOn()], ['overview', 'navigate', 'principles', 'dictionary', 'matrix', 'reference', 'cta'], 'purpose, contents, do’s and don’ts, the dictionary, the matrix, then the way to page 2');
   h.api.go('principles');
   assert.equal(h.api.tab, 'home');
-  h.api.go('shortlist');
-  assert.equal(h.api.tab, 'recommendation');
-  assert.deepEqual([...blocksOn()], ['shortlist'], 'one tab of the recommendation at a time');
-  h.api.go('final');
-  assert.deepEqual([...blocksOn()], ['final']);
-  h.api.go('matrix');
-  assert.equal(h.api.tab, 'compare');
-  assert.deepEqual([...blocksOn()], ['matrix']);
-  h.api.go('versus');
-  assert.deepEqual([...blocksOn()], ['versus']);
-  h.api.go('reference');
-  assert.deepEqual([...blocksOn()], ['reference']);
   h.api.go('discovery');
-  assert.deepEqual([...blocksOn()], ['discovery']);
+  assert.equal(h.api.tab, 'discovery');
+  assert.deepEqual([...blocksOn()], ['discovery', 'shortlist', 'scoring'], 'the areas and the start, then the recommendation (one tab of it), then how it is made');
+  h.api.go('final');
+  assert.equal(h.api.tab, 'discovery', 'the recommendation is on the same page as the questions');
+  assert.deepEqual([...blocksOn()], ['discovery', 'final', 'scoring']);
+  const page = h.container.innerHTML;
+  assert.ok(page.indexOf('id="sec-discovery"') < page.indexOf('id="sec-reco"') && page.indexOf('id="sec-reco"') < page.indexOf('id="sec-scoring"'));
+  assert.ok(page.indexOf('Areas we ask about') < page.indexOf('Start the questions') , 'the areas come before the start');
 });
 
-test('the overview holds the introduction and the guidelines: who it is for, three more pages, purpose, the five areas, principles and how it works', () => {
+test('page 1 tells the story in the consultant’s voice: purpose, contents, do’s and don’ts, then it ends by asking who is still unsure', () => {
   const h = load(memoryStorage());
   const html = sec(h, 'overview');
-  assert.match(html, /helps JMAN teams choose and justify the right BI tool/);
+  assert.match(html, /<h2>Purpose<\/h2>/);
+  assert.match(html, /we do not start with a favourite/, 'we are the consultants');
   assert.match(html, /Looker, Power BI, Qlik, Sigma, Tableau and ThoughtSpot/, 'tools are listed alphabetically');
-  assert.match(html, /Who is this for\?/);
-  assert.match(html, /How to navigate/);
-  const cards = [...html.matchAll(/class="pb-chapter" data-action="go" data-tab="(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual([...cards], ['compare', 'discovery', 'recommendation']);
-  assert.match(html, /About 5 to 10 minutes/);
-  const crit = sec(h, 'criteria');
-  assert.match(crit, /What we ask about/);
-  assert.equal((crit.match(/class="pb-criterion"/g) || []).length, 5, 'the five areas are the basic criteria');
-  for (const t of ['Business context and goals', 'Data, security and governance', 'Skills and change readiness', 'Data landscape and delivery', 'Existing reporting and migration']) assert.ok(crit.includes(t), t);
-  assert.match(sec(h, 'purpose'), /What it does not replace/);
-  assert.match(sec(h, 'principles'), /Guiding principles/);
+  assert.match(html, /What it does not replace/);
+  assert.ok(!/Internal use only|Check before you quote/.test(html), 'the disclaimers are not in the middle of the page');
+  assert.ok(!/Who is this for\?|How to navigate|Guiding principles/.test(h.container.innerHTML), 'the earlier overview headings are gone');
+  const nav = sec(h, 'navigate');
+  assert.match(nav, /<h2>Contents<\/h2>/);
+  const cards = [...nav.matchAll(/data-action="go" data-tab="(\w+)"(?: data-anchor="([\w-]+)")?/g)].map((m) => `${m[1]}${m[2] ? '#' + m[2] : ''}`);
+  assert.deepEqual([...cards], ['home#sec-principles', 'home#sec-dictionary', 'home#sec-matrix', 'discovery'], 'do’s and don’ts, dictionary, matrix, then page 2');
+  assert.match(nav, /NEXT PAGE · 5 AREAS · 20 TO 26 QUESTIONS/, 'the count does not change as branches open');
+  const pr = sec(h, 'principles');
+  assert.match(pr, /<h2>Do’s and don’ts<\/h2>/);
+  assert.match(pr, /We start with the business problem/);
+  assert.match(pr, /We never declare a universal “best BI tool”/);
+  const cta = sec(h, 'cta');
+  assert.match(cta, /Still unable to pick a BI tool\?/);
+  assert.match(cta, /5 to 10 minutes/);
+  assert.match(cta, /data-action="go" data-tab="discovery">Start client discovery/);
+  const page = h.container.innerHTML;
+  const order = ['<h2>Purpose', '<h2>Contents', 'Do’s and don’ts</h2>', 'Tools dictionary</h2>', 'Comparison matrix</h2>', 'Still unable to pick'].map((t) => page.indexOf(t));
+  assert.ok(order.every((i, k) => i >= 0 && (k === 0 || i > order[k - 1])), `sections out of order: ${order}`);
+  const toc = [...h.toc.innerHTML.matchAll(/data-toc="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual([...toc], ['sec-overview', 'sec-navigate', 'sec-principles', 'sec-dictionary', 'sec-matrix', 'sec-cta'], 'the contents list follows the page');
   assert.match(sec(h, 'scoring'), /How the recommendation is made/);
-  for (const t of ['home-who', 'home-nav', 'sec-purpose', 'sec-criteria', 'sec-principles', 'sec-scoring']) assert.ok(h.toc.innerHTML.includes(`data-toc="${t}"`), t);
+  assert.match(sec(h, 'scoring'), /<details/, 'how it is made is a closed disclosure');
+  h.api.go('discovery');
+  assert.deepEqual([...h.toc.innerHTML.matchAll(/data-toc="([^"]+)"/g)].map((m) => m[1]), ['disc-about', 'disc-areas', 'disc-start', 'sec-reco', 'sec-scoring']);
 });
 
 test('the discovery page lists the five areas and opens the carousel', () => {
   const h = load(memoryStorage());
   const html = sec(h, 'discovery');
-  assert.match(html, /A set of questions to find the most suitable BI tool for this client\. It takes about 5 to 10 minutes\./);
+  assert.match(html, /The client’s answers decide the tool, not our preferences/);
+  assert.match(html, /It takes about 5 to 10 minutes\./);
   assert.match(html, /Start the questions/);
   const areas = [...html.matchAll(/class="pb-area[^"]*" data-action="openq" data-section="(\d)"/g)].map((m) => m[1]);
   assert.deepEqual(areas, ['1', '2', '3', '4', '5']);
@@ -375,7 +417,7 @@ test('finishing an area shows an "area complete" card with what comes next and a
   assert.match(html, /data-action="finish"/);
   h.timers.filter(Boolean).pop().fn();                 // the countdown on the last card
   assert.equal(h.api.overlayOpen(), false);
-  assert.equal(h.api.tab, 'recommendation');
+  assert.equal(h.api.tab, 'discovery', 'the recommendation is further down the same page');
 });
 
 test('after a click, 3.2 seconds without another moves to the next question, shown only as the progress bar filling ahead; an unanswered question or an open follow-up does not', () => {
@@ -628,8 +670,6 @@ test('the recommendation stays closed until every question has an answer, here a
   assert.ok(!/pb-tool|Best fit<\/h2>|pb-subtab/.test(html), 'no result, no tabs');
   assert.match(html, /data-action="openq">Continue the questions/);
   for (const id of ['migration', 'final']) { h.api.go(id); assert.match(h.container.innerHTML, /id="sec-locked"/, `${id} is closed too`); }
-  // the profiles do not give the answer away either
-  assert.ok(!/is-short/.test(sec(h, 'tools')), 'no best-fit marker in the profiles');
   // the carousel's last card asks for what is missing instead of showing a winner
   h.api.openDiscovery('1');
   for (let i = 0; i < 100 && h.api.step().kind !== 'end'; i++) h.api.move(1);
@@ -651,41 +691,83 @@ test('the recommendation stays closed until every question has an answer, here a
   assert.match(h.overlay.innerHTML, /pb-winner/);
 });
 
-test('the matrix is one short line per tool for each of the 14 criteria, with no \"leads\" marker', () => {
+test('the matrix shows its groups closed with one short line for each tool, tints the leaders, and shows the criteria as children when a group is opened', () => {
   const h = load(memoryStorage());
-  const html = sec(h, 'matrix');
+  const groups = json('data/deck/matrix.json').groups;
+  const tools = ['looker', 'powerbi', 'qlik', 'sigma', 'tableau', 'thoughtspot'];
+  let html = sec(h, 'matrix');
   const cols = [...html.matchAll(/<th scope="col"><span class="pb-colhead">[\s\S]*?<span>([^<]+)<\/span><\/span><\/th>/g)].map((m) => m[1]);
   assert.deepEqual([...cols], ['Looker', 'Power BI', 'Qlik', 'Sigma', 'Tableau', 'ThoughtSpot'], 'alphabetical');
-  assert.equal((html.match(/<tr><th scope="row">/g) || []).length, 14, 'the deck\'s 14 criteria');
-  assert.equal((html.match(/class="pb-grouprow"/g) || []).length, json('data/deck/matrix.json').groups.length);
+  assert.equal((html.match(/class="pb-groupbtn"/g) || []).length, groups.length, 'one row per group');
+  assert.equal((html.match(/aria-expanded="false"/g) || []).length, groups.length, 'all closed to start with');
+  assert.equal((html.match(/pb-childrow/g) || []).length, 0, 'no criteria until a group is opened');
+  assert.match(html, new RegExp(`${groups[0].name}</span><span class="pb-groupmeta">${groups[0].criteria.length} criteria`));
+  // a closed row reads as a row of the matrix: a cell per tool, each a short line (never a bare count)
+  assert.equal((html.match(/class="pb-groupcell/g) || []).length, groups.length * 6);
+  assert.ok(!/criteria led/.test(html), 'every group and tool has its own line');
+  assert.ok(!/\d of \d<\/td>/.test(html), 'no "1 of 3" counts');
+  const cells = [...html.matchAll(/<td class="pb-groupcell[^"]*">(?:<span class="pb-sr">Leads this group\. <\/span>)?([^<]+)<\/td>/g)].map((m) => m[1]);
+  assert.equal(cells.length, groups.length * 6);
+  for (const c of cells) assert.ok(c.length <= 56, `short enough to sit in a cell: ${c}`);
+  assert.equal(new Set(cells).size, cells.length, 'no line repeats');
+  const ba = html.slice(html.indexOf('Business Adoption</span>'), html.indexOf('AI &amp; Analytics</span>'));
+  assert.match(ba, /pb-groupcell is-win"><span class="pb-sr">Leads this group\. <\/span>Fastest for spreadsheet teams, easy to edit/);
+  assert.equal((ba.match(/is-win/g) || []).length, 1, 'one winner there');
+  const ai = html.slice(html.indexOf('AI &amp; Analytics</span>'), html.indexOf('Enterprise Readiness</span>'));
+  assert.equal((ai.match(/is-win/g) || []).length, 3, 'a tie tints every tied tool');
+  assert.ok(!/Most leads:|Tied:/.test(html), 'the tint says it, no extra words');
+  const click = (attrs) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => attrs[k] }) } });
+  click({ 'data-action': 'mgroup', 'data-group': '0' });
+  html = sec(h, 'matrix');
+  assert.equal((html.match(/class="pb-childrow/g) || []).length, groups[0].criteria.length, 'only that group opened');
+  assert.match(html, /pb-childrow is-last/, 'the last child closes the connector');
+  const leadsIn0 = groups[0].criteria.reduce((n, c) => n + tools.filter((t) => c.cells[t].leads).length, 0);
+  assert.equal((html.match(/<td class="is-lead">/g) || []).length, leadsIn0, 'the deck’s leaders are tinted, no others');
+  assert.ok(!/pb-cell-d/.test(html), 'six tools: headlines only');
+  click({ 'data-action': 'mall', 'data-open': '1' });
+  html = sec(h, 'matrix');
+  assert.equal((html.match(/class="pb-childrow/g) || []).length, 14, 'the deck\'s 14 criteria');
   assert.match(html, /Fastest to adopt/);
-  assert.ok(!/Leads \(deck\)|pb-pill leads/.test(html), 'no leader markers');
-  assert.match(html, /data-sub="versus">Compare two tools in depth/);
+  assert.match(html, /Collapse all groups/);
+  click({ 'data-action': 'mall', 'data-open': '0' });
+  assert.equal((sec(h, 'matrix').match(/pb-childrow/g) || []).length, 0);
   assert.ok(!/Leads \(deck\)/.test(sec(h, 'reference')) && !/Decision matrix/.test(sec(h, 'reference')), 'and none left in the reference tab');
 });
 
-test('the 1 v 1 comparison puts two tools side by side on every criterion, then on deployment', () => {
+test('the matrix takes the place of the 1 v 1 view: pick the tools to show, at least two stay, and with three or fewer each cell gives its detail', () => {
   const h = load(memoryStorage());
-  h.api.answer('Q04', ['salesforce']);
-  let html = sec(h, 'versus');
-  assert.match(html, /<select id="cmp-a"[\s\S]*value="tableau" selected/, 'it opens on the best fit');
-  const b = html.match(/<select id="cmp-b"[\s\S]*?<option value="(\w+)" selected/)[1];
-  assert.notEqual(b, 'tableau');
-  assert.equal((html.match(/<tr><th scope="row">[^<]*(?:<br>[\s\S]*?)?<\/th><td>/g) || []).length >= 14, true);
-  assert.match(html, /<th colspan="3" scope="colgroup">Deployment<\/th>/);
-  assert.match(html, /Data residency control/);
-  assert.ok(!/Leads \(deck\)/.test(html));
-  // two different tools only
-  assert.ok(!new RegExp(`<select id="cmp-a"[^>]*>[\\s\\S]*?value="${b}"[\\s\\S]*?</select><label>against`).test(html), 'the second tool is not offered as the first');
-  h.listeners.change.forEach((fn) => fn({ target: { matches: () => false, getAttribute: (k) => ({ 'data-action': 'cmp-b' }[k]), value: 'looker' } }));
-  html = sec(h, 'versus');
-  assert.match(html, /<select id="cmp-b"[\s\S]*value="looker" selected/);
-  assert.match(html, /Tableau compared with Looker/);
-  h.listeners.change.forEach((fn) => fn({ target: { matches: () => false, getAttribute: (k) => ({ 'data-action': 'cmp-a' }[k]), value: 'looker' } }));
-  html = sec(h, 'versus');
-  const [a2, b2] = [html.match(/<select id="cmp-a"[\s\S]*?<option value="(\w+)" selected/)[1], html.match(/<select id="cmp-b"[\s\S]*?<option value="(\w+)" selected/)[1]];
-  assert.equal(a2, 'looker');
-  assert.notEqual(b2, 'looker', 'choosing the same tool twice moves the other one');
+  const click = (attrs) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => attrs[k] }) } });
+  const shown = () => [...sec(h, 'matrix').matchAll(/<th scope="col"><span class="pb-colhead">[\s\S]*?<span>([^<]+)<\/span><\/span><\/th>/g)].map((m) => m[1]);
+  let html = sec(h, 'matrix');
+  assert.equal((html.match(/data-action="mtool"/g) || []).length, 6, 'a switch for each tool');
+  assert.equal((html.match(/aria-pressed="true"/g) || []).length, 6, 'all on to start with');
+  assert.ok(!/select|1 v 1|Compare two tools in depth/.test(html), 'no separate comparison view');
+  for (const t of ['powerbi', 'qlik', 'sigma', 'thoughtspot']) click({ 'data-action': 'mtool', 'data-tool': t });
+  assert.deepEqual([...shown()], ['Looker', 'Tableau'], 'two tools left, still alphabetical');
+  html = sec(h, 'matrix');
+  assert.match(html, /Head to head: Looker and Tableau\./);
+  assert.equal((html.match(/aria-disabled="true"/g) || []).length, 2, 'the last two cannot be switched off');
+  click({ 'data-action': 'mtool', 'data-tool': 'looker' });
+  assert.deepEqual([...shown()], ['Looker', 'Tableau'], 'a third cannot be dropped');
+  // winners are among the tools shown: Tableau and Looker tie on Business Adoption? check by the deck
+  const groups = json('data/deck/matrix.json').groups;
+  const leadsOf = (g, t) => g.criteria.filter((c) => c.cells[t].leads).length;
+  const row = (g) => { const i = html.indexOf(`${g.name.replace('&', '&amp;')}</span>`); return html.slice(i, html.indexOf('</tr>', i)); };
+  for (const g of groups) {
+    const a = leadsOf(g, 'looker'), b = leadsOf(g, 'tableau');
+    const wins = (row(g).match(/is-win/g) || []).length;
+    assert.equal(wins, a === b ? (a ? 2 : 0) : 1, g.name);
+  }
+  click({ 'data-action': 'mall', 'data-open': '1' });
+  html = sec(h, 'matrix');
+  assert.equal((html.match(/pb-cell-d/g) || []).length, 14 * 2, 'a detail line under every headline');
+  assert.match(html, /needs LookML built first/);
+  click({ 'data-action': 'mtool', 'data-tool': 'qlik' });
+  assert.equal((sec(h, 'matrix').match(/pb-cell-d/g) || []).length, 14 * 3, 'three tools still show the detail');
+  click({ 'data-action': 'mtool', 'data-tool': 'sigma' });
+  assert.ok(!/pb-cell-d/.test(sec(h, 'matrix')), 'four tools: headlines only');
+  click({ 'data-action': 'mall-tools' });
+  assert.equal(shown().length, 6);
 });
 
 test('the burger menu lists every area and question, marks answers and the current question, and jumps', () => {
@@ -753,4 +835,33 @@ test('leaving the questions unfinished shrinks them into a corner window that st
   assert.equal(b.mini.hidden, false);
   b.api.reset();
   assert.equal(b.mini.hidden, true);
+});
+
+test('the disclaimers appear once, at the bottom of every page, and nowhere in the middle', () => {
+  const h = load(memoryStorage());
+  h.api.answer('Q04', ['salesforce']);
+  for (const id of ['overview', 'dictionary', 'matrix', 'discovery', 'shortlist', 'migration', 'final']) {
+    h.api.go(id);
+    const page = h.container.innerHTML;
+    assert.equal((page.match(/<aside class="pb-notices"/g) || []).length, 1, `${id}: one notices block`);
+    assert.ok(page.lastIndexOf('<aside class="pb-notices"') > page.lastIndexOf('<div class="pb-block"'), `${id}: after the last section`);
+    const body = page.slice(0, page.indexOf('<aside class="pb-notices"'));
+    assert.ok(!/Check before you quote|Verify current platform details|Nothing is sent anywhere/.test(body), `${id}: not repeated above`);
+  }
+  assert.match(h.container.innerHTML, /Internal use only\.<\/strong> This playbook is written for the consultant/);
+  assert.match(h.container.innerHTML, /Verify current details with the vendor before quoting a client/);
+  assert.match(h.container.innerHTML, /Answers and notes stay in this browser/);
+});
+
+test('page 1 is wide enough for the matrix, and the contents list follows each page', () => {
+  const h = load(memoryStorage());
+  assert.match(h.container.innerHTML, /<div class="pb-page" data-page="home">/);
+  assert.notEqual(h.toc.innerHTML, '');
+  assert.equal(h.toc.hidden, false);
+  h.api.go('discovery');
+  assert.match(h.container.innerHTML, /<div class="pb-page" data-page="discovery">/);
+  assert.notEqual(h.toc.innerHTML, '');
+  const css = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src/page/styles.css'), 'utf8');
+  assert.match(css, /\.pb-page\[data-page="home"\], \.pb-page\[data-page="home"\] \.pb-sec \{ max-width: 1200px; \}/, 'the tools page uses the wider measure');
+  assert.ok(/pv-layout:has\(\.pv-toc\[hidden\]\)/.test(css), 'a page without a contents list still gives the column back');
 });
