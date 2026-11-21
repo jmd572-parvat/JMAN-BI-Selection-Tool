@@ -41,7 +41,7 @@ EPS = 1e-9
 # Flow sheet tie-break order. The Flow text says "ecosystem fit; governance/security fit; implementation risk and total cost".
 TIEBREAK_GROUPS = [
     ("ecosystem", ["Q04"]),
-    ("governance", ["Q05", "Q06", "Q07", "Q08", "Q09", "Q26"]),
+    ("governance", ["Q05", "Q06", "Q07", "Q08", "Q26"]),
     ("risk & cost", ["Q10", "Q11", "Q12", "Q20", "Q23"]),
 ]
 

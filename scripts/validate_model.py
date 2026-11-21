@@ -74,15 +74,15 @@ HEAT_MAP = [  # (question, option, heatmap row) - only pairs where the option me
     ("Q11", "beginner", "Ease of Adoption"), ("Q16", "high_volume_rapidly_growing", "Scalability & Performance")]
 THEMES = {
     "business context": ["Q01", "Q02", "Q03", "Q21", "Q22", "Q23", "Q25"], "ecosystem": ["Q04"],
-    "governance & security": ["Q03", "Q05", "Q06", "Q07", "Q08", "Q09"],
+    "governance & security": ["Q03", "Q05", "Q06", "Q07", "Q08"],
     "skills & change": ["Q10", "Q11", "Q12", "Q24"], "migration": ["Q13", "Q14", "Q15"],
     "technical requirements": ["Q16", "Q17", "Q18", "Q19"], "constraints": ["Q20", "Q26"]}
 # deal-breaker topics: every gate path must be able to reach at least one SCORED option of each
 SIGNALS = {
     "deployment / residency control": [("Q06", "data_residency_requirement"), ("Q16", "hybrid_on_premises"),
-                                       ("Q18", "offline_on_premises_operation"), ("Q26", "no_self_hosted")],
+                                       ("Q26", "no_self_hosted")],
     "budget / cost pressure": [("Q23", "tight_budget")],
-    "embedded / external audiences": [("Q06", "external_access"), ("Q19", "embedded_customer_facing_analytics"),
+    "embedded / external audiences": [("Q19", "embedded_customer_facing_analytics"),
                                       ("Q19", "controlled_external_sharing")],
     "performance / scale": [("Q16", "high_volume_rapidly_growing"), ("Q18", "high_concurrency_strict_sla"),
                             ("Q25", "u_100_plus")],
@@ -149,8 +149,7 @@ def main():
     check(1, "Q14 matches deck migration grid (slide 28)", "FAIL" if bad else "PASS",
           f"{len(bad)} mismatches of {len(GRID) * 6}: {bad[:5]}" if bad else "0 mismatches of 42")
     bad = []
-    for q, o in [("Q16", "hybrid_on_premises"), ("Q18", "offline_on_premises_operation"),
-                 ("Q26", "no_self_hosted")]:
+    for q, o in [("Q16", "hybrid_on_premises"), ("Q26", "no_self_hosted")]:
         s = m["qmap"][q]["omap"][o]["scores"]
         if min(s[t] for t in ONPREM_YES) <= max(s[t] for t in T if t not in ONPREM_YES):
             bad.append(f"{q}/{o}")

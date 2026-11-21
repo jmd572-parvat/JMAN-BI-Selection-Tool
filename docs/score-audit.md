@@ -2,7 +2,7 @@
 
 Owner concern: serious doubts about the marks (the 1 to 4 scores) behind the recommendation. This audit checked all 110 answers (95 that carry scores) across 26 questions, six tools each, 660 scores, plus the weights.
 
-**No score or weight was changed.** The scores belong to the owner and the subject-matter experts, and the workbook is edited only through Excel. This document lists what is doubtful, with evidence, and what each fix would change. The numbers come from `scripts/validate_model.py` and a one-off analysis on the Python engine (3,000 random clients, seed 7; the script is not kept in the repo).
+**When this audit was written no score or weight had been changed. On 2026-11-21 the owner asked for a review by judgement and several were changed (see section 21 of `page-design.md`): H1, H2 (in part), H3, M1, M2, M4 and M5 below, and the duplicated on-premises answers in M6. H4 was tried and taken back.** The scores belong to the owner and the subject-matter experts, and the workbook is edited only through Excel. This document lists what is doubtful, with evidence, and what each fix would change. The numbers come from `scripts/validate_model.py` and a one-off analysis on the Python engine (3,000 random clients, seed 7; the script is not kept in the repo).
 
 ## Findings that most deserve a decision
 

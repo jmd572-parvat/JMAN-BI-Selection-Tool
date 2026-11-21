@@ -80,29 +80,32 @@ test('state lines say how much the result rests on', () => {
   assert.equal(L.stateLine('none', 0, 22), '');
 });
 
-test('the summary is internal, states its status, lists notes, and never names a single winner for a tie', () => {
-  const s = new Session(model());
-  s.answer('Q03', ['no']);
-  const r = s.result();
+test('the summary is Markdown: internal, states its status, lists notes, and never names a single winner for a tie', () => {
   const text = L.buildSummary({
-    date: '2026-11-17', clientName: 'Example client', state: r.state, answered: 1, visible: 22, informative: r.informative,
-    coLeaders: r.coLeaders.map((t) => t.name), shortlist: r.shortlist.map((x) => ({ name: x.tool.name, rank: x.rank })),
-    leadStrength: r.leadStrength, boundaryMessage: null, excluded: [], reasons: [], constraints: [], migration: [],
-    usesDraft: ['Q21'],
+    date: '2026-11-17', clientName: 'Example client', state: 'provisional', answered: 1, visible: 22, informative: true,
+    winners: [{ id: 'sigma', name: 'Sigma', docUrl: 'https://help.sigmacomputing.com/' }, { id: 'tableau', name: 'Tableau', docUrl: 'https://help.tableau.com/' }],
+    leadSentence: 'Sigma and Tableau fit equally.', leadStrength: 'tooClose', boundaryMessage: null, others: [{ name: 'Looker', rank: 3, tied: false }], excluded: [],
+    reasons: [{ tool: 'Sigma', strengths: [{ answer: 'No', question: 'Strict governance?', why: 'Warehouse permissions are enough.' }], concerns: [] }, { tool: 'Tableau', strengths: [], concerns: [] }],
+    constraints: [], migration: [], nextSteps: ['Run a proof of concept.'], usesDraft: ['Q21'],
     answers: [{ section: 'Business context and goals', question: 'Presentation quality?', answer: 'Critical', note: 'board pack' }]
   });
-  assert.match(text, /INTERNAL USE ONLY/);
-  assert.match(text, /Status: Provisional, based on 1 of 22 questions/);
-  assert.match(text, /Best fit so far: Sigma and Tableau fit equally on these answers/);
-  assert.match(text, /Lead: too close to call/);
-  assert.match(text, /\(board pack\)/);
-  assert.match(text, /draft questions \(Q21\)/);
-  assert.ok(!/Best fit[a-z ]*: Tableau\b/.test(text));
+  assert.match(text, /^# BI tool recommendation for Example client\n/);
+  assert.match(text, /\*Internal use only · 2026-11-17 · Provisional: 1 of 22 questions answered\*/);
+  assert.match(text, /## Too close to call: Sigma and Tableau/);
+  assert.ok(!/## Best fit/.test(text), 'a tie is never one winner');
+  assert.match(text, /## Why Sigma fits\n\n- \*\*No\*\* \(Strict governance\?\): Warehouse permissions are enough\./);
+  assert.match(text, /## Why Tableau fits\n\n- No answer favours it yet\./);
+  assert.match(text, /- Rank 3: Looker/);
+  assert.match(text, /- Official documentation for Sigma: \[https:\/\/help\.sigmacomputing\.com\/\]\(https:\/\/help\.sigmacomputing\.com\/\)/);
+  assert.match(text, /- Official documentation for Tableau: /);
+  assert.match(text, /\*\(board pack\)\*/);
+  assert.match(text, /questions marked as draft \(Q21\)/);
 });
 
 test('a summary with nothing scored says there is nothing to recommend', () => {
-  const t = L.buildSummary({ date: 'x', clientName: '', state: 'none', answered: 0, visible: 22, informative: false, coLeaders: [], shortlist: [], excluded: [], answers: [] });
+  const t = L.buildSummary({ date: 'x', clientName: '', state: 'none', answered: 0, visible: 22, informative: false, answers: [] });
   assert.match(t, /nothing to recommend/);
+  assert.match(t, /## Answers and notes\n\n- None yet\./);
 });
 
 test('html is escaped', () => {

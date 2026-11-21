@@ -83,11 +83,10 @@
     Q23: 'How much price should count when choosing between tools.',
     Q25: 'An estimate is fine. Choose “To be confirmed” if it is not known yet.',
     Q05: 'Whether regulation or internal policy limits how data may be stored, shared or accessed.',
-    Q06: 'Pick every kind of access control the client needs.',
+    Q06: 'Pick everything the client needs, including any concern about how AI features use their data.',
     Q26: 'Whether the client is able to use a tool that the vendor hosts in the cloud. Answering No rules out any tool that is only offered that way.',
     Q07: 'Whether the business definitions, such as metrics and how tables relate, are already modelled in one place.',
     Q08: 'How consistently reporting is controlled today: who can publish, and who checks the numbers.',
-    Q09: 'Whether the client has concerns about AI features working with their data.',
     Q10: 'Who does the hands-on report building during this engagement.',
     Q11: 'The skill of the people who will build and maintain the reports on the client side.',
     Q12: 'How much time and support the client can give to training people and to the change.',
@@ -106,7 +105,7 @@
   /** Which questions bear on which matrix criterion, for "Relevant to your answers". Proposal, docs/page-design.md A14. */
   var CRITERION_QS = [
     ['Ease of Adoption', ['Q10', 'Q11', 'Q12']], ['Self-Service Analytics', ['Q01', 'Q11']], ['Visualization', ['Q21', 'Q17']],
-    ['AI-Assisted', ['Q22', 'Q09']], ['Predictive', ['Q01']], ['Governance & Security', ['Q03', 'Q05', 'Q06', 'Q08', 'Q09', 'Q26']],
+    ['AI-Assisted', ['Q22', 'Q06']], ['Predictive', ['Q01']], ['Governance & Security', ['Q03', 'Q05', 'Q06', 'Q08', 'Q26']],
     ['Semantic Layer', ['Q07']], ['Scalability', ['Q16', 'Q18', 'Q25']], ['Technology Ecosystem', ['Q04']], ['Cloud Data Platform', ['Q04', 'Q16']],
     ['Embedded', ['Q19']], ['Licensing', ['Q23']], ['Business Value', ['Q01']], ['Community', ['Q24']]
   ];
@@ -305,10 +304,10 @@
           '<strong class="pb-area-title">' + esc(x.title) + '</strong><span class="pb-area-d">' + esc(x.blurb) + '</span>' +
           '<span class="pb-area-foot"><span class="pb-area-meta">' + meta + '</span><span class="pb-area-act">' + act + icon('right') + '</span></span></button></li>';
       }).join('');
-      var download = '<li><button class="pb-area pb-area-dl" data-action="download">' +
+      var download = '<li><div class="pb-area pb-area-dl">' +
         '<span class="pb-area-top"><span class="pb-area-n" aria-hidden="true">' + icon('download') + '</span></span>' +
-        '<strong class="pb-area-title">Download your answers</strong><span class="pb-area-d">Save your answers and notes as a file. They stay on your device.</span>' +
-        '<span class="pb-area-foot"><span class="pb-area-meta">' + (started ? prog.answered + ' answered so far' : 'Nothing answered yet') + '</span><span class="pb-area-act">Download' + icon('download') + '</span></span></button></li>';
+        '<strong class="pb-area-title">Save your answers</strong><span class="pb-area-d">A document with the recommendation, the reasons and every answer and note. It stays on your device.</span>' +
+        '<span class="pb-area-foot pb-dl-actions"><button class="pb-btn pb-btn-ghost" data-action="mdsave">Markdown</button><button class="pb-btn pb-btn-ghost" data-action="pdf"' + (lockedNow() ? ' disabled title="The PDF holds the recommendation, which opens once every question is answered. Markdown is always available."' : '') + '>PDF</button></span></div></li>';
       return '<section class="pb-sec"><p class="pb-backrow"><button class="pb-link pb-back" data-action="go" data-tab="home">' + icon('left') + '<span>Tools overview</span></button></p>' +
         '<h2 id="disc-about">Client discovery</h2>' +
         '<p class="pb-lead">The client’s answers decide the tool, not our preferences. We ask about five areas of their situation, and the recommendation further down follows from what they tell us. It takes about 5 to 10 minutes.</p>' +
@@ -520,6 +519,7 @@
         '<h4>Why it fits</h4>' + (ex.strengths.length ? '<ul class="pb-reasons">' + ex.strengths.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer favours this tool yet.</p>') +
         '<h4>Watch-outs</h4>' + (ex.concerns.length ? '<ul class="pb-reasons">' + ex.concerns.map(reasonHtml).join('') + '</ul>' : '<p class="pb-fine">No answer holds this tool back yet.</p>') +
         (below ? '<p class="pb-ranknote">Ranked below ' + esc(listTools(below.rankedBelow)) + ' because ' + (below.rankedBelow.length > 1 ? 'each fits' : esc(names[below.rankedBelow[0]]) + ' fits') + ' at least as well on every answer you gave.</p>' : '') +
+        (DOCS[id] ? '<p class="pb-doclink"><a href="' + DOCS[id] + '" target="_blank" rel="noopener">Official documentation' + icon('external') + '</a></p>' : '') +
         '</article>';
     }
 
@@ -725,21 +725,19 @@
       return '<section class="pb-sec"><h2>Comparison matrix</h2><p class="pb-lead">Now we put the tools side by side. Each row sums up a group of criteria; open a row to see the criteria inside it. To compare tools head to head, choose which to show.</p>' +
         toolPicker(cols) +
         '<p class="pb-matrix-tools"><span class="pb-legend"><span class="pb-swatch" aria-hidden="true"></span>Leads</span> <button class="pb-link" data-action="mall" data-open="' + (allOpen ? '0' : '1') + '">' + (allOpen ? 'Collapse all groups' : 'Expand all groups') + '</button></p>' +
-        '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Tool matrix across 14 criteria, ' + cols.length + ' tools shown</caption><thead><tr><th scope="col">Group and criterion</th>' + cols.map(function (id) { return colHead(id); }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>' +
-        '<p class="pb-fine">A tinted cell leads. In a group row, it is the tool that leads the most of the group’s criteria among the tools shown (tools that tie are all tinted). In a criterion row, it is a tool our comparison marks as leading. The one-line summaries in the group rows restate the criteria’s own headlines. With three tools or fewer, each cell also gives its detail line (one, Sigma’s AI, is corrected: its assistant is now called Sigma Assistant). Criteria marked <em>Relevant to your answers</em> are the ones your answers bear on.</p></section>';
+        '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Tool matrix across 14 criteria, ' + cols.length + ' tools shown</caption><thead><tr><th scope="col">Group and criterion</th>' + cols.map(function (id) { return colHead(id); }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div></section>';
     }
 
     // ------------------------------------------------------------------ FINAL RECOMMENDATION
     function summaryContext() {
       var r = session.result();
       var prog = session.progress();
-      var shortlistNames = r.shortlist.map(function (x) { return { name: x.tool.name, rank: x.rank }; });
-      var leaders = r.informative ? (r.coLeaders.length > 1 ? r.coLeaders.map(function (t) { return t.name; }) : []) : [];
       var leadTools = r.informative ? (r.coLeaders.length > 1 ? r.coLeaders : [r.shortlist[0].tool]) : [];
+      var winners = leadTools.map(function (t) { return { id: t.id, name: t.name, docUrl: DOCS[t.id] || '' }; });
       var reasons = leadTools.map(function (t) {
         var ex = session.explain(t.id, 3);
-        var fmt = function (x) { return x.text + ' ' + x.answer.map(function (a) { return a.label; }).join(', ') + '.' + (x.why.length ? ' ' + x.why.join(' ') : ''); };
-        return { tool: t.name, strengths: ex.strengths.map(fmt), concerns: ex.concerns.map(fmt) };
+        var map = function (x) { return { answer: x.answer.map(function (a) { return a.label; }).join(', '), question: x.text, why: x.why.join(' ') }; };
+        return { tool: t.name, strengths: ex.strengths.map(map), concerns: ex.concerns.map(map) };
       });
       var constraints = CONSTRAINT_QS.filter(function (id) { return (session.answers[id] || []).some(function (o) { var q = qOf(id); return q && q.omap[o] && !q.omap[o].unknown; }); })
         .map(function (id) { return qOf(id).text + ' ' + answerText(id); });
@@ -753,23 +751,66 @@
           if (cell) migration.push('From ' + (from === 'excel_other' ? 'Excel' : names[from]) + ' to ' + names[to] + ': ' + cell.rating + '.' + ((cell.reasons || cell.notes || []).length ? ' ' + (cell.reasons || cell.notes).join('; ') + '.' : ''));
         });
       }
-      var secTitle = {}; SECTIONS.forEach(function (s) { secTitle[s.id] = s.title; });
+      var steps = [];
+      var second = r.informative && r.ranking[1] ? r.ranking[1].tool.name : '';
+      if (winners.length > 1) steps.push('The answers do not separate ' + L.listJoin(L.sortNames(winners.map(function (w) { return w.name; }))) + '. Compare them on a real use case before you choose.');
+      else if (r.informative && r.leadStrength === 'narrow' && second) steps.push('The lead over ' + second + ' is narrow. Compare the two on a real use case before you commit.');
+      if (reasons.some(function (rs) { return rs.concerns.length; })) steps.push('Go through the watch-outs with the client and confirm they can live with them.');
+      if (migration.length) steps.push('List the reports and data sources to be moved before you scope the migration.');
+      if (r.informative) steps.push('Run a proof of concept on the riskiest assumption.', 'Check current pricing and licensing with the vendor before you quote.');
+      if (r.informative && r.state === 'provisional') steps.unshift('Answer the remaining questions: the order may still change.');
+      var secTitle = {}; SECTIONS.forEach(function (x) { secTitle[x.id] = x.title; });
       var answers = session.visible().filter(function (q) { return q.answered; }).map(function (q) { return { section: secTitle[sectionOf(q)], question: q.text, answer: answerText(q.id), note: store.notes[q.id] || '' }; });
+      var winIds = winners.map(function (w) { return w.id; });
       return {
         date: today(), clientName: ui.clientName, state: r.state, answered: prog.answered, visible: prog.visible, informative: r.informative,
-        coLeaders: leaders, shortlist: shortlistNames, leadStrength: r.leadStrength, boundaryMessage: L.boundaryMessage(r),
-        excluded: r.excluded.map(function (e) { return { name: e.tool.name, because: '“' + e.because[0].questionText + '” answered “' + e.because[0].optionLabel + '”' }; }),
-        reasons: reasons, constraints: constraints, migration: migration, usesDraft: r.usesDraftQuestions, answers: answers
+        winners: winners, leadSentence: r.informative ? L.leadSentence(r, names) : '', leadStrength: r.leadStrength, boundaryMessage: L.boundaryMessage(r),
+        others: r.informative ? r.ranking.filter(function (x) { return winIds.indexOf(x.tool.id) === -1; }).map(function (x) { return { name: x.tool.name, rank: x.rank, tied: !!x.tied }; }) : [],
+        excluded: r.excluded.map(function (e) { return { name: e.tool.name, because: '“' + e.because[0].questionText + '” was answered “' + e.because[0].optionLabel + '”.' }; }),
+        reasons: reasons, constraints: constraints, migration: migration, nextSteps: steps, usesDraft: r.usesDraftQuestions, answers: answers
       };
     }
+
+    /** The final recommendation as a page: the headline, why, watch-outs, the other tools, what to do next and the answers behind it. */
+    function finalHtml(c) {
+      var list = function (items) { return '<ul class="pb-rep-list">' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
+      var reasonLi = function (x) { return '<strong>' + esc(x.answer) + '</strong><span class="pb-rep-q">' + esc(x.question) + '</span>' + (x.why ? '<span class="pb-rep-why">' + esc(x.why) + '</span>' : ''); };
+      var status = c.state === 'complete' ? 'Complete: all ' + c.visible + ' questions answered' : (L.STATE_LABEL[c.state] || c.state) + ': ' + c.answered + ' of ' + c.visible + ' questions answered';
+      var out = '<header class="pb-rep-head"><p class="pb-rep-kicker">Internal use only · ' + esc(c.date) + ' · ' + esc(status) + '</p>' +
+        '<h3 class="pb-rep-title" id="pb-rep-title">BI tool recommendation' + (c.clientName ? ' for ' + esc(c.clientName) : '') + '</h3></header>';
+      if (!c.informative) return out + '<p>No scored answers yet, so there is nothing to recommend.</p>';
+      var tie = c.winners.length > 1;
+      var nm = L.listJoin(L.sortNames(c.winners.map(function (w) { return w.name; })));
+      out += '<div class="pb-rep-hero"><span class="pb-rep-logos">' + c.winners.map(function (w) { return logoHtml(w.id, 'pb-logo-lg'); }).join('') + '</span><div>' +
+        '<p class="pb-rep-kicker">' + (tie ? 'Too close to call' : c.state === 'provisional' ? 'Best fit so far' : 'Best fit') + '</p><h3>' + esc(nm) + '</h3><p class="pb-rep-lead">' + esc(c.leadSentence) + '</p>' +
+        (c.boundaryMessage ? '<p class="pb-rep-fine">' + esc(c.boundaryMessage) + '</p>' : '') + '</div></div>';
+      c.reasons.forEach(function (rs) {
+        out += '<section class="pb-rep-sec"><h4>Why ' + esc(rs.tool) + ' fits</h4>' + (rs.strengths.length ? list(rs.strengths.map(reasonLi)) : '<p class="pb-fine">No answer favours it yet.</p>') + '</section>' +
+          '<section class="pb-rep-sec"><h4>Watch-outs for ' + esc(rs.tool) + '</h4>' + (rs.concerns.length ? list(rs.concerns.map(reasonLi)) : '<p class="pb-fine">None flagged by the answers given.</p>') + '</section>';
+      });
+      if (c.others.length || c.excluded.length) {
+        out += '<section class="pb-rep-sec"><h4>The other tools</h4>' + list(c.others.map(function (t) { return '<strong>Rank ' + (t.tied ? '=' : '') + t.rank + '</strong> ' + esc(t.name); })
+          .concat(c.excluded.map(function (e) { return '<strong>' + esc(e.name) + '</strong> is ruled out: ' + esc(e.because); }))) + '</section>';
+      }
+      if (c.constraints.length) out += '<section class="pb-rep-sec"><h4>What the client told us they need</h4>' + list(c.constraints.map(esc)) + '</section>';
+      if (c.migration.length) out += '<section class="pb-rep-sec"><h4>Migration</h4>' + list(c.migration.map(esc)) + '</section>';
+      out += '<section class="pb-rep-sec"><h4>Next steps</h4>' + list(c.nextSteps.map(esc).concat(c.winners.filter(function (w) { return w.docUrl; }).map(function (w) {
+        return 'Official documentation for ' + esc(w.name) + ': <a href="' + esc(w.docUrl) + '" target="_blank" rel="noopener">' + esc(w.docUrl.replace(/^https:\/\//, '')) + '</a>';
+      }))) + '</section>';
+      var secs = [];
+      c.answers.forEach(function (a) { var last = secs[secs.length - 1]; if (!last || last.title !== a.section) secs.push(last = { title: a.section, rows: [] }); last.rows.push(a); });
+      out += '<section class="pb-rep-sec pb-rep-answers"><h4>Answers and notes</h4>' + (secs.length ? secs.map(function (x) {
+        return '<h5>' + esc(x.title) + '</h5>' + list(x.rows.map(function (a) { return '<strong>' + esc(a.question) + '</strong> ' + esc(a.answer) + (a.note ? ' <em>(' + esc(a.note) + ')</em>' : ''); }));
+      }).join('') : '<p class="pb-fine">None yet.</p>') + '</section>';
+      return out;
+    }
     function renderFinal() {
-      var text = L.buildSummary(summaryContext());
       return '<section class="pb-sec"><h2>Final recommendation</h2>' +
-        '<p class="pb-lead">A plain-text summary you can copy, print or save: the best fit, the reasons and watch-outs, migration notes, and what to validate next.</p>' +
-        '<div class="pb-card" id="pb-summary"><label class="pb-notelabel">Client name (shown on the printout, never saved)<input class="pb-input" data-action="client" value="' + esc(ui.clientName) + '" autocomplete="off"></label>' +
-        '<pre class="pb-pre" id="pb-summary-text">' + esc(text) + '</pre></div>' +
-        '<p class="pb-actions"><button class="pb-btn" data-action="copy">Copy as text</button> <button class="pb-btn pb-btn-ghost" data-action="print">Print or save as PDF</button> ' +
-        '<button class="pb-btn pb-btn-ghost" data-action="download">Download answers</button> <label class="pb-btn pb-btn-ghost pb-file">Restore answers<input type="file" accept="application/json" data-action="restore"></label></p>' +
+        '<p class="pb-lead">The best fit and the reasons for it, written so you can hand it over. Copy it, save it as Markdown, or save it as a PDF.</p>' +
+        '<label class="pb-notelabel pb-rep-client">Client name (shown on the document, never saved)<input class="pb-input" data-action="client" value="' + esc(ui.clientName) + '" autocomplete="off"></label>' +
+        '<article class="pb-card pb-report" id="pb-summary">' + finalHtml(summaryContext()) + '</article>' +
+        '<p class="pb-actions"><button class="pb-btn" data-action="copy">Copy as Markdown</button> <button class="pb-btn pb-btn-ghost" data-action="mdsave">Save as Markdown</button> <button class="pb-btn pb-btn-ghost" data-action="print">Save as PDF</button> ' +
+        '<button class="pb-btn pb-btn-ghost" data-action="download">Back up the answers</button> <label class="pb-btn pb-btn-ghost pb-file">Restore answers<input type="file" accept="application/json" data-action="restore"></label></p>' +
         '<p class="pb-fine" id="pb-flash" role="status"></p></section>';
     }
 
@@ -1180,9 +1221,21 @@
       try { flash(doc().execCommand('copy') ? 'Copied.' : 'Select the text and copy it.'); } catch (e) { flash('Select the text and copy it.'); }
       doc().body.removeChild(ta);
     }
-    function download() {
-      var blob = new root.Blob([JSON.stringify({ app: 'bi-playbook', version: 1, answers: session.answers, notes: store.notes }, null, 2)], { type: 'application/json' });
-      var a = doc().createElement('a'); a.href = root.URL.createObjectURL(blob); a.download = 'bi-playbook-answers.json'; a.click(); root.URL.revokeObjectURL(a.href);
+    function saveFile(name, text, type) {
+      var blob = new root.Blob([text], { type: type });
+      var a = doc().createElement('a'); a.href = root.URL.createObjectURL(blob); a.download = name; a.click(); root.URL.revokeObjectURL(a.href);
+    }
+    /** A backup of the answers and notes that can be restored on another device. */
+    function download() { saveFile('bi-playbook-answers.json', JSON.stringify({ app: 'bi-playbook', version: 1, answers: session.answers, notes: store.notes }, null, 2), 'application/json'); }
+    function saveMarkdown() { saveFile('bi-tool-recommendation.md', summaryText(), 'text/markdown'); }
+    /** Print only the final recommendation: the browser's print dialog offers "Save as PDF". */
+    function printSummary() {
+      var html = doc().documentElement; html.setAttribute('data-print', 'summary'); root.print(); html.removeAttribute('data-print');
+    }
+    function savePdf() {
+      if (lockedNow()) return;
+      ui.rec = 'final'; ui.page = 'discovery'; render();
+      printSummary();
     }
 
     /** Attach the page's handlers to a host element: the content area and the carousel share them. */
@@ -1208,7 +1261,7 @@
       host.addEventListener('input', function (e) {
         var t = e.target;
         if (t.matches && t.matches('textarea[data-note]')) { store.notes[t.getAttribute('data-note')] = t.value; if (!t.value) delete store.notes[t.getAttribute('data-note')]; saveStore(); }
-        else if (t.getAttribute && t.getAttribute('data-action') === 'client') { ui.clientName = t.value; var pre = o.container.querySelector('#pb-summary-text'); if (pre) pre.textContent = L.buildSummary(summaryContext()); }
+        else if (t.getAttribute && t.getAttribute('data-action') === 'client') { ui.clientName = t.value; var ti = o.container.querySelector('#pb-rep-title'); if (ti) ti.textContent = 'BI tool recommendation' + (t.value ? ' for ' + t.value : ''); }
       });
       host.addEventListener('click', function (e) {          // a radio clicked twice quickly
         var t = e.target;
@@ -1258,7 +1311,9 @@
         else if (act === 'undo') { if (ui.notice && ui.notice.undo) { var prev = ui.notice.undo; ui.notice = null; buildSession(prev); persist(); refresh(); } }
         else if (act === 'dismiss') { ui.notice = null; refresh(); }
         else if (act === 'copy') copy();
-        else if (act === 'print') { var html = doc().documentElement; html.setAttribute('data-print', 'summary'); root.print(); html.removeAttribute('data-print'); }
+        else if (act === 'print') printSummary();
+        else if (act === 'mdsave') saveMarkdown();
+        else if (act === 'pdf') savePdf();
         else if (act === 'download') download();
         else if (act === 'reset') api.reset();
       });

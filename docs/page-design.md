@@ -252,7 +252,7 @@ Answers are tiles. Up to three scored answers sit side by side in one bar; four 
 - When an answer closes a branch, the answers behind it are cleared and a quiet notice says so, with **Undo**: *Your answers to the skill-level and training questions were cleared because JMAN will build the reports.* **[Proposal; `answer()` returns the cleared question IDs, Undo is kept by the page]**
 
 #### The right rail while answering: "Your answers"
-- **Progress:** "7 of 22 questions answered" with a purple bar. 20 are asked at the start; the total moves as branches open or close.
+- **Progress:** "7 of 22 questions answered" with a purple bar. 19 are asked at the start; the total moves as branches open or close.
 - **State label** (see 3.6).
 - **Matters most, still open:** unanswered questions ordered by weight, highest first, each a link to the question. The weights only order the list; they are not shown. Needs a small engine addition **[section 6]**; weights are provisional **[B7]**.
 - **Start over**, and a note *Saved on this device.*
@@ -535,7 +535,7 @@ Compared question by question on 2026-11-17 **[Measured]**.
 | A23 | The 30 one-line group summaries in the comparison matrix (one for each tool in each of the five groups), the "we" wording of page 1 and its closing call to action | Owner / expert review |
 | A22 | The live ranking in the carousel is shown while answering although the recommendation is held back until every question is answered | Owner |
 | A21 | The proposed scores for Q06 "Data residency requirement" (3, 2, 4, 2, 3, 4 for Power BI, Looker, Tableau, ThoughtSpot, Sigma, Qlik), Q12 "Limited upskilling capacity" (4, 2, 3, 4, 4, 2) and Q12 "No capacity for change" (3, 1, 3, 3, 4, 2), written from deck slides 7 and 22 | Expert review |
-| A17 | The one-line guide under each of the 26 questions (it restates the question and makes no claim about any tool) | Owner review |
+| A17 | The one-line guide under each of the 25 questions (it restates the question and makes no claim about any tool) | Owner review |
 | A18 | "About 5 to 10 minutes" is the owner's estimate for the questionnaire; it has not been timed with users | Time a few real sessions |
 | A19 | The owner first gave 5 seconds, then 4 and 5 in different places, and on 2026-11-18 asked for 3.2 seconds. 3.2 is used for both the question and the area-complete countdowns, in two constants (`QUESTION_SECONDS`, `SECTION_SECONDS`) | Owner |
 | A20 | Tool logos are the files the owner supplied; the Qlik file is a wide wordmark and the Sigma file a black JPEG square, so both look different from the others; whether JMAN may show vendor logos is the owner's decision | Owner |
@@ -550,7 +550,7 @@ How this document was checked on 2026-11-17, and what remains unchecked.
 | 3 | Slide references | Every slide number is within 1 to 29; the contents slide lists six items | Pass. The criteria count is **14** (slides 7 and 9 hold seven each); an earlier draft said 15 |
 | 4 | Flow vs the questions | All 20 Flow questions compared by wording, select type and options | Seven question wordings and one option label differed and were aligned in the workbook; three Flow options are not offered [B1]; one extra option [D16]; types for Q14 to Q20 are not in the Flow [A7] |
 | 5 | Question inventory | The appendix is generated from `data/questions.json` and checked on every run of `scripts/check_docs.py` | Pass |
-| 6 | Engine facts | Counts and behaviour measured: 26 questions, 22 asked at the start, 9 multi-select, 12 with a not-scored answer, one answer that rules a tool out, scripts 20.2 KB, `result()` 0.03 ms | Pass; the engine's 28 tests and the model harness (37 pass, 6 warn, 0 fail) were re-run |
+| 6 | Engine facts | Counts and behaviour measured: 25 questions, 19 asked at the start, 9 multi-select, 12 with a not-scored answer, one answer that rules a tool out, scripts 20.2 KB, `result()` 0.03 ms | Pass; the engine's 28 tests and the model harness (37 pass, 6 warn, 0 fail) were re-run |
 | 7 | Palette and contrast | Pixels sampled from the five screenshots; WCAG ratios computed | Five of six accents are close to the deck's theme; orchid differs; only indigo and purple pass as text on white; the earlier "meets AA" claim and the pink progress bar were wrong and are replaced |
 | 8 | Confidence thresholds | `scripts/calibrate_thresholds.py`: simulated clients, every weight nudged by up to 1 up or down, partial versus final answers | The earlier 0.15 z and 60% were not supported; replaced by 0.3 and 0.5 z and an 80% coverage line, with the evidence quoted in 3.6 |
 | 9 | Marketplace claims | Each element compared with the screenshots | Hero, meta, owner chip, tab row, "On this page", helpfulness row, previous/next, question form and pill style are **[Observed]**; fixed-on-scroll, sub-page behaviour, hosting, pre-filling and analytics are not observable [A1 to A6] |
@@ -635,7 +635,7 @@ python -m http.server 5173 --directory site  # then open http://localhost:5173
 
 **The five areas, in the order they are asked.** The migration-related questions are last, as requested:
 1. Business context and goals (Q01 to Q04, Q21 to Q23, Q25)
-2. Data, security and governance (Q05 to Q09, Q26)
+2. Data, security and governance (Q05 to Q08, Q26)
 3. Skills and change readiness (Q10 with its follow-ups Q11 and Q12, then Q24)
 4. Data landscape and delivery (Q16, Q18, Q19)
 5. Existing reporting and migration (Q13 with its follow-ups Q14 and Q15, then Q17 and Q20)
@@ -694,7 +694,7 @@ Owner request: when the reader leaves the questions before finishing, the contai
 ## 18. Two pages, told as a story (revision 2026-11-20, third)
 Owner request: the playbook should read as a story, in words that make clear the authors are consultants, and be two pages instead of four. This section supersedes the page list in section 16, the Compare tools landing, the 1 v 1 view and the width paragraph there.
 
-**Superseded in part by section 20:** no tab row, the questions are a subpage reached from the last button of page 1, the areas are a card grid, nothing moves on by itself, and the reference section is gone.
+**Section 21 (2026-11-21) rewrites the final recommendation and changes the question set.** **Superseded in part by section 20:** no tab row, the questions are a subpage reached from the last button of page 1, the areas are a card grid, nothing moves on by itself, and the reference section is gone.
 
 **Page 1, Tools overview.** In this order: *Purpose* (we do not start with a favourite; who the playbook is for; when we use it, what it helps us decide, what it does not replace); *Contents* (cards for Do's and Don'ts, Tools dictionary, Comparison matrix, and Client discovery on the next page); *Do's and Don'ts* (the earlier principles, now in the first person: *We start with…*, *We never declare…*); *Tools dictionary*; *Comparison matrix*; a closed *More reference* disclosure (scenarios, fast path, deployment, integration, the pending "why these six" note); and the closing call to action *Still unable to pick a BI tool?* with *Spend just 5 to 10 minutes on a few questions about the client…* and a *Start client discovery* button. The page's own list (*On this page*) follows the same order. It is wider (1200 px) so the matrix fits without sideways scrolling at a normal laptop width.
 
@@ -757,6 +757,19 @@ Owner request. This section supersedes sections 15 and 17 where they describe th
 
 **Published page.** `site/` is committed (it is the page hosted from the repository) and is rebuilt with `python scripts/build_site.py --production --with-font`.
 
+## 21. The final recommendation, the save card, and a review of the questions and marks (revision 2026-11-21)
+Owner requests, decided on judgement (the long checks were not run again).
+
+**Final recommendation.** It is now a document, not a block of text. Under a title (with the client's name when entered) and a line saying *Internal use only*, the date and the status, it has: the headline (the best fit, with its logo and the lead sentence, or *Too close to call* with every co-leader); *Why it fits* and *Watch-outs*, each point as the answer given, the question it answered and the experts' reason; *The other tools* (ranked, with those ruled out and why); what the client told us they need; migration notes; *Next steps*; and *Answers and notes* by area. The next steps are specific: compare the two when the lead is narrow or tied, go through the watch-outs with the client, list the reports to move when there is a migration, run a proof of concept on the riskiest assumption, check pricing and licensing with the vendor, and, last, a link to the official documentation of the winner (of every co-leader on a tie). The best-fit card ends with the same link. The same content is the Markdown file: *Copy as Markdown*, *Save as Markdown* and *Save as PDF* (the browser's print dialog, with only the document printed) sit under it, and *Back up the answers* (JSON) and *Restore answers* remain.
+
+**The save card.** The last card of the discovery grid is *Save your answers*, with two buttons: *Markdown* (always available) and *PDF* (available once every question is answered, because it holds the recommendation).
+
+**The matrix note is gone.** The paragraph under the matrix explaining the tint was removed; the legend swatch (*Leads*) stays.
+
+**Questions merged or trimmed (workbook edit v6).** 26 questions became 25 and 110 answers became 106: Q09 (*AI governance concerns*) is merged into Q06 as one more requirement (*AI governance concerns*, with the scores of the former *Yes*; its yes/maybe/no ladder duplicated Q05); Q06 *External access* is removed (Q19 asks about external and embedded reporting); Q18 *Offline / on-premises operation* is removed (Q16 and Q26 carry that fact with identical scores). 19 questions are asked at the start (it was 20). The tie-break group *governance* is now Q05 to Q08 and Q26. The Flow sheet's drawing was not edited and still shows the old Q09.
+
+**Marks adjusted by judgement (v6 and v6b), each noted in the workbook's Score basis and awaiting SME confirmation:** Q21 Sigma 4 to 3 (critical) and 3 to 2 (important); Q01 forecasting and planning: Tableau 1 to 2, Sigma 4 to 3; Q16 hybrid and Q26 no-self-hosted: Power BI 4 to 3; Q11 beginner and Q12 no training required: Tableau 4 to 3; Q19 pixel-perfect: Sigma 2 to 3 and Tableau 4 to 3; Q20 parallel run: Looker and ThoughtSpot 2 to 3; Q23 cost: ThoughtSpot 1 to 2 on both answers; Q22 AI: Looker and Sigma 2 to 3 on both answers. A first version of the review also raised Power BI 3 to 4 on Q11 and Q12; it was taken back (v6b) because it made Power BI tie ThoughtSpot and Sigma on every answer in the plain-English and spreadsheet scenarios, and the rule that no tool ranks above one that fits at least as well on every answer then put Power BI first. After the review all six of the deck's client scenarios give the expected tool, including the one that failed before (needs presentation-quality dashboards gives Tableau, with Sigma second).
+
 ---
 
 ## Appendix: question inventory
@@ -783,11 +796,10 @@ Generated from `data/questions.json` by `scripts/check_docs.py --write` (26 ques
 | # | Question | Select | Asked | Options |
 |---|---|---|---|---|
 | Q05 | Do you have strict governance or compliance requirements? | one | Always | Yes; No; To be confirmed *(not scored)* |
-| Q06 | What are your security and access requirements? | several | Always | Basic access; Role-based access / RLS; Enterprise security (SSO and granular controls); External access; Data residency requirement; To be confirmed *(not scored)* |
+| Q06 | What are your security and access requirements? | several | Always | Basic access; Role-based access / RLS; Enterprise security (SSO and granular controls); Data residency requirement; AI governance concerns (control over how AI features use the data); To be confirmed *(not scored)* |
 | Q26 | Is a vendor-hosted (SaaS) BI platform acceptable? | one | Always | Yes: vendor-hosted SaaS is acceptable *(not scored)*; No: must run on-premises or on client-controlled infrastructure *(rules out sigma)*; To be confirmed *(not scored)* |
 | Q07 | Do you have a defined data model or semantic layer in existing reporting? | one | Always | Yes; Partial; No |
 | Q08 | How mature is the current reporting governance process? | one | Always | No formal governance; Partially governed; Fully governed |
-| Q09 | Are there any AI governance concerns to be aware of? | one | Always | Yes; Maybe; No |
 
 **Section 3 Skills and change readiness**
 
@@ -812,7 +824,7 @@ Generated from `data/questions.json` by `scripts/check_docs.py --write` (26 ques
 |---|---|---|---|---|
 | Q16 | What is the data estate? | several (assumed) | Always | Cloud warehouse ready; Hybrid / on-premises; Fragmented sources / no warehouse; High-volume / rapidly growing |
 | Q17 | How complex is the existing content? | several (assumed) | Only if "Does the client have an active reporting suite" is "Yes" or "Partial / Departmental only" | Standard dashboards / simple calculations; Complex calculations / semantic models; Custom visuals / extensions; Write-back / planning / complex dependencies |
-| Q18 | What are the refresh and performance requirements? | several (assumed) | Always | Scheduled / daily batch; Near-real-time / live query; High concurrency / strict SLA; Offline / on-premises operation |
+| Q18 | What are the refresh and performance requirements? | several (assumed) | Always | Scheduled / daily batch; Near-real-time / live query; High concurrency / strict SLA |
 | Q19 | Is embedded or external reporting required? | several (assumed) | Always | Internal reporting only; Controlled external sharing; Embedded customer-facing analytics; Pixel-perfect export / scheduled distribution |
 | Q20 | What are the migration constraints? | several (assumed) | Only if "Does the client have an active reporting suite" is "Yes" or "Partial / Departmental only" | Aggressive timeline; Limited delivery or change capacity; Risk-minimized parallel run; No material constraints / TBC *(not scored)* |
 

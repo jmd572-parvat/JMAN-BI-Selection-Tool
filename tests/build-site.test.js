@@ -27,7 +27,7 @@ test('preview build: drafts included with a toggle, reviewer notes present', () 
   assert.match(html, /pv-preview/);
   assert.ok(!/known gaps/.test(html), 'the known-gaps panel is gone');
   const q = JSON.parse(read(out, 'data/questions.json'));
-  assert.equal(q.questions.length, 26);
+  assert.equal(q.questions.length, 25);
   assert.ok(q.meta.draftsIncluded);
   assert.deepEqual(q.meta.draftQuestions, [], 'no question is a draft any more');
   assert.ok(!html.includes('{{'), 'no unreplaced template placeholders');
@@ -45,7 +45,7 @@ test('production build: no draft questions, no reviewer strip, no preview config
   const q = JSON.parse(read(out, 'data/questions.json'));
   assert.equal(q.meta.draftsIncluded, false);
   assert.ok(q.questions.every((x) => x.status !== 'draft'), 'no draft question ships');
-  assert.equal(q.questions.length, 26, 'with no drafts the production build holds every question');
+  assert.equal(q.questions.length, 25, 'with no drafts the production build holds every question');
 });
 
 test('both builds contain every file the page loads, and nothing refers to a missing file', () => {

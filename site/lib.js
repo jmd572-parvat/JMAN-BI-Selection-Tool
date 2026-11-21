@@ -123,50 +123,53 @@
   var STATE_LABEL = { none: 'Nothing scored yet', provisional: 'Provisional', near: 'Near complete', complete: 'Complete' };
 
   /** Plain-text summary for copy and print. All inputs are plain data (see tests/page-lib.test.js for the shape). */
+  /**
+   * The recommendation as Markdown. `c` is built by the page (summaryContext); nothing in here knows about tools or scores:
+   * winners, reasons, ranking, constraints, next steps and answers arrive ready to print.
+   */
   function buildSummary(c) {
-    var L = [];
-    L.push('BI tool recommendation          INTERNAL USE ONLY            ' + c.date);
-    L.push('Client: ' + (c.clientName || '(not entered)'));
-    L.push('Status: ' + (c.state === 'complete' ? 'Complete, all ' + c.visible + ' questions'
-      : (STATE_LABEL[c.state] || c.state) + ', based on ' + c.answered + ' of ' + c.visible + ' questions'));
-    L.push('');
+    var M = [];
+    var item = function (x) { return '- **' + x.answer + '** (' + x.question + ')' + (x.why ? ': ' + x.why : ''); };
+    var status = c.state === 'complete' ? 'Complete: all ' + c.visible + ' questions answered'
+      : (STATE_LABEL[c.state] || c.state) + ': ' + c.answered + ' of ' + c.visible + ' questions answered';
+    M.push('# BI tool recommendation' + (c.clientName ? ' for ' + c.clientName : ''), '');
+    M.push('*Internal use only · ' + c.date + ' · ' + status + '*', '');
     if (!c.informative) {
-      L.push('No scored answers yet, so there is nothing to recommend.');
+      M.push('No scored answers yet, so there is nothing to recommend.', '');
     } else {
-      var lead = c.coLeaders.length > 1 ? listJoin(sortNames(c.coLeaders)) + ' fit equally on these answers' : c.shortlist[0].name;
-      L.push((c.state === 'provisional' ? 'Best fit so far: ' : 'Best fit: ') + lead);
-      L.push('Lead: ' + ({ clear: 'clear', narrow: 'narrow', tooClose: 'too close to call' }[c.leadStrength] || c.leadStrength));
-      var others = c.shortlist.filter(function (t) { return c.coLeaders.length > 1 ? c.coLeaders.indexOf(t.name) === -1 : t.rank > 1; });
-      if (others.length) L.push('Also on the shortlist: ' + others.map(function (t) { return t.name; }).join(', ') + (c.boundaryMessage ? '   (' + c.boundaryMessage + ')' : ''));
-      else if (c.boundaryMessage) L.push(c.boundaryMessage);
-      if (c.excluded.length) c.excluded.forEach(function (e) { L.push('Ruled out: ' + e.name + ': ' + e.because); });
-      L.push('');
+      var winners = c.winners || [], tie = winners.length > 1;
+      M.push('## ' + (tie ? 'Too close to call: ' : c.state === 'provisional' ? 'Best fit so far: ' : 'Best fit: ') + listJoin(sortNames(winners.map(function (w) { return w.name; }))), '');
+      if (c.leadSentence) M.push(c.leadSentence, '');
+      if (c.boundaryMessage) M.push(c.boundaryMessage, '');
       (c.reasons || []).forEach(function (rs) {
-        L.push('Why ' + rs.tool);
-        rs.strengths.forEach(function (r) { L.push('- ' + r); });
-        L.push('Watch-outs for ' + rs.tool);
-        if (rs.concerns.length) rs.concerns.forEach(function (r) { L.push('- ' + r); }); else L.push('- none flagged by the answers given');
-        L.push('');
+        M.push('## Why ' + rs.tool + ' fits', '');
+        if (rs.strengths.length) rs.strengths.forEach(function (x) { M.push(item(x)); }); else M.push('- No answer favours it yet.');
+        M.push('', '## Watch-outs for ' + rs.tool, '');
+        if (rs.concerns.length) rs.concerns.forEach(function (x) { M.push(item(x)); }); else M.push('- None flagged by the answers given.');
+        M.push('');
       });
-      if (c.constraints && c.constraints.length) {
-        L.push('Constraints you told us about');
-        c.constraints.forEach(function (r) { L.push('- ' + r); });
-        L.push('');
+      if ((c.others || []).length || (c.excluded || []).length) {
+        M.push('## The other tools', '');
+        (c.others || []).forEach(function (t) { M.push('- Rank ' + (t.tied ? '=' : '') + t.rank + ': ' + t.name); });
+        (c.excluded || []).forEach(function (e) { M.push('- **' + e.name + '** is ruled out: ' + e.because); });
+        M.push('');
       }
-      if (c.migration && c.migration.length) {
-        L.push('Migration implications');
-        c.migration.forEach(function (r) { L.push('- ' + r); });
-        L.push('');
-      }
-      L.push('Next validation step');
-      L.push('- Run a proof of concept on the highest-risk assumption. Verify pricing and licensing before quoting.');
-      L.push('');
+      if ((c.constraints || []).length) { M.push('## What the client told us they need', ''); c.constraints.forEach(function (r) { M.push('- ' + r); }); M.push(''); }
+      if ((c.migration || []).length) { M.push('## Migration', ''); c.migration.forEach(function (r) { M.push('- ' + r); }); M.push(''); }
+      M.push('## Next steps', '');
+      (c.nextSteps || []).forEach(function (r) { M.push('- ' + r); });
+      winners.forEach(function (w) { if (w.docUrl) M.push('- Official documentation for ' + w.name + ': [' + w.docUrl + '](' + w.docUrl + ')'); });
+      M.push('');
     }
-    if (c.usesDraft && c.usesDraft.length) L.push('Note: this result uses draft questions (' + c.usesDraft.join(', ') + '); their scores are awaiting review.');
-    L.push('Answers and notes');
-    c.answers.forEach(function (a) { L.push('- ' + a.section + ': ' + a.question + ' - ' + a.answer + (a.note ? '  (' + a.note + ')' : '')); });
-    if (!c.answers.length) L.push('- none yet');
-    return L.join('\n');
+    if (c.usesDraft && c.usesDraft.length) M.push('*This result uses questions marked as draft (' + c.usesDraft.join(', ') + '); their scores are awaiting review.*', '');
+    M.push('## Answers and notes', '');
+    if (!c.answers.length) M.push('- None yet.');
+    var section = null;
+    c.answers.forEach(function (a) {
+      if (a.section !== section) { section = a.section; M.push('', '### ' + section, ''); }
+      M.push('- **' + a.question + '**: ' + a.answer + (a.note ? ' *(' + a.note + ')*' : ''));
+    });
+    return M.join('\n').replace(/\n{3,}/g, '\n\n') + '\n';
   }
 
   function escapeHtml(s) {

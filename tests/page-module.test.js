@@ -103,7 +103,7 @@ test('the module runs on the production data (no draft questions) at every answe
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'pb-prod-')), 'q.json');
   execFileSync('python', ['-X', 'utf8', 'scripts/excel_to_json.py', '--exclude-draft', '--out', out], { cwd: root, stdio: 'pipe' });
   const prod = JSON.parse(fs.readFileSync(out, 'utf8'));
-  assert.equal(prod.questions.length, 26, 'no draft is left to leave out');
+  assert.equal(prod.questions.length, 25, 'no draft is left to leave out');
   const h = load(memoryStorage(), { showDrafts: false, preview: false }, prod);
   let all = renderAll(h);
   for (const t of SECTIONS) assert.ok(!BAD.test(all[t]), `${t} (no answers): ${(all[t].match(BAD) || [])[0]}`);
@@ -114,7 +114,7 @@ test('the module runs on the production data (no draft questions) at every answe
   for (const t of [...SECTIONS, 'overlay']) assert.ok(!BAD.test(all[t]), `${t} (answered): ${(all[t].match(BAD) || [])[0]}`);
   assert.ok(!/Draft/.test(all.overlay) && !/Draft/.test(all.discovery) && !/draft questions/i.test(all.shortlist), 'no draft wording in production');
   assert.match(all.overlay, /Question 1 of 8/);
-  assert.match(all.final, /INTERNAL USE ONLY/);
+  assert.match(all.final, /Internal use only/);
 });
 
 test('answers are stored, restored by a fresh load, and cleared by Start over', () => {
@@ -152,7 +152,7 @@ test('a clear answer produces one clear leader with reasons and fit words', () =
   assert.match(html, /Why it fits/);
   assert.match(html, /pb-pill tier-(strong|good)/, 'fit words are shown beside each reason');
   assert.match(html, /Provisional/);
-  assert.match(html, /Based on 1 of 20 questions/);
+  assert.match(html, /Based on 1 of 19 questions/);
 });
 
 test('a ruled-out tool is explained with the answer, the deployment facts and the expert rationale', () => {
@@ -233,19 +233,33 @@ test('there is no reference section, and nothing on the page cites the deck as a
   assert.ok(!/sec-reference|More reference/.test(h.container.innerHTML));
 });
 
-test('the final summary names the status and is marked internal', () => {
+test('the final recommendation is a document: the headline, why, watch-outs, the other tools, next steps, the winner documentation link and the answers', () => {
   const h = load(memoryStorage());
   h.api.answer('Q04', ['microsoft']);
-  assert.match(sec(h, 'final'), /INTERNAL USE ONLY/);
-  assert.match(sec(h, 'final'), /Status: Provisional, based on 1 of 20 questions/);
-  assert.match(h.api.summary(), /Best fit so far: /);
-  for (let i = 0; i < 40 && h.api.session().openQuestions().length; i++) {      // answer everything: no more hedge
-    const q = h.api.session().visible().find((v) => !v.answered);
-    h.api.answer(q.id, [q.options.find((o) => !o.unknown).id]);
-  }
+  let html = sec(h, 'final');
+  assert.match(html, /Internal use only · \d{4}-\d{2}-\d{2} · Provisional: 1 of 19 questions answered/);
+  assert.match(h.api.summary(), /## Best fit so far: /);
+  answerAll(h);
   assert.equal(h.api.session().result().state, 'complete');
-  assert.match(h.api.summary(), /Status: Complete, all \d+ questions/);
-  assert.match(h.api.summary(), /Best fit(?! so far): /);
+  html = sec(h, 'final');
+  assert.match(html, /Complete: all \d+ questions answered/);
+  for (const part of ['class="pb-rep-hero"', 'Best fit</p>', '>Why ', '>Watch-outs for ', '>The other tools<', '>Next steps<', '>Answers and notes<', 'Run a proof of concept on the riskiest assumption', 'Check current pricing and licensing with the vendor']) assert.ok(html.includes(part), part);
+  assert.match(html, /Official documentation for [A-Za-z ]+: <a href="https:\/\/[^"]+" target="_blank" rel="noopener">/, 'the documentation link of the winner ends the next steps');
+  assert.ok(!/<pre/.test(html), 'a document, not a block of text');
+  assert.match(html, /data-action="copy">Copy as Markdown<\/button>/);
+  assert.match(html, /data-action="mdsave">Save as Markdown/);
+  assert.match(html, /data-action="print">Save as PDF/);
+  const md = h.api.summary();
+  assert.match(md, /^# BI tool recommendation\n/);
+  assert.match(md, /\*Internal use only · \d{4}-\d{2}-\d{2} · Complete: all \d+ questions answered\*/);
+  assert.match(md, /## Best fit: /);
+  assert.match(md, /## Why .+ fits\n\n- \*\*/);
+  assert.match(md, /## Next steps\n\n- .+\n- .+/);
+  assert.match(md, /- Official documentation for [A-Za-z ]+: \[https:\/\/[^\]]+\]\(https:\/\/[^)]+\)\n/);
+  assert.match(md, /## Answers and notes\n\n### Business context and goals\n\n- \*\*/);
+  assert.match(sec(h, 'shortlist'), /<p class="pb-doclink"><a href="https:\/\/[^"]+" target="_blank" rel="noopener">Official documentation/, 'the best-fit card ends with a link too');
+  h.listeners.input.forEach((fn) => fn({ target: { matches: () => false, getAttribute: (k) => ({ 'data-action': 'client' }[k]), value: 'Acme' } }));
+  assert.match(h.api.summary(), /^# BI tool recommendation for Acme\n/);
 });
 
 // ------------------------------------------------------------------ pages
@@ -308,9 +322,10 @@ test('the discovery page shows the five areas and a download card as a grid of c
   const html = sec(h, 'discovery');
   assert.match(html, /The client’s answers decide the tool, not our preferences/);
   assert.match(html, /It takes about 5 to 10 minutes\./);
-  const cards = [...html.matchAll(/<button class="pb-area[^"]*" data-action="(\w+)"(?: data-section="(\d)")?/g)].map((m) => m[1] + (m[2] ? ':' + m[2] : ''));
-  assert.deepEqual(cards, ['openq:1', 'openq:2', 'openq:3', 'openq:4', 'openq:5', 'download'], 'the five areas, then the download card last');
-  assert.match(html, /<strong class="pb-area-title">Download your answers<\/strong>/);
+  const cards = [...html.matchAll(/<(?:button|div) class="pb-area[^"]*"(?: data-action="(\w+)")?(?: data-section="(\d)")?/g)].map((m) => (m[1] ? m[1] + (m[2] ? ':' + m[2] : '') : 'save'));
+  assert.deepEqual(cards, ['openq:1', 'openq:2', 'openq:3', 'openq:4', 'openq:5', 'save'], 'the five areas, then the save card last');
+  assert.match(html, /<strong class="pb-area-title">Save your answers<\/strong>/);
+  assert.match(html, /data-action="mdsave">Markdown<\/button><button class="pb-btn pb-btn-ghost" data-action="pdf">PDF<\/button>/, 'Markdown and PDF');
   assert.ok(html.indexOf('Existing reporting and migration') > html.indexOf('Data landscape and delivery'), 'migration is the last area');
   assert.match(html, /class="pb-area is-next" data-action="openq" data-section="1"[\s\S]*Start here/, 'the first card says where to begin');
   assert.match(html, /data-action="openq">Start the questions/);
@@ -333,19 +348,27 @@ test('there is no tab row: the questions are reached from the last button of pag
   assert.equal(h.api.tab, 'discovery');
 });
 
-test('the download card saves the answers and notes as a file', () => {
-  const h = load(memoryStorage());
+test('the save card writes the recommendation as a Markdown file; the PDF waits for the recommendation; the back-up file is still there', () => {
+  const h = load(memoryStorage(), { lockUntilComplete: true });
   h.api.answer('Q04', ['microsoft']); h.api.setNote('Q04', 'a note');
+  assert.match(sec(h, 'discovery'), /data-action="pdf" disabled title="The PDF holds the recommendation/, 'no PDF until every question is answered');
   const saved = [];
   const a = { click() { saved.push(a.download); }, set href(v) { a._h = v; } };
-  h.ctx.Blob = function (parts) { saved.push(parts.join('')); };
+  h.ctx.Blob = function (parts, o) { saved.push(parts.join(''), o.type); };
   h.ctx.URL = { createObjectURL: () => 'blob:x', revokeObjectURL() {} };
   h.container.ownerDocument.createElement = () => a;
-  h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'download' }[k]) }) } });
-  const file = JSON.parse(saved[0]);
-  assert.deepEqual(file.answers.Q04, ['microsoft']);
-  assert.equal(file.notes.Q04, 'a note');
-  assert.equal(saved[1], 'bi-playbook-answers.json');
+  const click = (act) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': act }[k]) }) } });
+  click('mdsave');
+  assert.match(saved[0], /^# BI tool recommendation\n/);
+  assert.match(saved[0], /- \*\*Which enterprise ecosystem do you primarily operate within\?\*\*: Microsoft \*\(a note\)\*/);
+  assert.equal(saved[1], 'text/markdown');
+  assert.equal(saved[2], 'bi-tool-recommendation.md');
+  saved.length = 0;
+  click('download');
+  assert.deepEqual(JSON.parse(saved[0]).answers.Q04, ['microsoft']);
+  assert.equal(saved[2], 'bi-playbook-answers.json');
+  answerAll(h);
+  assert.ok(!/data-action="pdf" disabled/.test(sec(h, 'discovery')), 'the PDF button works once everything is answered');
 });
 
 // ------------------------------------------------------------------ the question carousel
@@ -362,7 +385,7 @@ test('opening an area shows one question in a dialog with the area title, a prog
   assert.match(html, /role="progressbar"/);
   assert.match(html, /data-action="next"/);
   assert.match(html, /data-action="close"/);
-  assert.match(html, /Question 1 of 6/);
+  assert.match(html, /Question 1 of 5/);
   assert.equal((html.match(/<fieldset/g) || []).length, 1, 'one question at a time');
   assert.match(html, /will appear here after your first scored answer/);
   assert.equal(h.overlay.hidden, false);
@@ -482,10 +505,10 @@ test('finishing an area closes it into its card and opens the next one; the last
   assert.equal(h.api.tab, 'discovery', 'the recommendation is further down the same page');
   // two areas open: finishing the first goes straight to the second
   const g = load(memoryStorage());
-  answerAll(g, ['Q05', 'Q06', 'Q26', 'Q07', 'Q08', 'Q09', 'Q16', 'Q18', 'Q19']);
+  answerAll(g, ['Q05', 'Q06', 'Q26', 'Q07', 'Q08', 'Q16', 'Q18', 'Q19']);
   g.api.openDiscovery('2');
   assert.equal(g.api.step().section, '2');
-  for (const id of ['Q05', 'Q06', 'Q26', 'Q07', 'Q08', 'Q09']) { g.api.openDiscovery(id); g.api.answer(id, [g.api.session().visible().find((v) => v.id === id).options.find((o) => !o.unknown).id]); }
+  for (const id of ['Q05', 'Q06', 'Q26', 'Q07', 'Q08']) { g.api.openDiscovery(id); g.api.answer(id, [g.api.session().visible().find((v) => v.id === id).options.find((o) => !o.unknown).id]); }
   g.api.advance();
   assert.equal(g.api.step().section, '4', 'area 2 is done, area 3 was answered already: on to area 4');
 });
@@ -662,7 +685,7 @@ test('each question has a one-line guide, and none of them names a tool or a sco
       h.api.move(1);
     }
   }
-  assert.equal(seen.size, 26, 'all 26 questions were shown with a guide');
+  assert.equal(seen.size, 25, 'all 25 questions were shown with a guide');
 });
 
 // ------------------------------------------------------------------ double-click and keys
@@ -750,7 +773,7 @@ test('the recommendation stays closed until every question has an answer', () =>
   let html = h.container.innerHTML;
   assert.match(html, /id="sec-locked"/);
   assert.match(html, /The recommendation opens once every question has an answer/);
-  assert.match(html, /1 of 20<\/strong> questions answered\. 19 to go\./);
+  assert.match(html, /1 of 19<\/strong> questions answered\. 18 to go\./);
   assert.ok(!/pb-tool|Best fit<\/h2>|pb-subtab/.test(html), 'no result, no tabs');
   assert.match(html, /data-action="openq">Continue the questions/);
   for (const id of ['migration', 'final']) { h.api.go(id); assert.match(h.container.innerHTML, /id="sec-locked"/, `${id} is closed too`); }
@@ -884,8 +907,8 @@ test('leaving the questions unfinished shrinks them into a corner window that st
   assert.equal(h.api.overlayOpen(), false);
   assert.ok(h.api.minimized());
   assert.equal(h.mini.hidden, false);
-  assert.match(h.mini.innerHTML, /data-action="resume" aria-label="Resume the questions: 1 of 20 answered"/);
-  assert.match(h.mini.innerHTML, /1 of 20 answered · Skills and change readiness/, 'it says where they are');
+  assert.match(h.mini.innerHTML, /data-action="resume" aria-label="Resume the questions: 1 of 19 answered"/);
+  assert.match(h.mini.innerHTML, /1 of 19 answered · Skills and change readiness/, 'it says where they are');
   assert.match(h.mini.innerHTML, /class="pb-mini-ring" style="--p:5%"/);
   h.api.go('compare');                      // it follows the reader to other pages
   assert.equal(h.mini.hidden, false);
@@ -1007,7 +1030,6 @@ test('content audit: the matrix correction applies to the original text only, an
   const m = sec(h, 'matrix');
   assert.match(m, /Sigma Assistant \(successor to Ask Sigma\) covers the basics/);
   assert.ok(!/Ask Sigma covers the basics/.test(m));
-  assert.match(m, /Sigma’s AI, is corrected/);
   const sc = sec(h, 'scoring');
   assert.match(sc, /Most of those ratings come from our experts/);
   assert.match(sc, /took them from our comparison table, and three answers are our own proposals\. Those are all still waiting for an expert to confirm them/);
