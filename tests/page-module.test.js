@@ -179,7 +179,7 @@ test('the migration section follows the answers: gate, none, tools in use', () =
   assert.match(sec(h, 'migration'), /Effort by dimension/);
 });
 
-test('the dictionary is one container with a tab for each tool, A to Z, and shows one tool at a time with every detail we hold', () => {
+test('the dictionary is one container with a tab for each tool, A to Z, and each tool is one sentence and a link to its official documentation', () => {
   const h = load(memoryStorage());
   let html = sec(h, 'dictionary');
   assert.match(html, /Tools dictionary/);
@@ -188,21 +188,20 @@ test('the dictionary is one container with a tab for each tool, A to Z, and show
   assert.deepEqual(tabs.filter((t) => t[1] === 'true').map((t) => t[0]), ['looker'], 'the first tool is shown to start with');
   assert.equal((html.match(/<article class="pb-dict"/g) || []).length, 1, 'one tool at a time');
   assert.match(html, /id="dpanel" role="tabpanel" aria-labelledby="dtab-looker"/);
+  const docs = { looker: 'https://docs.cloud.google.com/looker/docs', powerbi: 'https://learn.microsoft.com/en-us/power-bi/', qlik: 'https://help.qlik.com/', sigma: 'https://help.sigmacomputing.com/', tableau: 'https://help.tableau.com/', thoughtspot: 'https://docs.thoughtspot.com/' };
   const click = (attrs) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => attrs[k] }) } });
-  const seen = {};
+  const names = { looker: 'Looker', powerbi: 'Power BI', qlik: 'Qlik', sigma: 'Sigma', tableau: 'Tableau', thoughtspot: 'ThoughtSpot' };
   for (const [id] of tabs) {
     click({ 'data-action': 'dtab', 'data-tool': id });
     html = sec(h, 'dictionary');
     assert.match(html, new RegExp(`<article class="pb-dict" id="dict-${id}"`), `${id} is shown`);
     assert.match(html, new RegExp(`id="dtab-${id}" aria-selected="true"`));
-    for (const part of ['Typical features', 'Unique features', 'Benefits', 'AI capabilities', 'Cost tier', 'Deployment', 'Integration']) assert.match(html, new RegExp(`<h4>${part}</h4>`), `${part} for ${id}`);
-    seen[id] = html;
+    assert.match(html, new RegExp(`<p class="pb-dict-main">${names[id]} is best suited for [^<]+\.</p>`), `${id}: one sentence, with the tool's name spelled right`);
+    assert.match(html, new RegExp(`<a class="pb-btn pb-btn-ghost" href="${docs[id].replace(/[.*+?^${}()|[\]\/]/g, '\$&')}" target="_blank" rel="noopener">Read the official documentation`), `${id}: the link to its own documentation`);
+    assert.equal((html.match(/<p class="pb-dict-main">/g) || []).length, 1);
+    assert.ok(!/<h4>/.test(html.slice(html.indexOf('<article class="pb-dict"'), html.indexOf('</article>'))), 'no lists of features, benefits or costs');
   }
-  assert.match(seen.looker, /Primary deployment:<\/strong> Looker \(Google Cloud core\)/, 'the vendor-sourced corrections apply');
-  assert.ok(Object.values(seen).some((x) => /Integration details for this tool are not available yet/.test(x)), 'and the gaps are said');
-  assert.match(seen.tableau, /Not shown yet\. This list is being corrected\./);
-  assert.ok(!/Semantic data modeling with DAX/.test(seen.tableau), 'the Power BI feature list is not shown under the Tableau entry');
-  assert.ok(Object.values(seen).filter((x) => /<h4>Moving to it<\/h4>/.test(x)).length >= 4, 'migration notes where the deck has them');
+  assert.equal(Object.keys(docs).length, tabs.length, 'a link for every tool');
   // the arrow keys move between tabs
   const key = (k, tool) => h.listeners.keydown.forEach((fn) => fn({ key: k, target: { closest: () => ({ getAttribute: () => tool }) }, preventDefault() {} }));
   key('ArrowRight', 'thoughtspot');
@@ -985,8 +984,8 @@ test('page 1 reads shorter: purpose as four labelled rows, no line under Content
   assert.match(css, /\.pb-mk-dont \{[^}]*color: #D6293E;/, 'the cross is red');
   const rule = (name) => css.slice(css.indexOf('\n' + name + ' {')).split('}')[0];
   assert.ok(!/max-width/.test(rule('.pb-lead')) && !/max-width/.test(rule('.pb-intro')), 'paragraphs are not cut short');
-  assert.ok(!/\.pb-dict-intro \{[^}]*max-width/.test(css) && !/\.pb-intro-sm \{[^}]*max-width/.test(css));
-  assert.match(sec(h, 'dictionary'), /<h3>Looker<\/h3><\/header><p class="pb-bestsuited"><strong>Best suited for<\/strong>/);
+  assert.ok(!/\.pb-dict-main \{[^}]*max-width/.test(css) && !/\.pb-intro-sm \{[^}]*max-width/.test(css));
+  assert.match(sec(h, 'dictionary'), /<h3>Looker<\/h3><\/header><p class="pb-dict-main">Looker is best suited for /);
   const how = sec(h, 'scoring');
   const prose = how.slice(how.indexOf('pb-prose'), how.indexOf('</details>'));
   assert.equal((prose.match(/<p>/g) || []).length, 4, 'four short paragraphs, in plain sentences');
@@ -999,38 +998,18 @@ test('page 1 reads shorter: purpose as four labelled rows, no line under Content
   assert.match(read('src/page/index.html'), /fonts\.googleapis\.com\/css2\?family=M\+PLUS\+1/, 'the preview shell loads it');
 });
 
-test('content audit: the corrections apply to the deck’s exact text, carry a marker and a vendor source, and the scoring text says where scores come from', () => {
-  const deck = json('data/deck/profiles.json');
+test('content audit: the matrix correction applies to the original text only, and the scoring text says where scores come from', () => {
   const matrix = json('data/deck/matrix.json');
   const h = load(memoryStorage());
-  const tabHtml = (id) => { h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'dtab', 'data-tool': id }[k]) }) } }); return sec(h, 'dictionary'); };
-  // ThoughtSpot: the deck's "Team" edition no longer exists under that name
-  const ts = deck.tools.find((x) => x.id === 'thoughtspot');
-  assert.ok(ts.costTier.includes('Team, Pro, Enterprise (custom pricing)'), 'the correction is written for this exact deck text');
-  let html = tabHtml('thoughtspot');
-  assert.match(html, /Essentials, Pro and Enterprise plans; Enterprise is custom-priced <span class="pb-pill corr">Corrected<\/span> <a href="https:\/\/www\.thoughtspot\.com\/pricing"/);
-  assert.ok(!/Team, Pro, Enterprise/.test(html), 'the superseded wording is not shown');
-  // Sigma: Ask Sigma is now part of Sigma Assistant
-  const sg = deck.tools.find((x) => x.id === 'sigma');
-  assert.ok(sg.uniqueFeatures.includes('Ask Sigma enables natural language querying and AI-assisted data exploration'));
-  assert.ok(sg.aiCapabilities.includes('Ask Sigma for conversational analytics and natural language querying'));
-  html = tabHtml('sigma');
-  assert.equal((html.match(/Sigma Assistant \(the successor to Ask Sigma and AI Builder\)/g) || []).length, 2);
-  assert.equal((html.match(/pb-pill corr">Corrected/g) || []).length, 2 + 0, 'one marker for each corrected line');
-  assert.ok(!/<li>Ask Sigma/.test(html));
-  // and one matrix cell
-  assert.equal(matrix.groups[1].criteria[0].cells.sigma.detail, 'Ask Sigma covers the basics');
+  assert.equal(matrix.groups[1].criteria[0].cells.sigma.detail, 'Ask Sigma covers the basics', 'the correction is written for this exact text');
   h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'mall', 'data-open': '1' }[k]) }) } });
   for (const t of ['powerbi', 'qlik', 'tableau', 'thoughtspot', 'looker']) h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'mtool', 'data-tool': t }[k]) }) } });
   const m = sec(h, 'matrix');
   assert.match(m, /Sigma Assistant \(successor to Ask Sigma\) covers the basics/);
   assert.ok(!/Ask Sigma covers the basics/.test(m));
   assert.match(m, /Sigma’s AI, is corrected/);
-  // the scoring text is straight about its inputs
   const sc = sec(h, 'scoring');
   assert.match(sc, /Most of those ratings come from our experts/);
   assert.match(sc, /took them from our comparison table, and three answers are our own proposals\. Those are all still waiting for an expert to confirm them/);
   assert.ok(!/For every answer, subject-matter experts/.test(sc));
-  // the dictionary has no source line
-  assert.ok(!/Source: deck/.test(tabHtml('looker')), 'no source sentence under a tool');
 });

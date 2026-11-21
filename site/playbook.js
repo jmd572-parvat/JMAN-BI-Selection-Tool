@@ -124,23 +124,16 @@
     }
   };
 
-  /**
-   * Corrections to the tool profiles (deck slides 10 to 15) and one matrix cell, each checked against the vendor's own pages on 2026-11-20.
-   * `from` is the deck's exact text: a test fails if the deck changes, so a correction never lands on text it was not written for.
-   */
-  var TS_PRICING = 'https://www.thoughtspot.com/pricing';
-  var SIGMA_ASSISTANT = 'https://www.sigmacomputing.com/blog/introducing-sigma-assistant';
-  var PROFILE_FIX = {
-    thoughtspot: { costTier: [{ from: 'Team, Pro, Enterprise (custom pricing)', to: 'Essentials, Pro and Enterprise plans; Enterprise is custom-priced', url: TS_PRICING }] },
-    sigma: {
-      uniqueFeatures: [{ from: 'Ask Sigma enables natural language querying and AI-assisted data exploration', to: 'Sigma Assistant (the successor to Ask Sigma and AI Builder) enables natural language querying and AI-assisted data exploration', url: SIGMA_ASSISTANT }],
-      aiCapabilities: [{ from: 'Ask Sigma for conversational analytics and natural language querying', to: 'Sigma Assistant (the successor to Ask Sigma and AI Builder) for conversational analytics and natural language querying', url: SIGMA_ASSISTANT }]
-    }
+  /** One correction to a matrix cell, checked against the vendor's own pages on 2026-11-20. `from` is the original text: it only applies to that exact text. */
+  /** Where each tool's own documentation starts. Every address was opened on 2026-11-21. */
+  var DOCS = {
+    looker: 'https://docs.cloud.google.com/looker/docs', powerbi: 'https://learn.microsoft.com/en-us/power-bi/', qlik: 'https://help.qlik.com/',
+    sigma: 'https://help.sigmacomputing.com/', tableau: 'https://help.tableau.com/', thoughtspot: 'https://docs.thoughtspot.com/'
   };
   var MATRIX_FIX = { sigma: { 'AI-Assisted & Conversational Analytics': { from: 'Ask Sigma covers the basics', to: 'Sigma Assistant (successor to Ask Sigma) covers the basics' } } };
 
   /** Line icons (24 px grid, drawn with the text colour): used for every arrow, close and tick so they centre exactly. */
-  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', up: '<path d="m6 14.5 6-6 6 6"/>', down: '<path d="m6 9.5 6 6 6-6"/>', expand: '<path d="M14 5h5v5M10 19H5v-5M19 5l-6 6M5 19l-6 6"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>', top: '<path d="M12 19V6M6.5 11.5 12 6l5.5 5.5"/>', download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>' };
+  var ICON_PATHS = { left: '<path d="M14.5 6 8.5 12l6 6"/>', right: '<path d="m9.5 6 6 6-6 6"/>', close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', menu: '<path d="M4.5 7h15M4.5 12h15M4.5 17h15"/>', up: '<path d="m6 14.5 6-6 6 6"/>', down: '<path d="m6 9.5 6 6 6-6"/>', expand: '<path d="M14 5h5v5M10 19H5v-5M19 5l-6 6M5 19l-6 6"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', check: '<path d="m5.5 12.5 4.2 4.2 8.8-9.4"/>', top: '<path d="M12 19V6M6.5 11.5 12 6l5.5 5.5"/>', download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>', external: '<path d="M8 16 16 8M9.5 8H16v6.5"/>' };
   function icon(name) {
     return '<svg class="pb-ico pb-ico-' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICON_PATHS[name] + '</svg>';
   }
@@ -215,7 +208,7 @@
       return '<section class="pb-sec"><h2>Contents</h2>' +
         '<ol class="pb-chapters">' +
         chapter(1, 'Do’s and Don’ts', 'The principles we hold ourselves to on every recommendation.', 'HOW WE WORK', 'sec-principles') +
-        chapter(2, 'Tools dictionary', 'What each tool is, what it does best and what it costs. One tool at a time.', toolIds.length + ' TOOLS · A TO Z', 'sec-dictionary') +
+        chapter(2, 'Tools dictionary', 'A one-line summary of each tool, with a link to its official documentation.', toolIds.length + ' TOOLS · A TO Z', 'sec-dictionary') +
         chapter(3, 'Comparison matrix', 'All six side by side, a group of criteria at a time. Choose the tools to show, or put any two head to head.', '14 CRITERIA · ' + toolIds.length + ' TOOLS', 'sec-matrix') +
         '</ol></section>';
     }
@@ -658,38 +651,13 @@
       });
     }
 
-    function ul(items, fixes) {
-      return '<ul>' + items.map(function (x) {
-        var f = (fixes || []).filter(function (c) { return c.from === x; })[0];
-        return '<li>' + (f ? esc(f.to) + ' ' + pill('corr', 'Corrected') + ' <a href="' + f.url + '" rel="noopener" target="_blank">Source</a>' : esc(x)) + '</li>';
-      }).join('') + '</ul>';
-    }
-
-    var DEPLOY_ROWS = ['Primary deployment', 'On-premises option', 'Data residency control'];
-    function deployVal(k, id) {
-      var cells = {};
-      D.reference.deployment.forEach(function (row) { if (row.consideration === k) cells = row.cells; });
-      return DEPLOY_FIX[k] && DEPLOY_FIX[k][id] ? DEPLOY_FIX[k][id].text : cells[id];
-    }
-
-    /** One tool's entry in the dictionary: everything the deck says about it, in one place. */
+    /** One tool in the dictionary: a single sentence on what it is best suited for, and a link to its official documentation. */
     function dictEntry(id) {
-      var p = profileOf[id], M = D.migration;
-      var fx = PROFILE_FIX[id] || {};
-      var parts = [['Typical features', p.typicalFeatures, fx.typicalFeatures], ['Unique features', p.uniqueFeatures, fx.uniqueFeatures], ['Benefits', p.benefits, fx.benefits], ['AI capabilities', p.aiCapabilities, fx.aiCapabilities], ['Cost tier', p.costTier, fx.costTier]];
-      var integ = D.reference.integration;
-      var integRows = integ.tools.indexOf(id) !== -1 ? integ.rows.filter(function (row) { return row.cells[id]; }).map(function (row) { return '<li><strong>' + esc(row.platform) + ':</strong> ' + esc(row.cells[id]) + '</li>'; }).join('') : '';
+      var p = profileOf[id];
+      var rest = p.bestSuited.replace(/^.*? is best suited for /i, '').replace(/\.$/, '');
       return '<article class="pb-dict" id="dict-' + id + '"><header class="pb-dict-head">' + logoHtml(id, 'pb-logo-lg') + '<h3>' + esc(names[id]) + '</h3></header>' +
-        '<p class="pb-bestsuited"><strong>Best suited for</strong> ' + esc(p.bestSuited.replace(/^.*? is best suited for /i, '').replace(/^\w/, function (c) { return c.toUpperCase(); })) + '</p>' +
-        '<p class="pb-dict-intro">' + esc(p.intro) + '</p>' +
-        '<div class="pb-dict-grid">' + parts.map(function (x) {
-          if (!x[1].length) return '<div class="pb-card pb-withheld"><h4>' + x[0] + '</h4><p class="pb-fine">Not shown yet. This list is being corrected.</p></div>';
-          return '<div class="pb-card"><h4>' + x[0] + '</h4>' + ul(x[1], x[2]) + '</div>';
-        }).join('') +
-        '<div class="pb-card"><h4>Deployment</h4><ul>' + DEPLOY_ROWS.map(function (k) { return '<li><strong>' + esc(k) + ':</strong> ' + esc(deployVal(k, id)) + '</li>'; }).join('') + '</ul></div>' +
-        '<div class="pb-card"><h4>Integration</h4>' + (integRows ? '<ul>' + integRows + '</ul>' : '<p class="pb-fine">Integration details for this tool are not available yet.</p>') + '</div>' +
-        (M.challenges && M.challenges[id] ? '<div class="pb-card"><h4>Moving to it</h4><p>' + esc(M.challenges[id]) + '</p></div>' : '') +
-        '</div></article>';
+        '<p class="pb-dict-main">' + esc(names[id]) + ' is best suited for ' + esc(rest) + '.</p>' +
+        '<p class="pb-dict-link"><a class="pb-btn pb-btn-ghost" href="' + DOCS[id] + '" target="_blank" rel="noopener">Read the official documentation' + icon('external') + '</a></p></article>';
     }
 
     /** The tool dictionary: one container with a tab for each tool; the tool chosen is shown in full. */
@@ -697,7 +665,7 @@
       var cur = ui.dtool && toolIds.indexOf(ui.dtool) !== -1 ? ui.dtool : toolIds[0];
       ui.dtool = cur;
       return '<section class="pb-sec"><h2>Tools dictionary</h2>' +
-        '<p class="pb-lead">Before we compare the tools, we get to know them. Choose a tool to read what it is, what it does best and what it costs.</p>' +
+        '<p class="pb-lead">Before we compare the tools, we get to know them. Choose a tool for a one-line summary and a link to its own documentation.</p>' +
         '<div class="pb-dbox"><div class="pb-dtabs" role="tablist" aria-label="Tools">' + toolIds.map(function (id) {
           var on = id === cur;
           return '<button type="button" class="pb-dtab' + (on ? ' on' : '') + '" role="tab" id="dtab-' + id + '" aria-selected="' + on + '" aria-controls="dpanel" tabindex="' + (on ? '0' : '-1') + '" data-action="dtab" data-tool="' + id + '">' + logoHtml(id, 'pb-logo-xs') + '<span>' + esc(names[id]) + '</span></button>';

@@ -887,6 +887,13 @@ body:has(.pb-mini:not([hidden])) .pb-top { bottom: 106px; }
 @media (max-width: 760px) { .pb-keys-bar { display: none; } }
 .pb-keys kbd { font: inherit; font-size: .8rem; padding: .05rem .5rem; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; background: var(--lav2); color: var(--indigo); }
 
+/* the dictionary: one sentence and a link */
+.pb-dbox .pb-dict { padding: 2.2rem 2.4rem 2.4rem; }
+.pb-dict-main { margin: 0 0 1.6rem; font-size: 1.3rem; line-height: 1.55; color: var(--indigo); }
+.pb-dict-link { margin: 0; }
+.pb-dict-link .pb-btn { display: inline-flex; align-items: center; gap: .5rem; }
+.pb-dict-link .pb-ico { width: 1.05rem; height: 1.05rem; }
+
 /* ----- responsive ----- */
 @media (max-width: 980px) {
   .pv-layout { grid-template-columns: minmax(0, 1fr); }

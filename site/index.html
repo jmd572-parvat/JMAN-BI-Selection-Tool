@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&display=swap">
-<link rel="stylesheet" href="styles.css?v=f195e22413">
+<link rel="stylesheet" href="styles.css?v=fb49133626">
 </head>
 <body>
 <!-- PREVIEW SHELL. The marketplace provides the hero, tab row, "On this page", helpfulness row and Q&A (docs/page-design.md, A1).
@@ -20,7 +20,7 @@
       <div class="pv-crumb">Playbook &rsaquo; BI Tools Selection Playbook</div>
       <h1>BI Tools Selection Playbook</h1>
       <p>A guide for choosing and justifying the right BI tool for each client engagement: Looker, Power BI, Qlik, Sigma, Tableau or ThoughtSpot.</p>
-      <div class="pv-meta"><span>v1 draft</span><span>Updated 2026-11-20</span><span class="pv-badge">Internal use only</span><span>Owner: to be confirmed</span></div>
+      <div class="pv-meta"><span>v1 draft</span><span>Updated 2026-11-21</span><span class="pv-badge">Internal use only</span><span>Owner: to be confirmed</span></div>
     </div>
     <button class="pv-ask" type="button" disabled title="Provided by the marketplace">Ask a question</button>
   </div>
@@ -37,16 +37,16 @@
 
 <div id="pb-overlay" class="pb-overlay" hidden></div>
 <script>window.PLAYBOOK_CONFIG = {"preview": false, "showDrafts": false, "draftToggle": false, "storageKey": "bi-playbook-v1", "logos": {"looker": "assets/logos/looker.png", "powerbi": "assets/logos/powerbi.png", "qlik": "assets/logos/qlik.png", "sigma": "assets/logos/sigma.jpeg", "tableau": "assets/logos/tableau.png", "thoughtspot": "assets/logos/thoughtspot.png"}};</script>
-<script src="engine.js?v=f195e22413"></script>
-<script src="session.js?v=f195e22413"></script>
-<script src="lib.js?v=f195e22413"></script>
-<script src="playbook.js?v=f195e22413"></script>
+<script src="engine.js?v=fb49133626"></script>
+<script src="session.js?v=fb49133626"></script>
+<script src="lib.js?v=fb49133626"></script>
+<script src="playbook.js?v=fb49133626"></script>
 <script>
 (function () {
   var cfg = window.PLAYBOOK_CONFIG;
   var main = document.getElementById('pb-main');
   var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
-  Promise.all([get('data/questions.json?v=f195e22413'), get('data/deck/profiles.json?v=f195e22413'), get('data/deck/matrix.json?v=f195e22413'), get('data/deck/migration.json?v=f195e22413'), get('data/deck/reference.json?v=f195e22413')])
+  Promise.all([get('data/questions.json?v=fb49133626'), get('data/deck/profiles.json?v=fb49133626'), get('data/deck/matrix.json?v=fb49133626'), get('data/deck/migration.json?v=fb49133626'), get('data/deck/reference.json?v=fb49133626')])
     .then(function (d) {
       function setActive(id) { if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id); }   // the page address follows the page; there is no tab row
       var ctl = Playbook.mount({
