@@ -520,6 +520,10 @@ html.pb-lock { overflow: hidden; }
   .pb-card-q { width: 100%; padding: 1.2rem 1rem; }
   .pb-card-q .pb-opts-grid, .pb-card-q .pb-opts-seg { grid-template-columns: 1fr; }
 }
+/* tablet and small laptop windows: as many columns as fit at 190 px or more, so a tile never breaks a word letter by letter */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .pb-card-q .pb-opts-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+}
 
 /* ----- the winner ----- */
 .pb-winner { text-align: center; padding: .6rem 0 .4rem; }

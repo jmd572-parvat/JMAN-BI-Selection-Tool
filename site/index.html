@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&display=swap">
-<link rel="stylesheet" href="styles.css?v=028266e842">
+<link rel="stylesheet" href="styles.css?v=e9aaf2edb5">
 </head>
 <body>
 <!-- PREVIEW SHELL. The marketplace provides the hero, tab row, "On this page", helpfulness row and Q&A (docs/page-design.md, A1).
@@ -37,16 +37,16 @@
 
 <div id="pb-overlay" class="pb-overlay" hidden></div>
 <script>window.PLAYBOOK_CONFIG = {"preview": false, "showDrafts": false, "draftToggle": false, "storageKey": "bi-playbook-v1", "logos": {"looker": "assets/logos/looker.png", "powerbi": "assets/logos/powerbi.png", "qlik": "assets/logos/qlik.png", "sigma": "assets/logos/sigma.jpeg", "tableau": "assets/logos/tableau.png", "thoughtspot": "assets/logos/thoughtspot.png"}};</script>
-<script src="engine.js?v=028266e842"></script>
-<script src="session.js?v=028266e842"></script>
-<script src="lib.js?v=028266e842"></script>
-<script src="playbook.js?v=028266e842"></script>
+<script src="engine.js?v=e9aaf2edb5"></script>
+<script src="session.js?v=e9aaf2edb5"></script>
+<script src="lib.js?v=e9aaf2edb5"></script>
+<script src="playbook.js?v=e9aaf2edb5"></script>
 <script>
 (function () {
   var cfg = window.PLAYBOOK_CONFIG;
   var main = document.getElementById('pb-main');
   var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
-  Promise.all([get('data/questions.json?v=028266e842'), get('data/deck/profiles.json?v=028266e842'), get('data/deck/matrix.json?v=028266e842'), get('data/deck/migration.json?v=028266e842'), get('data/deck/reference.json?v=028266e842')])
+  Promise.all([get('data/questions.json?v=e9aaf2edb5'), get('data/deck/profiles.json?v=e9aaf2edb5'), get('data/deck/matrix.json?v=e9aaf2edb5'), get('data/deck/migration.json?v=e9aaf2edb5'), get('data/deck/reference.json?v=e9aaf2edb5')])
     .then(function (d) {
       try { start(d); } catch (err) { console.error(err); main.innerHTML = '<div class="pb-card"><p><strong>The playbook could not start.</strong> This is a fault in the page, not in your connection.</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; }
     }, function (err) { main.innerHTML = '<div class="pb-card"><p><strong>The playbook data could not be loaded.</strong> ' + String(err.message).replace(/[<>&]/g, '') + '</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; });

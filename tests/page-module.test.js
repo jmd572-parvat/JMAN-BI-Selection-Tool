@@ -1216,3 +1216,8 @@ test('the area-complete card can be closed or skipped: closing shrinks the quest
   h.api.resume();
   assert.equal(h.api.step().section, '2', 'resuming lands in the next area');
 });
+
+test('between phone and desktop widths the answer tiles use columns at least 190 px wide, so words are never broken letter by letter', () => {
+  const css = read('src/page/styles.css');
+  assert.match(css, /@media \(min-width: 761px\) and \(max-width: 1100px\) \{\s*\.pb-card-q \.pb-opts-grid \{ grid-template-columns: repeat\(auto-fit, minmax\(190px, 1fr\)\); \}/);
+});

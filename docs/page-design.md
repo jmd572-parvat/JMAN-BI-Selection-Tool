@@ -790,6 +790,8 @@ Owner request: check everything once, with complete research on the integrity of
 ## 23. The area-complete card (revision 2026-11-23)
 Owner report: when an area was finished the container vanished at once. **Now** the last answered question is followed by a card in the same container: a tick, *Area N complete*, *All X questions in "title" answered*, and *Next: title* (the next area that has an open question). After 1.7 seconds the card fades out and the next area fades in, in the same container; Enter moves on sooner (ignored for the first half second, so a held-down Enter does not skip the message). Closing during the message shrinks the questions into the corner window as for any unfinished questions. The section 20 description of the container shrinking into its card no longer applies to finishing an area (an area still grows out of its card when it is opened from the page). After the last area the winner is shown as before. This is the only wait in the questions: it is a short transition, and no question advances by itself. With reduced motion the message shows, then the next area appears without the fade.
 
+**Found by playing with the page (2026-11-23).** At tablet and small-laptop widths (761 to 1100 px) the answer tiles stayed in four narrow columns and broke words letter by letter; they now use as many columns as fit at 190 px or more. Checked at 768 px and at phone width (no sideways scroll). The rest of the walk-through (dictionary tabs, matrix tool picker, opening an area, the final page) behaved as designed.
+
 ---
 
 ## Appendix: question inventory
