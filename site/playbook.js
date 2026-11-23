@@ -338,7 +338,7 @@
     /** The step being shown, checked against the questions asked now (an answer can close a branch). */
     function currentStep() {
       var st = ui.step;
-      if (st && st.kind === 'end') return st;
+      if (st && (st.kind === 'end' || st.kind === 'done')) return st;
       if (st && st.kind === 'review' && sectionTops(st.section).length) return st;
       if (st && st.kind === 'q') { var fresh = qStep(st.qid); if (fresh) return fresh; }
       var sid = st && st.section && sectionTops(st.section).length ? st.section : (nextOpenSection(null) || SECTIONS.filter(function (x) { return sectionTops(x.id).length; })[0].id);
@@ -502,6 +502,13 @@
         tops.map(function (q, i) { return questionCard(q, 'Question ' + (i + 1) + ' of ' + tops.length, false); }).join('') +
         '<p class="pb-review-foot"><button class="pb-btn" data-action="close">Done</button></p>';
     }
+    /** An area is finished and another follows: say so for a moment, then the card fades out and the next area fades in. */
+    function doneBody(st) {
+      var c = counts(visibleBySection()[st.section]), sec = sectionById(st.section), nx = sectionById(st.next);
+      return '<div class="pb-done" role="status"><span class="pb-done-check" aria-hidden="true">' + icon('check') + '</span><h3 tabindex="-1">Area ' + sec.id + ' complete</h3>' +
+        '<p>All ' + c.total + ' question' + (c.total === 1 ? '' : 's') + ' in “' + esc(sec.title) + '” answered.</p>' +
+        '<p class="pb-done-next">Next: ' + esc(nx.title) + '</p><p class="pb-keys"><kbd>Enter</kbd> to continue</p></div>';
+    }
     /** After the last open question: the winner alone in the middle (it flies up from the dock). */
     function endBody() {
       var prog = session.progress();
@@ -536,7 +543,7 @@
       var pct = run ? Math.round(st.pos / st.count * 100) : 100;
       var kicker = end ? 'Finished' : (st.kind === 'review' ? 'Review · ' : '') + 'Area ' + sec.id + ' of ' + SECTIONS.length;
       var title = end ? 'Client discovery' : sec.title;
-      var body = run ? questionBody(st) : end ? endBody() : reviewBody(st);
+      var body = run ? questionBody(st) : end ? endBody() : st.kind === 'done' ? doneBody(st) : reviewBody(st);
       return '<div class="pb-ovl-backdrop' + (ui.opening ? ' is-opening' : '') + '" data-action="close"></div>' +
         '<div class="pb-ovl' + (ui.opening ? ' is-opening' : '') + '" role="dialog" aria-modal="true" aria-labelledby="pb-ovl-title">' +
         '<header class="pb-ovl-head"><button class="pb-ovl-burger" data-action="menu" aria-label="Show all areas and questions" aria-expanded="' + (ui.menu ? 'true' : 'false') + '" aria-controls="pb-menu">' + icon('menu') + '</button><div class="pb-ovl-titlebox"><span class="pb-ovl-kicker">' + esc(kicker) + '</span><h2 id="pb-ovl-title">' + esc(title) + '</h2></div>' +
@@ -1112,6 +1119,7 @@
       if (!ui.overlay || ui.busy || !st) return;
       if (st.kind === 'end') { finish(); return; }
       if (st.kind === 'review') { closeDiscovery(); return; }
+      if (st.kind === 'done') { if (Date.now() - (ui.doneAt || 0) > 500) leaveDone(); return; }       // a held-down Enter must not skip the message
       var tops = sectionTops(st.section), i = -1;
       tops.forEach(function (q, k) { if (q.id === st.qid) i = k; });
       var queue = tops.slice(i + 1).concat(tops.slice(0, Math.max(i, 0))).filter(isOpenTop);
@@ -1124,24 +1132,34 @@
       }
       completeSection();
     }
-    /** The area is done: if another area has open questions the container shrinks into its card and the next card opens; if not, the winner. */
+    /**
+     * The area is done. If another area has open questions, the card says so ("Area 2 complete"), then fades out and the next area
+     * fades in (Enter moves on sooner); if not, the winner is shown.
+     */
     function completeSection() {
       var sid = ui.step.section, next = nextOpenSection(sid);
-      ui.busy = true;                                    // keys do nothing until the next area (or the winner) is open
-      if (!next) { setStep({ kind: 'end', section: sid }); return; }
-      contractToCard(sid, function (animated) {
-        if (animated && root.setTimeout) root.setTimeout(function () { expandSection(next, 'run'); }, 220); else expandSection(next, 'run');
-      });
+      if (!next) { ui.busy = true; setStep({ kind: 'end', section: sid }); return; }     // keys do nothing until the winner is open
+      setStep({ kind: 'done', section: sid, next: next });
+      ui.doneAt = Date.now();
+      if (root.setTimeout) root.setTimeout(leaveDone, 1700); else leaveDone();
+    }
+    /** The "area complete" card fades out, then the next area opens in the same container and fades in. */
+    function leaveDone() {
+      var st = ui.step;
+      if (!ui.overlay || !st || st.kind !== 'done' || ui.leaving) return;       // already moved on (Enter, the menu, or closed)
+      var host = overlayHost, card = host && host.querySelector ? host.querySelector('.pb-card-q') : null;
+      var next = function () { ui.leaving = false; if (ui.overlay && ui.step === st) expandSection(st.next, 'run', null, true); };
+      if (card && root.setTimeout && !reduceMotion()) { ui.leaving = true; card.classList.add('is-leaving'); root.setTimeout(next, 260); } else next();
     }
     function cardEl(sid) { return sid && o.container.querySelector ? o.container.querySelector('.pb-area[data-section="' + sid + '"]') : null; }
     /** An area opens: its card grows into the container. A finished area opens as a review of all its questions. */
-    function expandSection(sid, mode, qid) {
-      var card = cardEl(sid);
+    function expandSection(sid, mode, qid, soft) {
+      var card = soft ? null : cardEl(sid);              // soft: the container is already open, so it does not grow out of a card
       if (card && card.scrollIntoView) { try { card.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch (e) { card.scrollIntoView(); } }
       var from = card && card.getBoundingClientRect ? card.getBoundingClientRect() : null;
       var st = mode === 'review' ? { kind: 'review', section: sid } : (qid ? qStep(qid) : firstOpenStep(sid));
       if (!st) { ui.busy = false; return; }
-      ui.page = 'discovery'; ui.overlay = true; ui.opening = !from; ui.menu = false; ui.minimized = false; ui.popup = null; ui.followShown = {}; ui.hint = '';
+      ui.page = 'discovery'; ui.overlay = true; ui.opening = !from && !soft; ui.menu = false; ui.minimized = false; ui.popup = null; ui.followShown = {}; ui.hint = '';
       if (o.onTab) o.onTab('discovery');
       renderPage(); renderRail(); renderToc(); renderMini();
       setStep(st);
@@ -1189,7 +1207,7 @@
     function closeDiscovery() {
       if (!ui.overlay || ui.busy) return;
       var st = ui.step, p = session.progress();
-      if (st && st.kind === 'q' && p.visible > 0 && p.remaining > 0) { minimize(); return; }      // unfinished: it shrinks into the corner and waits
+      if (st && (st.kind === 'q' || st.kind === 'done') && p.visible > 0 && p.remaining > 0) { minimize(); return; }      // unfinished: it shrinks into the corner and waits
       contractToCard(st ? st.section : null, null);
     }
     function finish() {

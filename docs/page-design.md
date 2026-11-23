@@ -787,6 +787,9 @@ Owner request: check everything once, with complete research on the integrity of
 - *Facts still unconfirmed.* Whether Tableau's Einstein Discovery is still offered under that name (a second search found no Tableau page that says; Salesforce's renaming of *Tableau Einstein* to *Tableau Next* suggests the name has moved), the names of Sigma's plans (listings now disagree: *Essentials, Professional, Enterprise* in one, *View, Act, Analyze, Build* licence tiers in another; the deck's *Essential, Business, Enterprise* is not on the page), and Tableau's editions.
 - *The Flow sheet.* Its drawing still shows the old Q09, Q06 *External access* and Q18 *Offline*.
 
+## 23. The area-complete card (revision 2026-11-23)
+Owner report: when an area was finished the container vanished at once. **Now** the last answered question is followed by a card in the same container: a tick, *Area N complete*, *All X questions in "title" answered*, and *Next: title* (the next area that has an open question). After 1.7 seconds the card fades out and the next area fades in, in the same container; Enter moves on sooner (ignored for the first half second, so a held-down Enter does not skip the message). Closing during the message shrinks the questions into the corner window as for any unfinished questions. The section 20 description of the container shrinking into its card no longer applies to finishing an area (an area still grows out of its card when it is opened from the page). After the last area the winner is shown as before. This is the only wait in the questions: it is a short transition, and no question advances by itself. With reduced motion the message shows, then the next area appears without the fade.
+
 ---
 
 ## Appendix: question inventory

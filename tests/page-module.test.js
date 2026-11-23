@@ -486,12 +486,19 @@ test('Enter goes to the next open question; skipped ones come round again; an ar
   assert.match(h.overlay.innerHTML, /This is the last open question in this area/);
   h.api.answer('Q01', ['self_service_analytics_and_reporting']);
   assert.ok(!/This is the last open question/.test(h.overlay.innerHTML), 'the hint goes with the answer');
-  h.api.advance();                                    // area 1 is complete: on to the next area that has open questions
+  h.api.advance();                                    // area 1 is complete: it says so first
+  assert.equal(h.api.step().kind, 'done');
+  assert.equal(h.api.step().section, '1');
+  assert.match(h.overlay.innerHTML, /<h3 tabindex="-1">Area 1 complete<\/h3><p>All 8 questions in “Business context and goals” answered\.<\/p><p class="pb-done-next">Next: Data, security and governance<\/p>/);
+  h.api.advance();                                    // a held-down Enter does not skip the message
+  assert.equal(h.api.step().kind, 'done', 'Enter within half a second is ignored');
+  h.timers.filter(Boolean).forEach((t) => t.fn());    // a moment later the card fades out and the next area that has open questions opens
+  assert.equal(h.api.step().kind, 'q');
   assert.equal(h.api.step().section, '2');
   assert.equal(h.api.step().qid, 'Q05');
 });
 
-test('finishing an area closes it into its card and opens the next one; the last area shows the winner, and Enter opens the recommendation', () => {
+test('finishing an area says so, fades out, and opens the next one; the last area shows the winner, and Enter opens the recommendation', () => {
   const h = load(memoryStorage());
   answerAll(h, ['Q13']);
   h.api.openDiscovery('Q13');
@@ -515,10 +522,13 @@ test('finishing an area closes it into its card and opens the next one; the last
   assert.equal(g.api.step().section, '2');
   for (const id of ['Q05', 'Q06', 'Q26', 'Q07', 'Q08']) { g.api.openDiscovery(id); g.api.answer(id, [g.api.session().visible().find((v) => v.id === id).options.find((o) => !o.unknown).id]); }
   g.api.advance();
+  assert.equal(g.api.step().kind, 'done');
+  assert.match(g.overlay.innerHTML, /Area 2 complete[\s\S]*Next: Data landscape and delivery/, 'it names the area that follows, skipping the one answered already');
+  g.timers.filter(Boolean).forEach((t) => t.fn());
   assert.equal(g.api.step().section, '4', 'area 2 is done, area 3 was answered already: on to area 4');
 });
 
-test('nothing moves on by itself: there are no countdowns, and answering only waits for Enter or the arrows', () => {
+test('nothing moves on by itself while a question is open: there are no countdowns, and answering only waits for Enter or the arrows', () => {
   const h = load(memoryStorage());
   h.api.openDiscovery('Q04');
   h.api.answer('Q04', ['microsoft']);
@@ -1190,4 +1200,19 @@ test('the page shell follows the address without trapping Back, and tells a star
   assert.match(html, /routing = true; try \{[\s\S]*\} finally \{ routing = false; \}/, 'following the address itself never adds one, so Back cannot loop');
   assert.match(html, /The playbook could not start\./);
   assert.match(html, /The playbook data could not be loaded\./);
+});
+
+test('the area-complete card can be closed or skipped: closing shrinks the questions into the corner window and the timer then does nothing', () => {
+  const h = load(memoryStorage());
+  h.api.openDiscovery('1');
+  for (const [id, a] of [['Q01', 'self_service_analytics_and_reporting'], ['Q02', 'finance'], ['Q03', 'no'], ['Q04', 'microsoft'], ['Q21', 'important'], ['Q22', 'ai_assisted'], ['Q23', 'balanced'], ['Q25', 'u_51_100']]) { h.api.openDiscovery(id); h.api.answer(id, [a]); }
+  h.api.advance();
+  assert.equal(h.api.step().kind, 'done');
+  h.api.closeDiscovery();
+  assert.equal(h.api.overlayOpen(), false);
+  assert.ok(h.api.minimized(), 'the unfinished questions wait in the corner');
+  h.timers.filter(Boolean).forEach((t) => t.fn());
+  assert.equal(h.api.overlayOpen(), false, 'the pending move on does not reopen them');
+  h.api.resume();
+  assert.equal(h.api.step().section, '2', 'resuming lands in the next area');
 });
