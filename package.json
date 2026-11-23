@@ -12,6 +12,8 @@
     "build:site": "python scripts/build_site.py",
     "build:site:production": "python scripts/build_site.py --production",
     "docs:check": "python scripts/check_docs.py",
+    "integrity": "python scripts/check_integrity.py",
+    "integrity:links": "python scripts/check_integrity.py --links",
     "calibrate": "python scripts/calibrate_thresholds.py"
   },
   "engines": {

@@ -204,8 +204,9 @@ Q14 migration scores (0/42 mismatches against slide 28). On-prem options match s
 - Power BI Copilot needs paid [Fabric capacity](https://blog.fabric.microsoft.com/en-us/blog/copilot-and-ai-capabilities-now-accessible-to-all-paid-skus-in-microsoft-fabric); qualify "lowest entry cost" on slide 7/9.
 - Qlik Predict on client-managed Qlik Sense is described inconsistently ([Qlik](https://help.qlik.com/en-US/cloud-admin-playbook/Content/ai_services/qlik_predict.md)); Qlik Answers is cloud-only per a third-party guide.
 - Tableau Cloud vs Server data-residency options: no authoritative source found; verify with Salesforce before relying on slide 22's wording.
-- Sigma runs on AWS, Azure and GCP regions chosen at org creation and
-  [not changeable](https://help.sigmacomputing.com/hc/en-us/articles/360037430573), which supports its score of 2 on residency.
+- Sigma runs on AWS, Azure and GCP regions chosen when the organisation is created. Sigma's
+  [supported regions page](https://help.sigmacomputing.com/docs/region-warehouse-and-feature-support) says the cloud cannot be changed
+  or migrated afterwards (read in the audit of 2026-11-23, replacing an address that no longer opens); this supports its score of 2 on residency.
 
 ## Sources
 Methodology: [EC weighting guide](https://knowledge4policy.ec.europa.eu/composite-indicators/10-step-guide/step-6-weighting_en) ·
@@ -217,5 +218,5 @@ Methodology: [EC weighting guide](https://knowledge4policy.ec.europa.eu/composit
 Vendors: [Looker hosting](https://docs.cloud.google.com/looker/docs/choosing-hosting-option) ·
 [ThoughtSpot Cloud vs Software](https://docs.thoughtspot.com/cloud/latest/cloud-and-software-support) ·
 [Qlik client-managed vs cloud](https://help.qlik.com/en-US/migration/Content/Migration/differences-qcs-qse.htm) ·
-[Sigma regions](https://help.sigmacomputing.com/hc/en-us/articles/360037430573) ·
+[Sigma regions](https://help.sigmacomputing.com/docs/region-warehouse-and-feature-support) ·
 [Power BI Report Server vs service](https://learn.microsoft.com/en-gb/power-BI/report-server/compare-report-server-service).

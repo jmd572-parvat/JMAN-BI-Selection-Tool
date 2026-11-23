@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&display=swap">
-<link rel="stylesheet" href="styles.css?v=b5869789d2">
+<link rel="stylesheet" href="styles.css?v=b5402d0332">
 </head>
 <body>
 <!-- PREVIEW SHELL. The marketplace provides the hero, tab row, "On this page", helpfulness row and Q&A (docs/page-design.md, A1).
@@ -20,7 +20,7 @@
       <div class="pv-crumb">Playbook &rsaquo; BI Tools Selection Playbook</div>
       <h1>BI Tools Selection Playbook</h1>
       <p>A guide for choosing and justifying the right BI tool for each client engagement: Looker, Power BI, Qlik, Sigma, Tableau or ThoughtSpot.</p>
-      <div class="pv-meta"><span>v1 draft</span><span>Updated 2026-11-21</span><span class="pv-badge">Internal use only</span><span>Owner: to be confirmed</span></div>
+      <div class="pv-meta"><span>v1 draft</span><span>Updated 2026-11-23</span><span class="pv-badge">Internal use only</span><span>Owner: to be confirmed</span></div>
     </div>
     <button class="pv-ask" type="button" disabled title="Provided by the marketplace">Ask a question</button>
   </div>
@@ -37,23 +37,27 @@
 
 <div id="pb-overlay" class="pb-overlay" hidden></div>
 <script>window.PLAYBOOK_CONFIG = {"preview": false, "showDrafts": false, "draftToggle": false, "storageKey": "bi-playbook-v1", "logos": {"looker": "assets/logos/looker.png", "powerbi": "assets/logos/powerbi.png", "qlik": "assets/logos/qlik.png", "sigma": "assets/logos/sigma.jpeg", "tableau": "assets/logos/tableau.png", "thoughtspot": "assets/logos/thoughtspot.png"}};</script>
-<script src="engine.js?v=b5869789d2"></script>
-<script src="session.js?v=b5869789d2"></script>
-<script src="lib.js?v=b5869789d2"></script>
-<script src="playbook.js?v=b5869789d2"></script>
+<script src="engine.js?v=b5402d0332"></script>
+<script src="session.js?v=b5402d0332"></script>
+<script src="lib.js?v=b5402d0332"></script>
+<script src="playbook.js?v=b5402d0332"></script>
 <script>
 (function () {
   var cfg = window.PLAYBOOK_CONFIG;
   var main = document.getElementById('pb-main');
   var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }); };
-  Promise.all([get('data/questions.json?v=b5869789d2'), get('data/deck/profiles.json?v=b5869789d2'), get('data/deck/matrix.json?v=b5869789d2'), get('data/deck/migration.json?v=b5869789d2'), get('data/deck/reference.json?v=b5869789d2')])
+  Promise.all([get('data/questions.json?v=b5402d0332'), get('data/deck/profiles.json?v=b5402d0332'), get('data/deck/matrix.json?v=b5402d0332'), get('data/deck/migration.json?v=b5402d0332'), get('data/deck/reference.json?v=b5402d0332')])
     .then(function (d) {
-      function setActive(id) { if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id); }   // the page address follows the page; there is no tab row
+      try { start(d); } catch (err) { console.error(err); main.innerHTML = '<div class="pb-card"><p><strong>The playbook could not start.</strong> This is a fault in the page, not in your connection.</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; }
+    }, function (err) { main.innerHTML = '<div class="pb-card"><p><strong>The playbook data could not be loaded.</strong> ' + String(err.message).replace(/[<>&]/g, '') + '</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; });
+  function start(d) {
+      var routing = false;   // true while the address itself is being followed: that must not add history entries
+      function setActive(id, replace) { if (location.hash !== '#/' + id) history[replace ? 'replaceState' : 'pushState'](null, '', '#/' + id); }   // the page address follows the page; Back returns to the page before
       var ctl = Playbook.mount({
         container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'), overlay: document.getElementById('pb-overlay'),
-        model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: setActive
+        model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: function (id) { setActive(id, routing); }
       });
-      function route() { var id = location.hash.replace('#/', ''); if (ctl.knows(id)) ctl.go(id); else setActive(ctl.tab); }   // pages only (the earlier four-page ids land on the matching section): the questions are never a web address
+      function route() { var id = location.hash.replace('#/', ''); routing = true; try { if (ctl.knows(id)) ctl.go(id); else setActive(ctl.tab, true); } finally { routing = false; } }   // pages only (the earlier four-page ids land on the matching section): the questions are never a web address
       window.addEventListener('hashchange', route);
       route();
       document.getElementById('pb-toc').addEventListener('click', function (e) {
@@ -65,8 +69,7 @@
         box.checked = ctl.showDrafts; box.addEventListener('change', function () { ctl.setShowDrafts(box.checked); });
       }
       window.__playbook = ctl;   // for inspection while previewing
-    })
-    .catch(function (err) { main.innerHTML = '<div class="pb-card"><p><strong>The playbook data could not be loaded.</strong> ' + String(err.message).replace(/[<>&]/g, '') + '</p><p><button class="pb-btn" onclick="location.reload()">Try again</button></p></div>'; });
+  }
 })();
 </script>
 </body>

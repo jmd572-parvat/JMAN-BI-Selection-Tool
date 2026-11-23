@@ -122,52 +122,61 @@
   }
   var STATE_LABEL = { none: 'Nothing scored yet', provisional: 'Provisional', near: 'Near complete', complete: 'Complete' };
 
-  /** Plain-text summary for copy and print. All inputs are plain data (see tests/page-lib.test.js for the shape). */
   /**
-   * The recommendation as Markdown. `c` is built by the page (summaryContext); nothing in here knows about tools or scores:
-   * winners, reasons, ranking, constraints, next steps and answers arrive ready to print.
+   * Free text made safe for one line of Markdown: line breaks become spaces and the characters that start emphasis, links, code or
+   * HTML are escaped, so a note or a client name cannot add a heading or a list item, or close the bold or italics around it.
+   */
+  function md(s) {
+    return String(s == null ? '' : s).replace(/\s*[\r\n]+\s*/g, ' ').replace(/([\\`*_\[\]<>])/g, '\\$1');
+  }
+
+  /**
+   * The recommendation as Markdown, for copy and save. `c` is built by the page (summaryContext), all of it plain data (see
+   * tests/page-lib.test.js for the shape); nothing in here knows about tools or scores: winners, reasons, ranking, constraints, next
+   * steps and answers arrive ready to print.
    */
   function buildSummary(c) {
     var M = [];
-    var item = function (x) { return '- **' + x.answer + '** (' + x.question + ')' + (x.why ? ': ' + x.why : ''); };
+    var item = function (x) { return '- **' + md(x.answer) + '** (' + md(x.question) + ')' + (x.why ? ': ' + md(x.why) : ''); };
     var status = c.state === 'complete' ? 'Complete: all ' + c.visible + ' questions answered'
       : (STATE_LABEL[c.state] || c.state) + ': ' + c.answered + ' of ' + c.visible + ' questions answered';
-    M.push('# BI tool recommendation' + (c.clientName ? ' for ' + c.clientName : ''), '');
-    M.push('*Internal use only · ' + c.date + ' · ' + status + '*', '');
+    M.push('# BI tool recommendation' + (c.clientName ? ' for ' + md(c.clientName) : ''), '');
+    M.push('*Internal use only · ' + md(c.date) + ' · ' + status + '*', '');
     if (!c.informative) {
       M.push('No scored answers yet, so there is nothing to recommend.', '');
     } else {
       var winners = c.winners || [], tie = winners.length > 1;
-      M.push('## ' + (tie ? 'Too close to call: ' : c.state === 'provisional' ? 'Best fit so far: ' : 'Best fit: ') + listJoin(sortNames(winners.map(function (w) { return w.name; }))), '');
-      if (c.leadSentence) M.push(c.leadSentence, '');
-      if (c.boundaryMessage) M.push(c.boundaryMessage, '');
+      M.push('## ' + (tie ? 'Too close to call: ' : c.state === 'provisional' ? 'Best fit so far: ' : 'Best fit: ') + md(listJoin(sortNames(winners.map(function (w) { return w.name; })))), '');
+      if (c.leadSentence) M.push(md(c.leadSentence), '');
+      if (c.boundaryMessage) M.push(md(c.boundaryMessage), '');
       (c.reasons || []).forEach(function (rs) {
-        M.push('## Why ' + rs.tool + ' fits', '');
+        M.push('## Why ' + md(rs.tool) + ' fits', '');
         if (rs.strengths.length) rs.strengths.forEach(function (x) { M.push(item(x)); }); else M.push('- No answer favours it yet.');
-        M.push('', '## Watch-outs for ' + rs.tool, '');
+        M.push('', '## Watch-outs for ' + md(rs.tool), '');
         if (rs.concerns.length) rs.concerns.forEach(function (x) { M.push(item(x)); }); else M.push('- None flagged by the answers given.');
         M.push('');
       });
       if ((c.others || []).length || (c.excluded || []).length) {
         M.push('## The other tools', '');
-        (c.others || []).forEach(function (t) { M.push('- Rank ' + (t.tied ? '=' : '') + t.rank + ': ' + t.name); });
-        (c.excluded || []).forEach(function (e) { M.push('- **' + e.name + '** is ruled out: ' + e.because); });
+        (c.others || []).forEach(function (t) { M.push('- Rank ' + (t.tied ? '=' : '') + t.rank + ': ' + md(t.name)); });
+        (c.excluded || []).forEach(function (e) { M.push('- **' + md(e.name) + '** is ruled out: ' + md(e.because)); });
         M.push('');
       }
-      if ((c.constraints || []).length) { M.push('## What the client told us they need', ''); c.constraints.forEach(function (r) { M.push('- ' + r); }); M.push(''); }
-      if ((c.migration || []).length) { M.push('## Migration', ''); c.migration.forEach(function (r) { M.push('- ' + r); }); M.push(''); }
+      if ((c.constraints || []).length) { M.push('## What the client told us they need', ''); c.constraints.forEach(function (r) { M.push('- ' + md(r)); }); M.push(''); }
+      if ((c.migration || []).length) { M.push('## Migration', ''); c.migration.forEach(function (r) { M.push('- ' + md(r)); }); M.push(''); }
       M.push('## Next steps', '');
-      (c.nextSteps || []).forEach(function (r) { M.push('- ' + r); });
-      winners.forEach(function (w) { if (w.docUrl) M.push('- Official documentation for ' + w.name + ': [' + w.docUrl + '](' + w.docUrl + ')'); });
+      (c.nextSteps || []).forEach(function (r) { M.push('- ' + md(r)); });
+      winners.forEach(function (w) { if (w.docUrl) M.push('- Official documentation for ' + md(w.name) + ': [' + md(w.docUrl) + '](' + w.docUrl + ')'); });
       M.push('');
     }
-    if (c.usesDraft && c.usesDraft.length) M.push('*This result uses questions marked as draft (' + c.usesDraft.join(', ') + '); their scores are awaiting review.*', '');
+    if (c.usesDraft && c.usesDraft.length) M.push('*This result uses questions marked as draft (' + md(c.usesDraft.join(', ')) + '); their scores are awaiting review.*', '');
     M.push('## Answers and notes', '');
-    if (!c.answers.length) M.push('- None yet.');
+    var answers = c.answers || [];
+    if (!answers.length) M.push('- None yet.');
     var section = null;
-    c.answers.forEach(function (a) {
-      if (a.section !== section) { section = a.section; M.push('', '### ' + section, ''); }
-      M.push('- **' + a.question + '**: ' + a.answer + (a.note ? ' *(' + a.note + ')*' : ''));
+    answers.forEach(function (a) {
+      if (a.section !== section) { section = a.section; M.push('', '### ' + md(section), ''); }
+      M.push('- **' + md(a.question) + '**: ' + md(a.answer) + (a.note ? ' *(' + md(a.note) + ')*' : ''));
     });
     return M.join('\n').replace(/\n{3,}/g, '\n\n') + '\n';
   }
@@ -179,6 +188,6 @@
   return {
     ALPHABETICAL_QUESTIONS: ALPHABETICAL_QUESTIONS, sortNames: sortNames, listJoin: listJoin, orderOptions: orderOptions, splitLabel: splitLabel, optionLayout: optionLayout, optionColumns: optionColumns,
     fitTier: fitTier, barGeometry: barGeometry, leadSentence: leadSentence, boundaryMessage: boundaryMessage,
-    stateLine: stateLine, STATE_LABEL: STATE_LABEL, buildSummary: buildSummary, escapeHtml: escapeHtml
+    stateLine: stateLine, STATE_LABEL: STATE_LABEL, buildSummary: buildSummary, escapeHtml: escapeHtml, md: md
   };
 }));

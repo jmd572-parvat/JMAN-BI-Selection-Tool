@@ -353,16 +353,21 @@ test('the save card writes the recommendation as a Markdown file; the PDF waits 
   h.api.answer('Q04', ['microsoft']); h.api.setNote('Q04', 'a note');
   assert.match(sec(h, 'discovery'), /data-action="pdf" disabled title="The PDF holds the recommendation/, 'no PDF until every question is answered');
   const saved = [];
-  const a = { click() { saved.push(a.download); }, set href(v) { a._h = v; } };
+  const a = { style: {}, parentNode: null, click() { saved.push(a.download); }, set href(v) { a._h = v; } };
+  const revoked = [];
   h.ctx.Blob = function (parts, o) { saved.push(parts.join(''), o.type); };
-  h.ctx.URL = { createObjectURL: () => 'blob:x', revokeObjectURL() {} };
+  h.ctx.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: (u) => revoked.push(u) };
   h.container.ownerDocument.createElement = () => a;
+  h.container.ownerDocument.body = { appendChild(n) { n.parentNode = this; }, removeChild(n) { n.parentNode = null; } };
   const click = (act) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': act }[k]) }) } });
   click('mdsave');
   assert.match(saved[0], /^# BI tool recommendation\n/);
   assert.match(saved[0], /- \*\*Which enterprise ecosystem do you primarily operate within\?\*\*: Microsoft \*\(a note\)\*/);
   assert.equal(saved[1], 'text/markdown');
   assert.equal(saved[2], 'bi-tool-recommendation.md');
+  assert.deepEqual(revoked, [], 'the address stays until the browser has started the download');
+  h.timers.filter(Boolean).forEach((t) => t.fn());
+  assert.deepEqual(revoked, ['blob:x'], 'and is released afterwards');
   saved.length = 0;
   click('download');
   assert.deepEqual(JSON.parse(saved[0]).answers.Q04, ['microsoft']);
@@ -1034,4 +1039,155 @@ test('content audit: the matrix correction applies to the original text only, an
   assert.match(sc, /Most of those ratings come from our experts/);
   assert.match(sc, /took them from our comparison table, and three answers are our own proposals\. Those are all still waiting for an expert to confirm them/);
   assert.ok(!/For every answer, subject-matter experts/.test(sc));
+});
+
+// ------------------------------------------------------------------ audit of 2026-11-23: defects found in the review of src
+
+test('an address that names a built-in property (#/constructor, #/__proto__) is not a page: nothing crashes and the page stays where it was', () => {
+  const h = load(memoryStorage());
+  for (const id of ['constructor', 'toString', '__proto__', 'hasOwnProperty', 'valueOf', 'isPrototypeOf']) {
+    assert.equal(h.api.knows(id), false, `${id} is not a page`);
+    assert.doesNotThrow(() => h.api.go(id), `${id} does not crash`);
+    assert.equal(h.api.tab, 'home');
+  }
+  assert.ok(h.api.knows('shortlist') && h.api.knows('discovery') && h.api.knows('home'), 'real pages and the earlier ids still resolve');
+  h.api.go('shortlist');
+  assert.equal(h.api.tab, 'discovery');
+});
+
+test('answers saved by an earlier version of the questions are checked: moved ones are carried over, stale ones removed, and the reader is told', () => {
+  const store = memoryStorage();
+  store.m['bi-playbook-v1'] = JSON.stringify({
+    answers: { Q04: ['microsoft'], Q09: ['yes'], Q06: ['external_access', 'basic_access'], Q18: ['offline_on_premises_operation'], Q99: ['x'], Q05: 'yes', Q01: [3] },
+    notes: { Q04: 'keep', Q99: 'unknown question', Q05: 7 }
+  });
+  const h = load(store);
+  const ans = h.api.session().answers;
+  assert.equal(JSON.stringify(ans.Q04), '["microsoft"]');
+  assert.deepEqual([...ans.Q06].sort(), ['ai_governance_concerns', 'basic_access'], 'the AI governance answer now sits in Q06 and the removed option is gone');
+  for (const gone of ['Q09', 'Q18', 'Q99', 'Q05', 'Q01']) assert.ok(!(gone in ans), `${gone} is not kept`);
+  const saved = JSON.parse(store.m['bi-playbook-v1']);
+  assert.deepEqual(Object.keys(saved.answers).sort(), ['Q04', 'Q06'], 'the old values do not stay on the device');
+  assert.deepEqual(saved.notes, { Q04: 'keep' });
+  h.api.openDiscovery('1');
+  assert.match(h.overlay.innerHTML, /An earlier answer about AI governance now sits under the security and access question\. 5 saved answers no longer matched the questions, so they were removed\./);
+  // damaged storage is treated as empty, not spread into the answers
+  for (const bad of ['"x"', '[]', 'null', '{"answers":"x","notes":[]}', '{"answers":null}', 'not json']) {
+    const s2 = memoryStorage(); s2.m['bi-playbook-v1'] = bad;
+    const g = load(s2);
+    assert.equal(JSON.stringify(g.api.session().answers), '{}', bad);
+    g.api.answer('Q04', ['google_cloud']);
+    assert.deepEqual(Object.keys(JSON.parse(s2.m['bi-playbook-v1']).answers), ['Q04'], `${bad}: only real questions are stored`);
+  }
+});
+
+test('"Relevant to your answers" on the AI criterion follows the AI answers only, not every answer to the security question', () => {
+  const open = (h) => h.listeners.click[1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'mall', 'data-open': '1' }[k]) }) } });
+  const aiRow = (html) => html.slice(html.indexOf('AI-Assisted'), html.indexOf('Predictive'));
+  const h = load(memoryStorage());
+  h.api.answer('Q06', ['basic_access']);
+  open(h);
+  let m = sec(h, 'matrix');
+  assert.ok(!/Relevant to your answers/.test(aiRow(m)), 'basic access says nothing about AI');
+  assert.match(m.slice(m.indexOf('Governance &amp; Security'), m.indexOf('Semantic Layer')), /Relevant to your answers/, 'but it is relevant to governance and security');
+  h.api.answer('Q06', ['basic_access', 'ai_governance_concerns']);
+  m = sec(h, 'matrix');
+  assert.match(aiRow(m), /Relevant to your answers/, 'the AI governance answer makes it relevant');
+  const g = load(memoryStorage());
+  g.api.answer('Q22', ['ai_first']); open(g);
+  assert.match(aiRow(sec(g, 'matrix')), /Relevant to your answers/, 'and so does the AI question');
+});
+
+test('when the answers do not separate two tools, the migration lines cover each of them', () => {
+  const model = json('data/questions.json');
+  model.questions.forEach((q) => {                                                          // two tools that are alike on every answer, and in how each question is calibrated
+    q.options.forEach((o) => { if (o.scores) o.scores.powerbi = o.scores.tableau; });
+    if (q.baseline) { q.baseline.powerbi = q.baseline.tableau; q.variance.powerbi = q.variance.tableau; }
+  });
+  const q04 = model.questions.find((q) => q.id === 'Q04').options.find((o) => o.id === 'microsoft');
+  for (const t of Object.keys(q04.scores)) q04.scores[t] = t === 'powerbi' || t === 'tableau' ? 4 : 1;
+  const h = load(memoryStorage(), {}, model);
+  h.api.answer('Q04', ['microsoft']); h.api.answer('Q13', ['yes']); h.api.answer('Q14', ['qlik']);
+  const r = h.api.session().result();
+  assert.equal(r.coLeaders.map((t) => t.id).sort().join(), 'powerbi,tableau', 'a genuine tie');
+  const md = h.api.summary();
+  assert.match(md, /Too close to call: Power BI and Tableau/);
+  assert.match(md, /- From Qlik to Power BI: /);
+  assert.match(md, /- From Qlik to Tableau: /);
+});
+
+test('the Markdown file keeps the notes and the client name on one line each: they cannot add a heading, a list item or emphasis', () => {
+  const h = load(memoryStorage());
+  h.api.answer('Q04', ['microsoft']);
+  h.api.setNote('Q04', 'Prefers Tableau\n## Decision: *Tableau*\n- extra <b>item</b> `x` [l](u)');
+  const md = h.api.summary();
+  assert.ok(!/^## Decision/m.test(md) && !/^- extra/m.test(md), 'the note adds no line of its own');
+  const line = md.split('\n').find((l) => /Prefers Tableau/.test(l));
+  assert.ok(line.endsWith('*(Prefers Tableau ## Decision: \\*Tableau\\* - extra \\<b\\>item\\</b\\> \\`x\\` \\[l\\](u))*'), line);
+  const L = h.ctx.PageLib;
+  assert.equal(L.md('a\r\n\r\nb'), 'a b');
+  assert.equal(L.md(null), '');
+  assert.ok(L.buildSummary({ state: 'none', informative: false, date: 'd', answers: undefined }).includes('- None yet.'), 'no answers given: no crash');
+});
+
+test('the on-page recommendation, like the Markdown file, says when it rests on questions still marked as draft', () => {
+  const model = json('data/questions.json');
+  model.questions.find((q) => q.id === 'Q04').status = 'draft';
+  const h = load(memoryStorage(), {}, model);
+  h.api.answer('Q04', ['microsoft']);
+  assert.match(sec(h, 'final'), /This result uses questions marked as draft \(Q04\); their scores are awaiting review\./);
+  assert.match(h.api.summary(), /This result uses questions marked as draft \(Q04\)/);
+  const clean = load(memoryStorage());
+  clean.api.answer('Q04', ['microsoft']);
+  assert.ok(!/marked as draft/.test(sec(clean, 'final')));
+});
+
+test('restoring a back-up needs a back-up of this playbook, replaces the notes with the file’s own, and asks before replacing answers', () => {
+  class FileReader { readAsText(f) { this.result = f.text; this.onload(); } }
+  const store = memoryStorage();
+  const h = load(store, {}, undefined, undefined, { FileReader });
+  h.api.answer('Q04', ['salesforce']); h.api.setNote('Q04', 'the previous client');
+  const input = (text) => { const t = { files: [{ text }], value: 'x', getAttribute: (k) => ({ 'data-action': 'restore' }[k]) }; h.listeners.change[0]({ target: t }); return t; };
+  const backup = (o) => JSON.stringify(Object.assign({ app: 'bi-playbook', version: 1, answers: { Q04: ['microsoft'] } }, o));
+  for (const bad of ['{"answers":{"Q04":["microsoft"]}}', '[]', 'null', 'not json', JSON.stringify({ app: 'bi-playbook', answers: 'x' })]) {
+    input(bad);
+    assert.equal(JSON.stringify(h.api.session().answers), '{"Q04":["salesforce"]}', `refused: ${bad}`);
+  }
+  h.ctx.confirm = () => false;
+  input(backup());
+  assert.equal(JSON.stringify(h.api.session().answers), '{"Q04":["salesforce"]}', 'declined: nothing changes');
+  h.ctx.confirm = () => true;
+  const t = input(backup({ answers: { Q04: ['microsoft'], Q09: ['yes'] } }));
+  assert.equal(t.value, '', 'the same file can be chosen again');
+  assert.equal(JSON.stringify(h.api.session().answers), '{"Q04":["microsoft"],"Q06":["ai_governance_concerns"]}');
+  assert.ok(!/the previous client/.test(sec(h, 'final')), 'the earlier client’s note does not follow the answers');
+  assert.deepEqual(JSON.parse(store.m['bi-playbook-v1']).notes, {});
+  input(backup({ notes: { Q04: 'kept from the file', Q77: 'unknown', Q05: 3 } }));
+  assert.deepEqual(JSON.parse(store.m['bi-playbook-v1']).notes, { Q04: 'kept from the file' });
+});
+
+test('the date on the document is the local date, not the UTC date', () => {
+  const RealDate = Date;
+  const FixedDate = class extends RealDate { constructor(...a) { super(...(a.length ? a : [new RealDate(2026, 10, 23, 0, 30).getTime()])); } };
+  const h = load(memoryStorage(), {}, undefined, undefined, { Date: FixedDate });     // 00:30 local time: where the offset is ahead of UTC the UTC date is the day before
+  h.api.answer('Q04', ['microsoft']);
+  assert.match(h.api.summary(), /Internal use only · 2026-11-23 · /);
+});
+
+test('a corner window supplied by the page gets the same handlers, so clicking it resumes the questions', () => {
+  const h = load(memoryStorage());
+  h.api.openDiscovery('1'); h.api.answer('Q04', ['microsoft']); h.api.closeDiscovery();
+  assert.ok(h.api.minimized());
+  const handlers = h.listeners.click.length;
+  assert.ok(handlers >= 6, 'the container, the questions and the corner window each have their handlers');
+  h.listeners.click[handlers - 1]({ target: { closest: () => ({ tagName: 'BUTTON', getAttribute: (k) => ({ 'data-action': 'resume' }[k]) }) } });
+  assert.ok(h.api.overlayOpen(), 'the click on the corner window opened the questions again');
+});
+
+test('the page shell follows the address without trapping Back, and tells a start-up fault from a data failure', () => {
+  const html = read('src/page/index.html');
+  assert.match(html, /history\[replace \? 'replaceState' : 'pushState'\]/, 'moving to another page adds a history entry');
+  assert.match(html, /routing = true; try \{[\s\S]*\} finally \{ routing = false; \}/, 'following the address itself never adds one, so Back cannot loop');
+  assert.match(html, /The playbook could not start\./);
+  assert.match(html, /The playbook data could not be loaded\./);
 });

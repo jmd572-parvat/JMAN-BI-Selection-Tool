@@ -1076,7 +1076,7 @@
           },
           "scoreBasis": "Deck heatmap (slide 8), row 'AI-Assisted & Conversational' (matrix text slide 7); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. Adjusted 2026-11-21 in the owner's review (Looker 2->3, Sigma 2->3); awaiting SME confirmation.",
           "rationale": {
-            "summary": "Good fit: Power BI, Looker, Tableau, ThoughtSpot, Sigma, Qlik. Why the leaders (and 3 more): Power BI: Most integrated AI: Copilot gives natural-language Q&A and DAX help. Looker: Gemini in Looker and Conversational Analytics let people ask questions of governed LookML data in plain language. Tableau: Strong AI support: Tableau Agent builds from a prompt.",
+            "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
             "tools": {
               "powerbi": "Most integrated AI: Copilot gives natural-language Q&A and DAX help.",
               "looker": "Gemini in Looker and Conversational Analytics let people ask questions of governed LookML data in plain language.",

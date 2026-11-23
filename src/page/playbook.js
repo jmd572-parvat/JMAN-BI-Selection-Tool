@@ -20,6 +20,9 @@
   var root = typeof self !== 'undefined' ? self : (typeof globalThis !== 'undefined' ? globalThis : {});
   var Session = BISessionNS.Session;
   var esc = L.escapeHtml;
+  /** An own property of a plain lookup table: an address such as #/constructor must not find Object's inherited members. */
+  function has(table, key) { return Object.prototype.hasOwnProperty.call(table, key); }
+  function isPlain(x) { return !!x && typeof x === 'object' && !Array.isArray(x); }
 
   /**
    * The playbook's pages: the tab row. There are two, told as a story: first we get to know the tools (purpose, our principles, the
@@ -102,10 +105,13 @@
   };
   /** Questions whose answers are the client’s own constraints (listed in the final summary). Proposal, docs/page-design.md A15. */
   var CONSTRAINT_QS = ['Q05', 'Q06', 'Q20', 'Q26'];
-  /** Which questions bear on which matrix criterion, for "Relevant to your answers". Proposal, docs/page-design.md A14. */
+  /**
+   * Which questions bear on which matrix criterion, for "Relevant to your answers". Proposal, docs/page-design.md A14.
+   * 'Q06:ai_governance_concerns' means that one answer of Q06 only (any other answer to Q06 says nothing about AI).
+   */
   var CRITERION_QS = [
     ['Ease of Adoption', ['Q10', 'Q11', 'Q12']], ['Self-Service Analytics', ['Q01', 'Q11']], ['Visualization', ['Q21', 'Q17']],
-    ['AI-Assisted', ['Q22', 'Q06']], ['Predictive', ['Q01']], ['Governance & Security', ['Q03', 'Q05', 'Q06', 'Q08', 'Q26']],
+    ['AI-Assisted', ['Q22', 'Q06:ai_governance_concerns']], ['Predictive', ['Q01']], ['Governance & Security', ['Q03', 'Q05', 'Q06', 'Q08', 'Q26']],
     ['Semantic Layer', ['Q07']], ['Scalability', ['Q16', 'Q18', 'Q25']], ['Technology Ecosystem', ['Q04']], ['Cloud Data Platform', ['Q04', 'Q16']],
     ['Embedded', ['Q19']], ['Licensing', ['Q23']], ['Business Value', ['Q01']], ['Community', ['Q24']]
   ];
@@ -123,12 +129,12 @@
     }
   };
 
-  /** One correction to a matrix cell, checked against the vendor's own pages on 2026-11-20. `from` is the original text: it only applies to that exact text. */
   /** Where each tool's own documentation starts. Every address was opened on 2026-11-21. */
   var DOCS = {
     looker: 'https://docs.cloud.google.com/looker/docs', powerbi: 'https://learn.microsoft.com/en-us/power-bi/', qlik: 'https://help.qlik.com/',
     sigma: 'https://help.sigmacomputing.com/', tableau: 'https://help.tableau.com/', thoughtspot: 'https://docs.thoughtspot.com/'
   };
+  /** One correction to a matrix cell, checked against the vendor's own pages on 2026-11-20. `from` is the original text: it only applies to that exact text. */
   var MATRIX_FIX = { sigma: { 'AI-Assisted & Conversational Analytics': { from: 'Ask Sigma covers the basics', to: 'Sigma Assistant (successor to Ask Sigma) covers the basics' } } };
 
   /** Line icons (24 px grid, drawn with the text colour): used for every arrow, close and tick so they centre exactly. */
@@ -137,7 +143,14 @@
     return '<svg class="pb-ico pb-ico-' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICON_PATHS[name] + '</svg>';
   }
 
-  function today() { return new Date().toISOString().slice(0, 10); }
+  /** Today's date where the reader is (not the UTC date, which is the wrong day for part of the day away from Greenwich). */
+  function today() {
+    var d = new Date(), two = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate());
+  }
+
+  /** Answers saved before a question moved: Q09 (AI governance concerns) became an option of Q06. */
+  var MOVED_ANSWERS = [{ from: 'Q09', when: 'yes', to: 'Q06', option: 'ai_governance_concerns' }];
 
   /**
    * @param {{container: Element, rail: Element, toc?: Element, overlay?: Element, mini?: Element, model: object, deck: object, config?: object, onTab?: Function}} o
@@ -154,13 +167,56 @@
     var profileOf = {};
     D.profiles.tools.forEach(function (p) { profileOf[p.id] = p; });
 
+    var loadNote = '';                                   // what was changed in the answers saved on this device, said once to the reader
     var store = loadStore();
     var model, session;
-    var ui = { matrixOpen: {}, page: 'home', rec: 'shortlist', shortSel: null, overlay: false, step: null, popup: null, timer: null, hold: false, followShown: {}, notice: null, openNotes: {}, mtools: null, dtool: null, clientName: '' };
+    var ui = { matrixOpen: {}, page: 'home', rec: 'shortlist', shortSel: null, overlay: false, step: null, popup: null, followShown: {}, notice: null, openNotes: {}, mtools: null, dtool: null, clientName: '' };
+    if (loadNote) ui.notice = { text: loadNote };
 
+    /** The ids of the questions and options this model has: saved or restored answers are checked against them. */
+    function knownOptions() {
+      var qs = {};
+      fullModel.questions.forEach(function (q) { var m = {}; q.options.forEach(function (op) { m[op.id] = true; }); qs[q.id] = m; });
+      return qs;
+    }
+    /**
+     * Answers from storage or from a back-up file, made safe: a list of text for each question the model still has, and only options it
+     * still has. An answer to a question that moved is carried over (MOVED_ANSWERS); anything else that no longer fits is dropped and counted.
+     */
+    function cleanAnswers(raw) {
+      var out = {}, dropped = 0, moved = [], qs = knownOptions();
+      if (!isPlain(raw)) return { answers: out, message: raw == null ? '' : 'The saved answers could not be read, so they were not kept.' };
+      Object.keys(raw).forEach(function (id) {
+        var v = raw[id];
+        if (!Array.isArray(v) || !v.every(function (x) { return typeof x === 'string'; })) { dropped++; return; }
+        if (has(qs, id)) {
+          var kept = v.filter(function (x, i) { return has(qs[id], x) && v.indexOf(x) === i; });
+          if (kept.length) out[id] = kept;
+          if (kept.length < v.length) dropped++;
+          return;
+        }
+        var mv = MOVED_ANSWERS.filter(function (m) { return m.from === id; })[0];
+        if (mv && has(qs, mv.to) && has(qs[mv.to], mv.option)) { if (v.indexOf(mv.when) !== -1) moved.push(mv); } else dropped++;
+      });
+      moved.forEach(function (mv) { var cur = out[mv.to] || []; if (cur.indexOf(mv.option) === -1) out[mv.to] = cur.concat([mv.option]); });
+      var parts = [];
+      if (moved.length) parts.push('An earlier answer about AI governance now sits under the security and access question.');
+      if (dropped) parts.push(dropped + (dropped === 1 ? ' saved answer' : ' saved answers') + ' no longer matched the questions, so ' + (dropped === 1 ? 'it was' : 'they were') + ' removed.');
+      return { answers: out, message: parts.join(' ') };
+    }
+    /** Notes from storage or a back-up file: text for a question the model has. */
+    function cleanNotes(raw) {
+      var out = {}, qs = knownOptions();
+      if (isPlain(raw)) Object.keys(raw).forEach(function (id) { if (has(qs, id) && typeof raw[id] === 'string' && raw[id]) out[id] = raw[id]; });
+      return out;
+    }
     function loadStore() {
-      try { var raw = root.localStorage && root.localStorage.getItem(storageKey); if (raw) { var s = JSON.parse(raw); return { answers: s.answers || {}, notes: s.notes || {} }; } } catch (e) { /* storage unavailable: carry on without it */ }
-      return { answers: {}, notes: {} };
+      var raw = null;
+      try { var txt = root.localStorage && root.localStorage.getItem(storageKey); if (txt) raw = JSON.parse(txt); } catch (e) { /* storage unavailable or damaged: carry on without it */ }
+      if (!isPlain(raw)) return { answers: {}, notes: {} };
+      var c = cleanAnswers(raw.answers);
+      loadNote = c.message;
+      return { answers: c.answers, notes: cleanNotes(raw.notes) };
     }
     function saveStore() { try { root.localStorage && root.localStorage.setItem(storageKey, JSON.stringify(store)); } catch (e) { /* ignore */ } }
     function buildSession(answers) {
@@ -176,6 +232,7 @@
       saveStore();
     }
     buildSession(store.answers);
+    if (loadNote) saveStore();                           // the cleaned answers replace the old ones on this device
 
     // ------------------------------------------------------------------ small helpers
     var qOf = function (id) { return session.engine.qmap[id]; };
@@ -645,9 +702,10 @@
     function relevantCriterion(name) {
       var entry = CRITERION_QS.filter(function (e) { return name.indexOf(e[0]) === 0; })[0];
       if (!entry) return false;
-      return entry[1].some(function (qid) {
+      return entry[1].some(function (ref) {
+        var parts = ref.split(':'), qid = parts[0], only = parts[1];       // 'Q06:ai_governance_concerns' = that answer only
         var q = qOf(qid); var a = session.answers[qid] || [];
-        return q && a.some(function (id) { return q.omap[id] && !q.omap[id].unknown; });
+        return q && a.some(function (id) { return q.omap[id] && !q.omap[id].unknown && (!only || id === only); });
       });
     }
 
@@ -743,12 +801,14 @@
         .map(function (id) { return qOf(id).text + ' ' + answerText(id); });
       var migration = [];
       var q13 = session.answers.Q13 || [];
-      if (r.informative && q13.length && q13.indexOf('no') === -1 && leadTools.length) {
-        var to = leadTools[0].id;
-        (session.answers.Q14 || []).forEach(function (from) {
-          var o = qOf('Q14') && qOf('Q14').omap[from]; if (!o || o.unknown || from === to) return;
-          var cell = from === 'excel_other' ? D.migration.grid.excel[to] : D.migration.feasibility[from][to];
-          if (cell) migration.push('From ' + (from === 'excel_other' ? 'Excel' : names[from]) + ' to ' + names[to] + ': ' + cell.rating + '.' + ((cell.reasons || cell.notes || []).length ? ' ' + (cell.reasons || cell.notes).join('; ') + '.' : ''));
+      if (r.informative && q13.length && q13.indexOf('no') === -1) {
+        leadTools.forEach(function (lead) {                // every leader: when the answers do not separate tools, each one gets its own lines
+          var to = lead.id;
+          (session.answers.Q14 || []).forEach(function (from) {
+            var o = qOf('Q14') && qOf('Q14').omap[from]; if (!o || o.unknown || from === to) return;
+            var cell = from === 'excel_other' ? D.migration.grid.excel[to] : D.migration.feasibility[from][to];
+            if (cell) migration.push('From ' + (from === 'excel_other' ? 'Excel' : names[from]) + ' to ' + names[to] + ': ' + cell.rating + '.' + ((cell.reasons || cell.notes || []).length ? ' ' + (cell.reasons || cell.notes).join('; ') + '.' : ''));
+          });
         });
       }
       var steps = [];
@@ -792,6 +852,7 @@
         out += '<section class="pb-rep-sec"><h4>The other tools</h4>' + list(c.others.map(function (t) { return '<strong>Rank ' + (t.tied ? '=' : '') + t.rank + '</strong> ' + esc(t.name); })
           .concat(c.excluded.map(function (e) { return '<strong>' + esc(e.name) + '</strong> is ruled out: ' + esc(e.because); }))) + '</section>';
       }
+      if (c.usesDraft && c.usesDraft.length) out += '<p class="pb-rep-fine">This result uses questions marked as draft (' + esc(c.usesDraft.join(', ')) + '); their scores are awaiting review.</p>';
       if (c.constraints.length) out += '<section class="pb-rep-sec"><h4>What the client told us they need</h4>' + list(c.constraints.map(esc)) + '</section>';
       if (c.migration.length) out += '<section class="pb-rep-sec"><h4>Migration</h4>' + list(c.migration.map(esc)) + '</section>';
       out += '<section class="pb-rep-sec"><h4>Next steps</h4>' + list(c.nextSteps.map(esc).concat(c.winners.filter(function (w) { return w.docUrl; }).map(function (w) {
@@ -864,14 +925,15 @@
 
     /** Show a page, or a section of a page: go('shortlist') opens Client discovery at the recommendation, on its Shortlist tab. */
     function go(id, anchor, instant) {
-      var page = PAGE_IDS.indexOf(id) !== -1 ? id : SECTION_PAGE[id];
+      var page = PAGE_IDS.indexOf(id) !== -1 ? id : (has(SECTION_PAGE, id) ? SECTION_PAGE[id] : null);
       if (!page) return;
       var changed = page !== ui.page;
       if (SUBTABS.recommendation.items.some(function (it) { return it[0] === id; }) && ui.rec !== id) { ui.rec = id; changed = true; }
       ui.page = page;
-      if (changed) { render(); if (root.scrollTo && !anchor && !ANCHOR[id]) { try { root.scrollTo(0, 0); } catch (e) { /* not available */ } } }
+      var where = has(ANCHOR, id) ? ANCHOR[id] : null;
+      if (changed) { render(); if (root.scrollTo && !anchor && !where) { try { root.scrollTo(0, 0); } catch (e) { /* not available */ } } }
       if (o.onTab) o.onTab(page);
-      var target = anchor || ANCHOR[id] || (PAGE_IDS.indexOf(id) === -1 ? 'sec-' + id : null);
+      var target = anchor || where || (PAGE_IDS.indexOf(id) === -1 ? 'sec-' + id : null);
       var el = target ? o.container.querySelector('#' + target) : null;
       if (el) { if (el.tagName === 'DETAILS') el.open = true; if (el.scrollIntoView) el.scrollIntoView(instant ? { block: 'start', behavior: 'instant' } : { block: 'start' }); }
     }
@@ -1223,7 +1285,12 @@
     }
     function saveFile(name, text, type) {
       var blob = new root.Blob([text], { type: type });
-      var a = doc().createElement('a'); a.href = root.URL.createObjectURL(blob); a.download = name; a.click(); root.URL.revokeObjectURL(a.href);
+      var url = root.URL.createObjectURL(blob);
+      var a = doc().createElement('a'); a.href = url; a.download = name; a.style.display = 'none';
+      doc().body.appendChild(a); a.click();
+      // some browsers start the download after click() returns: the address and the link stay until then
+      var clean = function () { root.URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); };
+      if (root.setTimeout) root.setTimeout(clean, 1000); else clean();
     }
     /** A backup of the answers and notes that can be restored on another device. */
     function download() { saveFile('bi-playbook-answers.json', JSON.stringify({ app: 'bi-playbook', version: 1, answers: session.answers, notes: store.notes }, null, 2), 'application/json'); }
@@ -1253,9 +1320,19 @@
         }
         var act = t.getAttribute && t.getAttribute('data-action');
         if (act === 'restore' && t.files && t.files[0]) {
-          var rd = new root.FileReader();
-          rd.onload = function () { try { var d = JSON.parse(rd.result); buildSession(d.answers || {}); store.notes = d.notes || store.notes; persist(); ui.notice = null; render(); flash('Answers restored.'); } catch (err) { flash('That file could not be read.'); } };
-          rd.readAsText(t.files[0]);
+          var rd = new root.FileReader(), file = t.files[0];
+          rd.onload = function () {
+            try {
+              var d = JSON.parse(rd.result);
+              if (!isPlain(d) || d.app !== 'bi-playbook' || !isPlain(d.answers)) throw new Error('not a back-up of this playbook');
+              if (Object.keys(session.answers).length && root.confirm && !root.confirm('Replace the answers and notes on this page with the ones in this file?')) { flash('Nothing was changed.'); return; }
+              var c = cleanAnswers(d.answers);
+              buildSession(c.answers); store.notes = cleanNotes(d.notes); persist(); ui.notice = null; render();
+              flash('Answers restored.' + (c.message ? ' ' + c.message : ''));
+            } catch (err) { flash('That file could not be read as a back-up of this playbook.'); }
+          };
+          t.value = '';                                  // so the same file can be chosen again
+          rd.readAsText(file);
         }
       });
       host.addEventListener('input', function (e) {
@@ -1348,10 +1425,10 @@
         }
         if (k === 'ArrowLeft' || k === 'ArrowRight') { stepBy(k === 'ArrowRight' ? 1 : -1); e.preventDefault && e.preventDefault(); }
       });
-      // any click or key in the carousel counts as an interaction: a pending auto-advance is cancelled and re-armed by the answer itself
     }
     wire(o.container, false);
     if (overlayHost) wire(overlayHost, true);
+    if (miniHost) wire(miniHost, false);               // a corner window the embedder supplied needs the same handlers as the one the module makes
     o.rail.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-action]') : null;
       if (!b) return;
@@ -1368,7 +1445,7 @@
       /** Show a page, or a section of a page ('shortlist' opens the Recommendation page on its Shortlist tab). */
       go: function (id) { go(id); },
       /** True for a page or section id go() understands, including the ids of the earlier four-page layout (so old links still land). */
-      knows: function (id) { return PAGE_IDS.indexOf(id) !== -1 || !!SECTION_PAGE[id]; },
+      knows: function (id) { return PAGE_IDS.indexOf(id) !== -1 || has(SECTION_PAGE, id); },
       /** Programmatic equivalent of picking answers in the page (used by tests and by anything embedding the module). */
       answer: function (qid, optionIds) { applyAnswer(qid, optionIds); },
       /** What a double-click on an answer does: take that answer out of the selection (a single answer becomes unanswered). */
