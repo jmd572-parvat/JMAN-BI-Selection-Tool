@@ -792,6 +792,9 @@ Owner report: when an area was finished the container vanished at once. **Now** 
 
 **Found by playing with the page (2026-11-23).** At tablet and small-laptop widths (761 to 1100 px) the answer tiles stayed in four narrow columns and broke words letter by letter; they now use as many columns as fit at 190 px or more. Checked at 768 px and at phone width (no sideways scroll). The rest of the walk-through (dictionary tabs, matrix tool picker, opening an area, the final page) behaved as designed.
 
+## 24. Plainer wording (2026-11-23)
+Review feedback: some sentences read as machine-written. **Page copy:** 14 passages in the page's own text were rewritten (the scoring explanation, the introductions, the locked-recommendation and migration notes); no meaning, number or claim changed. **Reasons:** the per-tool reasons in the workbook (the "<Tool> Rationale" columns) were reworded where they read stiffly: 412 of the 636 cells (all different sentences; the workbook holds 559 distinct ones), through Excel (`scripts/_apply_v8_rationale_wording.py`), the same wording carried into "Combined Final Rationale". Most are light edits (stock phrasing replaced, one long semicolon sentence split in two); about a quarter are restructured. A script checked that no product name, number or negation changed. No mark, question, option or tool changed. The Flow drawing and the six threaded comments are intact. **Not changed:** the deck's own text (matrix cells, tool profiles, migration reasons and challenges), which is JMAN's; the question and answer wording; the reviewer notes in Score basis (not shown in the production page).
+
 ---
 
 ## Appendix: question inventory

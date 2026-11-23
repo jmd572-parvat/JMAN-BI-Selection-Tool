@@ -249,7 +249,7 @@
         '<p class="pb-lead">When a client asks us which BI tool to choose, we do not start with a favourite. We start with what they are trying to do.</p>' +
         '<dl class="pb-purpose">' +
         row('Who it is for', 'Sales and pre-sales, delivery teams and consultants.') +
-        row('What it does', 'Compares ' + toolList + ', and gives us reasons we can stand behind.') +
+        row('What it does', 'Compares ' + toolList + ' and gives us reasons we can defend.') +
         row('When we use it', 'In discovery and solution design, before we recommend a tool and before scope or pricing is final.') +
         row('What it does not replace', 'A proof of concept, a licensing negotiation or a formal RFP response.') + '</dl></section>';
     }
@@ -263,7 +263,7 @@
       };
       return '<section class="pb-sec"><h2>Contents</h2>' +
         '<ol class="pb-chapters">' +
-        chapter(1, 'Do’s and Don’ts', 'The principles we hold ourselves to on every recommendation.', 'HOW WE WORK', 'sec-principles') +
+        chapter(1, 'Do’s and Don’ts', 'How we approach every recommendation.', 'HOW WE WORK', 'sec-principles') +
         chapter(2, 'Tools dictionary', 'A one-line summary of each tool, with a link to its official documentation.', toolIds.length + ' TOOLS · A TO Z', 'sec-dictionary') +
         chapter(3, 'Comparison matrix', 'All six side by side, a group of criteria at a time. Choose the tools to show, or put any two head to head.', '14 CRITERIA · ' + toolIds.length + ' TOOLS', 'sec-matrix') +
         '</ol></section>';
@@ -281,7 +281,7 @@
       var list = function (items) { return '<ul class="pb-bullets pb-dd-list">' + items.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'; };
       var head = function (kind, text) { return '<h4><span class="pb-mk pb-mk-' + kind + ' pb-mk-lg" aria-hidden="true">' + icon(kind === 'do' ? 'check' : 'close') + '</span>' + text + '</h4>'; };
       return '<section class="pb-sec"><h2>Do’s and Don’ts</h2>' +
-        '<p class="pb-lead">The habits behind every recommendation we make.</p>' +
+        '<p class="pb-lead">The ground rules for every recommendation.</p>' +
         '<div class="pb-grid2 pb-dd"><div class="pb-card pb-do">' + head('do', 'What We Do') + list(dos) + '</div>' +
         '<div class="pb-card pb-dont">' + head('dont', 'What We Don’t Do') + list(donts) + '</div></div></section>';
     }
@@ -289,7 +289,7 @@
     /** The close of page 1: for the client who still cannot be placed, the way into the questions. */
     function renderCta() {
       return '<section class="pb-sec"><div class="pb-card pb-cta"><h2>Still unable to pick a BI tool?</h2>' +
-        '<p class="pb-lead">Spend just 5 to 10 minutes on a few questions about the client. We turn their answers into the best-fit BI tool for their situation, with the reasons to back it up.</p>' +
+        '<p class="pb-lead">Answer a few questions about the client; it takes 5 to 10 minutes. You get the tool that fits their answers best, and the reasons for it.</p>' +
         '<p><button class="pb-btn pb-btn-lg" data-action="go" data-tab="discovery">Start client discovery</button></p></div></section>';
     }
 
@@ -363,11 +363,11 @@
       }).join('');
       var download = '<li><div class="pb-area pb-area-dl">' +
         '<span class="pb-area-top"><span class="pb-area-n" aria-hidden="true">' + icon('download') + '</span></span>' +
-        '<strong class="pb-area-title">Save your answers</strong><span class="pb-area-d">A document with the recommendation, the reasons and every answer and note. It stays on your device.</span>' +
+        '<strong class="pb-area-title">Save your answers</strong><span class="pb-area-d">One document with the recommendation, the reasons, and every answer and note. It stays on your device.</span>' +
         '<span class="pb-area-foot pb-dl-actions"><button class="pb-btn pb-btn-ghost" data-action="mdsave">Markdown</button><button class="pb-btn pb-btn-ghost" data-action="pdf"' + (lockedNow() ? ' disabled title="The PDF holds the recommendation, which opens once every question is answered. Markdown is always available."' : '') + '>PDF</button></span></div></li>';
       return '<section class="pb-sec"><p class="pb-backrow"><button class="pb-link pb-back" data-action="go" data-tab="home">' + icon('left') + '<span>Tools overview</span></button></p>' +
         '<h2 id="disc-about">Client discovery</h2>' +
-        '<p class="pb-lead">The client’s answers decide the tool, not our preferences. We ask about five areas of their situation, and the recommendation further down follows from what they tell us. It takes about 5 to 10 minutes.</p>' +
+        '<p class="pb-lead">The client’s answers decide the tool, not our preferences. There are five areas of questions, and the recommendation below is built only from what the client tells us. It takes about 5 to 10 minutes.</p>' +
         '<h3 id="disc-areas">Areas we ask about</h3>' +
         '<ol class="pb-areas">' + cards + download + '</ol>' +
         '<div class="pb-startrow"><button class="pb-btn pb-btn-lg" data-action="openq">' + (allDone ? 'See the recommendation' : started ? 'Continue the questions' : 'Start the questions') + '</button>' +
@@ -591,7 +591,7 @@
     function lockedHtml() {
       var prog = session.progress(), open = session.openQuestions();
       return '<div class="pb-block" id="sec-locked" data-sec="locked"><section class="pb-sec"><h2>Recommendation</h2>' +
-        '<p class="pb-lead">The recommendation opens once every question has an answer, so it rests on the whole picture. “To be confirmed” counts as an answer.</p>' +
+        '<p class="pb-lead">The recommendation opens once every question has an answer, so that it is based on everything the client told us. “To be confirmed” counts as an answer.</p>' +
         '<div class="pb-card pb-locked"><span class="pb-lock-ico" aria-hidden="true">' + icon('lock') + '</span><div><p class="pb-locked-n"><strong>' + prog.answered + ' of ' + prog.visible + '</strong> questions answered. ' + open.length + ' to go.</p>' +
         (open.length ? '<ul class="pb-open">' + open.slice(0, 6).map(function (q) { return '<li><button class="pb-link" data-action="goq" data-qid="' + q.id + '">' + esc(q.text) + '</button></li>'; }).join('') + (open.length > 6 ? '<li class="pb-fine">and ' + (open.length - 6) + ' more</li>' : '') + '</ul>' : '') +
         '<p><button class="pb-btn" data-action="openq">Continue the questions</button></p></div></div></section></div>';
@@ -621,7 +621,7 @@
           var rl = x.tied ? '=' + x.rank : String(x.rank);
           return '<li><button class="pb-side-logo" data-action="short" data-tool="' + x.tool.id + '" aria-label="' + (x === best ? 'Best fit' : 'Rank ' + rl) + ': ' + esc(x.tool.name) + '. Show its reasons.">' + logoHtml(x.tool.id) + '<span class="pb-tip" role="tooltip">' + esc(x.tool.name) + ' · ' + (x === best ? 'best fit' : 'rank ' + rl) + '</span></button></li>';
         }).join('') + '</ol></div>' +
-        '<p class="pb-fine">The word beside each answer says how well that tool fits that answer on its own. Watch-outs are the answers that pull a tool down, even where it still fits reasonably well.</p>';
+        '<p class="pb-fine">The word beside each answer shows how well the tool fits that answer by itself. A watch-out is an answer that counts against the tool, even if the tool still fits it reasonably well.</p>';
       if (r.excluded.length) {
         out += '<h3>Ruled out by your answers</h3>' + r.excluded.map(function (e) {
           var dep = deploymentFacts(e.tool.id);
@@ -659,8 +659,8 @@
       if (q13.indexOf('no') !== -1) return head + '<div class="pb-card"><p><strong>No existing reporting to migrate.</strong> The discovery result stands.</p></div></section>';
       var shortlist = r.informative ? r.shortlist.map(function (x) { return x.tool.id; }) : [];
       var inUse = (session.answers.Q14 || []).filter(function (id) { var o = qOf('Q14') && qOf('Q14').omap[id]; return o && !o.unknown; });
-      var out = head + '<p class="pb-lead">How hard is the move from the tools the client uses today to each shortlisted tool? Effort is rated Low, Medium or High across six dimensions, so you can scope the work, not only pick the destination.</p>' +
-        '<p class="pb-note">Migration is already part of the ranking through the question about tools in use. This section explains that and adds detail; it is never counted twice.</p>';
+      var out = head + '<p class="pb-lead">How hard is it to move from the tools the client uses today to each shortlisted tool? Effort is rated Low, Medium or High on six dimensions, so you can scope the work as well as pick the destination.</p>' +
+        '<p class="pb-note">The question about tools in use already feeds the ranking. This section adds detail and is not counted a second time.</p>';
       if (!inUse.length) out += '<div class="pb-card"><p>Answer “Which BI tools and licences are currently in use?” to see feasibility from your current tools.</p><p><button class="pb-btn" data-action="goq" data-qid="Q14">Go to the question</button></p></div>';
       if (!shortlist.length) out += '<div class="pb-card"><p>The shortlist appears once enough questions are answered. Effort detail for each shortlisted tool will show here.</p></div>';
       if (inUse.length && shortlist.length) {
@@ -730,7 +730,7 @@
       var cur = ui.dtool && toolIds.indexOf(ui.dtool) !== -1 ? ui.dtool : toolIds[0];
       ui.dtool = cur;
       return '<section class="pb-sec"><h2>Tools dictionary</h2>' +
-        '<p class="pb-lead">Before we compare the tools, we get to know them. Choose a tool for a one-line summary and a link to its own documentation.</p>' +
+        '<p class="pb-lead">Pick a tool to see a one-line summary and a link to its official documentation.</p>' +
         '<div class="pb-dbox"><div class="pb-dtabs" role="tablist" aria-label="Tools">' + toolIds.map(function (id) {
           var on = id === cur;
           return '<button type="button" class="pb-dtab' + (on ? ' on' : '') + '" role="tab" id="dtab-' + id + '" aria-selected="' + on + '" aria-controls="dpanel" tabindex="' + (on ? '0' : '-1') + '" data-action="dtab" data-tool="' + id + '">' + logoHtml(id, 'pb-logo-xs') + '<span>' + esc(names[id]) + '</span></button>';
@@ -787,7 +787,7 @@
           }).join('') + '</tr>';
         }).join('') : '');
       }).join('');
-      return '<section class="pb-sec"><h2>Comparison matrix</h2><p class="pb-lead">Now we put the tools side by side. Each row sums up a group of criteria; open a row to see the criteria inside it. To compare tools head to head, choose which to show.</p>' +
+      return '<section class="pb-sec"><h2>Comparison matrix</h2><p class="pb-lead">The tools side by side. Each row sums up a group of criteria; open a row to see the criteria in it. To compare tools head to head, choose which ones to show.</p>' +
         toolPicker(cols) +
         '<p class="pb-matrix-tools"><span class="pb-legend"><span class="pb-swatch" aria-hidden="true"></span>Leads</span> <button class="pb-link" data-action="mall" data-open="' + (allOpen ? '0' : '1') + '">' + (allOpen ? 'Collapse all groups' : 'Expand all groups') + '</button></p>' +
         '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Tool matrix across 14 criteria, ' + cols.length + ' tools shown</caption><thead><tr><th scope="col">Group and criterion</th>' + cols.map(function (id) { return colHead(id); }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div></section>';
@@ -874,7 +874,7 @@
     }
     function renderFinal() {
       return '<section class="pb-sec"><h2>Final recommendation</h2>' +
-        '<p class="pb-lead">The best fit and the reasons for it, written so you can hand it over. Copy it, save it as Markdown, or save it as a PDF.</p>' +
+        '<p class="pb-lead">The best fit and the reasons for it, written so a colleague can follow it without you. Copy it, or save it as Markdown or PDF.</p>' +
         '<label class="pb-notelabel pb-rep-client">Client name (shown on the document, never saved)<input class="pb-input" data-action="client" value="' + esc(ui.clientName) + '" autocomplete="off"></label>' +
         '<article class="pb-card pb-report" id="pb-summary">' + finalHtml(summaryContext()) + '</article>' +
         '<p class="pb-actions"><button class="pb-btn" data-action="copy">Copy as Markdown</button> <button class="pb-btn pb-btn-ghost" data-action="mdsave">Save as Markdown</button> <button class="pb-btn pb-btn-ghost" data-action="print">Save as PDF</button> ' +
@@ -884,10 +884,10 @@
 
     function scoringHtml() {
       return '<div class="pb-prose">' +
-        '<p>Every answer a client can give has been rated for each tool, from 1 (possible but not ideal) to 4 (strong fit). Most of those ratings come from our experts. For the questions about polish, AI, cost, users and talent we took them from our comparison table, and three answers are our own proposals. Those are all still waiting for an expert to confirm them.</p>' +
-        '<p>We don’t just add the ratings up. Some tools score well on almost everything, so a plain total would pick the same tool whatever the client said. Instead each tool is measured against how it normally scores, and only the difference this client’s answers make counts. Questions that matter more count for more. A client who tells us nothing gets a tie.</p>' +
+        '<p>Each answer a client can give is rated for every tool, from 1 (possible but not ideal) to 4 (strong fit). Most of the ratings come from our experts. The ones for polish, AI, cost, users and talent were taken from our comparison table, and three answers are our own proposals. An expert still has to confirm all of those.</p>' +
+        '<p>We don’t simply add the ratings up. Some tools score well on almost everything, so a plain total would pick the same tool whatever the client said. Instead we compare each tool with how it normally scores, and only the difference this client’s answers make counts. Questions that matter more count for more, and a client who tells us nothing gets a tie.</p>' +
         '<p>When two tools finish level, we look at the answers about ecosystem first, then security and governance, then delivery risk and cost. If that doesn’t separate them, we call it a tie. One answer can rule a tool out outright: a client who can’t use a vendor-hosted tool rules out Sigma.</p>' +
-        '<p>Treat the order as provisional until most of the questions are answered, and as a starting point for your own judgement, not a verdict. The ratings and weights may change as the experts finish reviewing them.</p></div>';
+        '<p>Until most questions are answered, treat the order as provisional. Either way it is a starting point for your own judgement, not a verdict. The ratings and weights may change once the experts finish reviewing them.</p></div>';
     }
 
     // ------------------------------------------------------------------ pages, navigation, rail

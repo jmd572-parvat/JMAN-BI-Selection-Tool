@@ -1028,7 +1028,7 @@ test('page 1 reads shorter: purpose as four labelled rows, no line under Content
   const prose = how.slice(how.indexOf('pb-prose'), how.indexOf('</details>'));
   assert.equal((prose.match(/<p>/g) || []).length, 4, 'four short paragraphs, in plain sentences');
   assert.ok(!/<strong>|<ul|<li>/.test(prose), 'no bold labels and no bullet pattern');
-  assert.match(how, /We don’t just add the ratings up/);
+  assert.match(how, /We don’t simply add the ratings up/);
   assert.match(css, /#sec-reco \.pb-link, #sec-reco a \{ text-decoration: none;/, 'links in the recommendation have no underline');
   assert.match(css, /--font: "M PLUS 1", "M PLUS 1 Fallback", ui-sans-serif/, 'the site font first, with its fallback');
   assert.match(css, /--text: #334155;/, 'body text in the marketplace slate');
@@ -1046,8 +1046,8 @@ test('content audit: the matrix correction applies to the original text only, an
   assert.match(m, /Sigma Assistant \(successor to Ask Sigma\) covers the basics/);
   assert.ok(!/Ask Sigma covers the basics/.test(m));
   const sc = sec(h, 'scoring');
-  assert.match(sc, /Most of those ratings come from our experts/);
-  assert.match(sc, /took them from our comparison table, and three answers are our own proposals\. Those are all still waiting for an expert to confirm them/);
+  assert.match(sc, /Most of the ratings come from our experts/);
+  assert.match(sc, /were taken from our comparison table, and three answers are our own proposals\. An expert still has to confirm all of those/);
   assert.ok(!/For every answer, subject-matter experts/.test(sc));
 });
 
