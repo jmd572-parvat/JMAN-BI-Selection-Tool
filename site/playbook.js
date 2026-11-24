@@ -787,7 +787,7 @@
           }).join('') + '</tr>';
         }).join('') : '');
       }).join('');
-      return '<section class="pb-sec"><h2>Comparison matrix</h2><p class="pb-lead">The tools side by side. Each row sums up a group of criteria; open a row to see the criteria in it. To compare tools head to head, choose which ones to show.</p>' +
+      return '<section class="pb-sec"><h2>Comparison matrix</h2>' +
         toolPicker(cols) +
         '<p class="pb-matrix-tools"><span class="pb-legend"><span class="pb-swatch" aria-hidden="true"></span>Leads</span> <button class="pb-link" data-action="mall" data-open="' + (allOpen ? '0' : '1') + '">' + (allOpen ? 'Collapse all groups' : 'Expand all groups') + '</button></p>' +
         '<div class="pb-tablewrap"><table class="pb-table pb-matrix"><caption class="pb-sr">Tool matrix across 14 criteria, ' + cols.length + ' tools shown</caption><thead><tr><th scope="col">Group and criterion</th>' + cols.map(function (id) { return colHead(id); }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div></section>';

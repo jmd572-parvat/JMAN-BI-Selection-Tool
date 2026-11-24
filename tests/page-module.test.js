@@ -1221,3 +1221,10 @@ test('between phone and desktop widths the answer tiles use columns at least 190
   const css = read('src/page/styles.css');
   assert.match(css, /@media \(min-width: 761px\) and \(max-width: 1100px\) \{\s*\.pb-card-q \.pb-opts-grid \{ grid-template-columns: repeat\(auto-fit, minmax\(190px, 1fr\)\); \}/);
 });
+
+test('the comparison matrix has no description under its heading: the tool picker follows it directly', () => {
+  const h = load(memoryStorage());
+  const m = sec(h, 'matrix');
+  assert.match(m, /<h2>Comparison matrix<\/h2><div class="pb-picker"/);
+  assert.ok(!/side by side|head to head/.test(m));
+});
