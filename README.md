@@ -35,4 +35,4 @@ python scripts/prepare_logos.py <folder>     # tool logos from the original file
 After changing the workbook: `python scripts/excel_to_json.py`, then `npm run parity:update`, then the checks above.
 
 ## Status
-A working preview exists. It is not ready to ship: twelve answers still wait for an expert to confirm their scores, weights are provisional, the history of the repository still holds internal files and names removed from the current version (section 25), and the marketplace shell is stood in for. The open items are in `docs/page-design.md`, sections 11, 12, 22 and 25.
+A working preview exists. It is not ready to ship: the weights have not been set in a workshop, and the marketplace shell is stood in for. The open items are in `docs/page-design.md`, sections 11, 12 and 22, and in `docs/handoff.md`.

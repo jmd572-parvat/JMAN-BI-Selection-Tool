@@ -84,8 +84,8 @@
    {
     "platform": "Snowflake",
     "cells": {
-     "powerbi": "Optimized for fast queries",
-     "tableau": "Optimized high-speed queries",
+     "powerbi": "Optimised for fast queries",
+     "tableau": "Optimised high-speed queries",
      "looker": "Strong native link",
      "thoughtspot": "Strong native link"
     }
@@ -110,16 +110,16 @@
    }
   ],
   "legend": {
-   "green": "Deep, optimized integration for fastest performance and most features",
-   "yellow": "Optimized connection with good performance, but not the deepest level",
+   "green": "Deep, optimised integration for fastest performance and most features",
+   "yellow": "Optimised connection with good performance, but not the deepest level",
    "blue": "Standard connection; works well but may lack speed or advanced features"
   },
   "markerConflicts": [
    "Fabric / Tableau: marker yellow with text 'Standard SQL connection'",
    "Fabric / Looker: marker yellow with text 'Standard SQL connection'",
    "Fabric / ThoughtSpot: marker yellow with text 'Standard connector'",
-   "Snowflake / Power BI: marker blue with text 'Optimized for fast queries'",
-   "Snowflake / Tableau: marker blue with text 'Optimized high-speed queries'",
+   "Snowflake / Power BI: marker blue with text 'Optimised for fast queries'",
+   "Snowflake / Tableau: marker blue with text 'Optimised high-speed queries'",
    "Databricks / Looker: marker yellow with text 'Standard with Delta support'"
   ]
  },
@@ -149,7 +149,7 @@
   {
    "consideration": "Data residency control",
    "cells": {
-    "powerbi": "Regional Azure data centers",
+    "powerbi": "Regional Azure data centres",
     "tableau": "Choose region or self-host",
     "looker": "Tied to Google Cloud region",
     "thoughtspot": "Limited region choice",
@@ -172,7 +172,7 @@
  "whyTheseTools": [
   {
    "theme": "Market Leadership",
-   "text": "Each tool is recognized as a leader or challenger in the latest Gartner Magic Quadrant for Analytics and Business Intelligence Platforms."
+   "text": "Each tool is recognised as a leader or challenger in the latest Gartner Magic Quadrant for Analytics and Business Intelligence Platforms."
   },
   {
    "theme": "Widespread Adoption",
@@ -188,7 +188,7 @@
   },
   {
    "theme": "Innovative Approaches",
-   "text": "Each brings unique strengths—e.g., ThoughtSpot's search-based analytics, Looker's semantic modeling, Tableau’s intuitive visual storytelling, and Power BI’s native Microsoft integration—allowing us to match tool capabilities to client needs."
+   "text": "Each brings unique strengths—e.g., ThoughtSpot's search-based analytics, Looker's semantic modelling, Tableau’s intuitive visual storytelling, and Power BI’s native Microsoft integration—allowing us to match tool capabilities to client needs."
   }
  ]
 }

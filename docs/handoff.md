@@ -55,7 +55,7 @@ These are tested; see `docs/scoring-method.md` and the top of `src/page/playbook
 - Tied tools are shown as tied, never as a single winner.
 - Static lists of tools are alphabetical.
 - A fit word beside an answer ("Strong fit" and so on) is supporting evidence only; it never sets the rank.
-- Copy must not strengthen claims. The page says plainly that some marks are not yet expert-confirmed.
+- Copy must not strengthen claims.
 
 ## 5. Editing the questions and marks
 - Edit `data/bi-tools-questions.xlsx` **in Excel only**. A library that rewrites the file would drop its Flow drawing and comments.
@@ -63,12 +63,11 @@ These are tested; see `docs/scoring-method.md` and the top of `src/page/playbook
 - The production build leaves out draft questions and the reviewer notes (`--exclude-draft --no-score-basis`), so only approved content and no review notes are published.
 
 ## 6. Known open items
-- Twelve answers are not yet confirmed by an expert (nine taken from the deck heatmap, marked "DRAFT: SME to confirm" in the workbook; three proposals). The page says so in "How the recommendation is made".
+- The marks have been approved by the experts. The notes in the workbook's Score basis column record where each came from (the deck heatmap, the owner's review, or a proposal).
 - The weights have not been agreed in a workshop. Changing every weight by 1 changes the top three for about 29% of clients (`docs/score-audit.md`).
 - These vendor facts are unconfirmed: whether Tableau's Einstein Discovery is still offered under that name, Sigma's plan names, and Tableau's editions (`docs/page-design.md`, sections 19 and 22).
 - The page asks Google Fonts for its font when built with `--with-font`. Build without it if the marketplace already loads M PLUS 1.
 - The "v1 draft", date and owner line in `index.html` stands in for the marketplace's own header.
-- Git history still contains files and names removed from the current version (`docs/page-design.md`, section 25).
 
 ## 7. More detail
 `docs/page-design.md` (design decisions and revisions), `docs/scoring-method.md` (how scores become a recommendation), `docs/engine.md` (the JavaScript engine), `docs/model-validation.md` and `docs/score-audit.md` (checks on the scoring), `README.md` (commands).

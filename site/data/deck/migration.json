@@ -109,7 +109,7 @@
    "sigma": {
     "rating": "Easy",
     "reasons": [
-     "Both sit on the warehouse - minimal modeling to move",
+     "Both sit on the warehouse - minimal modelling to move",
      "Excel-like interface is familiar to Power BI business users"
     ]
    }
@@ -147,7 +147,7 @@
     "rating": "Easy",
     "reasons": [
      "Live warehouse connection carries over cleanly",
-     "Analysts adapt quickly; less custom modeling to unwind"
+     "Analysts adapt quickly; less custom modelling to unwind"
     ]
    }
   },
@@ -184,7 +184,7 @@
     "rating": "Moderate",
     "reasons": [
      "Shared warehouse-native foundation reduces data work",
-     "Central semantic governance gives way to spreadsheet-style modeling"
+     "Central semantic governance gives way to spreadsheet-style modelling"
     ]
    }
   },
@@ -281,7 +281,7 @@
     "rating": "Moderate",
     "reasons": [
      "Warehouse foundation is already in place",
-     "LookML modeling layer still has to be built from scratch"
+     "LookML modelling layer still has to be built from scratch"
     ]
    },
    "thoughtspot": {
@@ -470,7 +470,7 @@
   "powerbi": "Smooth from Excel; migrating from Tableau/Qlik means DAX retraining and rebuilding visuals.",
   "tableau": "Easy for analysts coming from Excel; enterprise governance takes longer without an expert in place.",
   "looker": "Biggest upfront lift — requires building a LookML model from scratch, but pays off long-term.",
-  "thoughtspot": "Needs a clean, modeled warehouse first; if data isn’t warehouse-ready, that becomes the real project.",
+  "thoughtspot": "Needs a clean, modelled warehouse first; if data isn’t warehouse-ready, that becomes the real project.",
   "qlik": "QlikView-to-Sense needs app conversion; the associative model has a learning curve for new users.",
   "sigma": "Fastest migration for spreadsheet-heavy teams; limited value if the org isn’t warehouse-centric yet."
  }

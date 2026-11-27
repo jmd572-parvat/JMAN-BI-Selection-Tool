@@ -154,7 +154,7 @@ button { font: inherit; }
 /* ----- migration, tools, tables ----- */
 .pb-feas { list-style: none; padding: 0; margin: 0; display: grid; gap: .8rem; }
 .pb-feas ul { margin: .3rem 0 0; padding-left: 1.1rem; }
-.pb-tablewrap { overflow-x: auto; margin: .6rem 0 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+.pb-tablewrap { position: relative; overflow-x: auto; margin: .6rem 0 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
 .pb-table { border-collapse: collapse; width: 100%; font-size: .92rem; }
 .pb-table th, .pb-table td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
 .pb-table td { min-width: 9.5rem; }

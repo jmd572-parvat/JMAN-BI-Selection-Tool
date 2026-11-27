@@ -5,20 +5,20 @@
    "id": "powerbi",
    "name": "Power BI",
    "source": "slide 10",
-   "intro": "Power BI is Microsoft's cloud-based Business Intelligence (BI) and analytics platform that enables organizations to connect to multiple data sources, transform data, build interactive dashboards, and share actionable insights across the enterprise. It integrates seamlessly with the Microsoft ecosystem, including Microsoft Fabric, Azure, Excel, Teams, and Microsoft 365.",
+   "intro": "Power BI is Microsoft's cloud-based Business Intelligence (BI) and analytics platform that enables organisations to connect to multiple data sources, transform data, build interactive dashboards, and share actionable insights across the enterprise. It integrates seamlessly with the Microsoft ecosystem, including Microsoft Fabric, Azure, Excel, Teams, and Microsoft 365.",
    "bestSuited": "Power BI is best suited for enterprise BI, self-service analytics, operational dashboards, and AI-powered reporting within the Microsoft ecosystem.",
    "typicalFeatures": [
     "Connects to 100+ cloud and on-premises data sources",
     "Interactive dashboards, reports, and KPI scorecards",
     "Powerful data transformation using Power Query",
-    "Semantic data modeling with DAX",
+    "Semantic data modelling with DAX",
     "Scheduled data refresh, row-level security (RLS), and governance",
     "Mobile access and report sharing across teams"
    ],
    "uniqueFeatures": [
     "Deep integration with Microsoft Fabric, Azure, Excel, Teams, and Microsoft 365",
     "Copilot-powered report creation and natural language querying (with supported Fabric capacities)",
-    "Industry-leading semantic modeling using DAX and reusable datasets",
+    "Industry-leading semantic modelling using DAX and reusable datasets",
     "AI visuals such as Key Influencers, Decomposition Tree, Smart Narratives, and anomaly detection",
     "Enterprise-grade security with Microsoft Entra ID integration"
    ],
@@ -51,15 +51,15 @@
    "id": "tableau",
    "name": "Tableau",
    "source": "slide 11",
-   "intro": "Tableau is Salesforce's cloud-based Business Intelligence (BI) and analytics platform that enables organizations to connect to diverse data sources, create interactive visualizations, and share insights across the enterprise. It is recognized for its industry-leading data visualization capabilities and strong support for self-service analytics.",
+   "intro": "Tableau is Salesforce's cloud-based Business Intelligence (BI) and analytics platform that enables organisations to connect to diverse data sources, create interactive visualisations, and share insights across the enterprise. It is recognised for its industry-leading data visualisation capabilities and strong support for self-service analytics.",
    "bestSuited": "Tableau is best suited for advanced visual analytics, executive dashboards, data storytelling, and enterprise reporting with Salesforce integration.",
    "typicalFeatures": [],
    "uniqueFeatures": [
-    "Best-in-class interactive data visualization with drag-and-drop interface",
-    "Tableau Pulse for AI-driven personalized insights",
+    "Best-in-class interactive data visualisation with drag-and-drop interface",
+    "Tableau Pulse for AI-driven personalised insights",
     "Tableau Agent for natural language analytics and dashboard creation",
     "Advanced geospatial analytics and mapping capabilities",
-    "Hyper data engine optimized for fast analytical queries",
+    "Hyper data engine optimised for fast analytical queries",
     "Strong integration with Salesforce CRM and enterprise cloud platforms"
    ],
    "benefits": [
@@ -92,7 +92,7 @@
    "id": "thoughtspot",
    "name": "ThoughtSpot",
    "source": "slide 12",
-   "intro": "ThoughtSpot is a cloud-native Business Intelligence (BI) and analytics platform that enables organizations to explore data using natural language search and AI-driven insights. Built for self-service analytics, it connects directly to modern cloud data platforms, allowing business users to uncover insights quickly without relying heavily on technical teams.",
+   "intro": "ThoughtSpot is a cloud-native Business Intelligence (BI) and analytics platform that enables organisations to explore data using natural language search and AI-driven insights. Built for self-service analytics, it connects directly to modern cloud data platforms, allowing business users to uncover insights quickly without relying heavily on technical teams.",
    "bestSuited": "Thoughtspot is best suited for search-driven analytics, conversational BI, and AI-powered self-service analytics on modern cloud data platforms.",
    "typicalFeatures": [
     "Natural Language Search (Ask questions in plain English)",
@@ -101,12 +101,12 @@
     "Role-based access & Row-Level Security (RLS)",
     "Real-time querying of cloud data warehouses",
     "Embedded Analytics (SDKs & APIs)",
-    "Data modeling through governed semantic layer",
+    "Data modelling through governed semantic layer",
     "Scheduled insights and monitoring"
    ],
    "uniqueFeatures": [
     "Spotter AI Agent for conversational analytics, deep research, root-cause analysis, and AI-generated summaries.",
-    "Search-first BI experience, minimizing reliance on pre-built dashboards.",
+    "Search-first BI experience, minimising reliance on pre-built dashboards.",
     "AI automatically identifies trends, anomalies, and KPI drivers.",
     "Live querying of cloud warehouses without requiring proprietary in-memory storage.",
     "Strong embedded analytics capabilities for SaaS applications.",
@@ -125,12 +125,12 @@
     "Natural language search and question answering",
     "AI-generated summaries and insights",
     "Automated anomaly detection and trend analysis",
-    "AI-assisted visualization recommendations",
+    "AI-assisted visualisation recommendations",
     "Generative AI integrated with cloud data platforms"
    ],
    "costTier": [
     "Team, Pro, Enterprise (custom pricing)",
-    "Best suited for cloud-first and enterprise organizations",
+    "Best suited for cloud-first and enterprise organisations",
     "AI capabilities available across higher subscription tiers",
     "Consumption and enterprise pricing options",
     "Designed for scalable cloud-native analytics"
@@ -141,19 +141,19 @@
    "id": "looker",
    "name": "Looker",
    "source": "slide 13",
-   "intro": "Looker is Google Cloud's enterprise Business Intelligence (BI) and analytics platform that enables organizations to explore, visualize, and govern data through a centralized semantic layer. Built for modern cloud data warehouses, Looker delivers consistent business metrics, self-service analytics, embedded analytics, and AI-powered insights while leveraging the scalability of cloud-native architectures.",
-   "bestSuited": "Looker is best suited for organizations seeking governed analytics, centralized business metrics, embedded BI, and seamless integration with modern cloud data platforms.",
+   "intro": "Looker is Google Cloud's enterprise Business Intelligence (BI) and analytics platform that enables organisations to explore, visualise, and govern data through a centralised semantic layer. Built for modern cloud data warehouses, Looker delivers consistent business metrics, self-service analytics, embedded analytics, and AI-powered insights while leveraging the scalability of cloud-native architectures.",
+   "bestSuited": "Looker is best suited for organisations seeking governed analytics, centralised business metrics, embedded BI, and seamless integration with modern cloud data platforms.",
    "typicalFeatures": [
     "Connects natively to BigQuery, Snowflake, Databricks, Redshift, PostgreSQL, and other cloud data platforms",
     "Interactive dashboards, reports, and self-service analytics",
     "Live querying on cloud data warehouses with no data extracts",
-    "LookML semantic modeling for consistent business metrics",
+    "LookML semantic modelling for consistent business metrics",
     "Role-Based Access Control (RBAC), Row-Level Security (RLS), and enterprise governance",
     "Embedded analytics through APIs and SDKs",
     "Integration with Looker Studio and the Google Cloud ecosystem"
    ],
    "uniqueFeatures": [
-    "LookML Semantic Layer centralizes business logic and ensures metric consistency across reports",
+    "LookML Semantic Layer centralises business logic and ensures metric consistency across reports",
     "Gemini in Looker provides conversational analytics and AI-assisted insights",
     "Conversational Analytics enables users to query data using natural language",
     "Native cloud architecture leverages warehouse compute without moving data",
@@ -161,8 +161,8 @@
     "Version-controlled development using Git for collaborative analytics engineering"
    ],
    "benefits": [
-    "Delivers trusted, governed metrics across the organization",
-    "Reduces duplicate business logic through centralized semantic modeling",
+    "Delivers trusted, governed metrics across the organisation",
+    "Reduces duplicate business logic through centralised semantic modelling",
     "Enables scalable self-service analytics on live cloud data",
     "Accelerates dashboard development using reusable data models",
     "Supports enterprise-grade governance, security, and collaboration",
@@ -181,7 +181,7 @@
     "Best suited for medium to large enterprises",
     "Pricing based on platform usage and deployment requirements",
     "Enterprise licensing with scalable cloud architecture",
-    "Most cost-effective for organizations already using Google Cloud"
+    "Most cost-effective for organisations already using Google Cloud"
    ],
    "issues": []
   },
@@ -189,13 +189,13 @@
    "id": "qlik",
    "name": "Qlik",
    "source": "slide 14",
-   "intro": "Qlik is an AI-powered Business Intelligence (BI) and analytics platform that enables organizations to integrate, analyze, and visualize data from multiple sources. Built on its Associative Analytics Engine, Qlik empowers users to freely explore relationships across data while leveraging AI-driven insights, automation, and enterprise-grade governance. It integrates with major cloud platforms, databases, SaaS applications, and Qlik Talend Cloud to support modern analytics workflows.",
-   "bestSuited": "Qlik is best suited for organizations seeking governed self-service analytics, AI-powered insights, enterprise-scale data integration, and modern cloud analytics.",
+   "intro": "Qlik is an AI-powered Business Intelligence (BI) and analytics platform that enables organisations to integrate, analyse, and visualise data from multiple sources. Built on its Associative Analytics Engine, Qlik empowers users to freely explore relationships across data while leveraging AI-driven insights, automation, and enterprise-grade governance. It integrates with major cloud platforms, databases, SaaS applications, and Qlik Talend Cloud to support modern analytics workflows.",
+   "bestSuited": "Qlik is best suited for organisations seeking governed self-service analytics, AI-powered insights, enterprise-scale data integration, and modern cloud analytics.",
    "typicalFeatures": [
     "Connects to 100+ cloud, on-premises, and SaaS data sources",
     "Interactive dashboards, reports, and self-service analytics",
     "Associative Analytics Engine for unrestricted data exploration",
-    "Drag-and-drop dashboard creation with responsive visualizations",
+    "Drag-and-drop dashboard creation with responsive visualisations",
     "Scheduled reporting, alerts, and collaboration",
     "Role-Based Access Control (RBAC), Section Access, and enterprise governance",
     "Embedded analytics and API support",
@@ -203,7 +203,7 @@
    ],
    "uniqueFeatures": [
     "Associative Analytics Engine enables users to explore all relationships in data without predefined drill paths",
-    "Insight Advisor provides AI-generated visualizations and natural language analytics",
+    "Insight Advisor provides AI-generated visualisations and natural language analytics",
     "Qlik Answers delivers conversational GenAI assistants grounded in enterprise knowledge",
     "Native Application Automation for workflow orchestration across business systems",
     "Built-in predictive analytics through Qlik Predict (AutoML) in Premium and Enterprise editions",
@@ -218,7 +218,7 @@
     "Scales from departmental analytics to enterprise-wide BI initiatives"
    ],
    "aiCapabilities": [
-    "Insight Advisor for AI-assisted visualizations and recommendations",
+    "Insight Advisor for AI-assisted visualisations and recommendations",
     "Qlik Answers for conversational GenAI and knowledge retrieval",
     "Natural Language Search & AI-generated insights",
     "Predictive Analytics (Qlik Predict / AutoML)",
@@ -227,7 +227,7 @@
    ],
    "costTier": [
     "Starter, Standard, Premium, Enterprise (capacity-based pricing)",
-    "Suitable for medium to large organizations",
+    "Suitable for medium to large organisations",
     "Premium AI and automation capabilities available in higher tiers",
     "Flexible SaaS subscription with enterprise scalability",
     "Pricing based on analytics capacity and deployment requirements"
@@ -238,8 +238,8 @@
    "id": "sigma",
    "name": "Sigma",
    "source": "slide 15",
-   "intro": "Sigma is a cloud-native Business Intelligence (BI) and analytics platform that enables organizations to analyze live cloud data using a familiar spreadsheet-like interface. Built directly on modern cloud data warehouses, Sigma empowers business users to explore, collaborate, and build interactive dashboards without extracting or duplicating data, while leveraging AI-powered analytics and enterprise governance.",
-   "bestSuited": "Sigma is best suited for cloud-first organizations seeking spreadsheet-like analytics, live cloud warehouse reporting, collaborative BI, and AI-assisted self-service analytics.",
+   "intro": "Sigma is a cloud-native Business Intelligence (BI) and analytics platform that enables organisations to analyse live cloud data using a familiar spreadsheet-like interface. Built directly on modern cloud data warehouses, Sigma empowers business users to explore, collaborate, and build interactive dashboards without extracting or duplicating data, while leveraging AI-powered analytics and enterprise governance.",
+   "bestSuited": "Sigma is best suited for cloud-first organisations seeking spreadsheet-like analytics, live cloud warehouse reporting, collaborative BI, and AI-assisted self-service analytics.",
    "typicalFeatures": [
     "Connects directly to Snowflake, Databricks, BigQuery, Redshift, Azure Synapse, and other cloud data platforms",
     "Spreadsheet-like interface for data exploration and analysis",
@@ -256,7 +256,7 @@
     "AI Formula Generator helps create formulas, calculations, and data transformations",
     "Input Tables allow users to write data back for planning, forecasting, and what-if analysis",
     "Native cloud warehouse architecture eliminates data movement and duplication",
-    "Collaborative workbooks enable multiple users to analyze and edit data simultaneously"
+    "Collaborative workbooks enable multiple users to analyse and edit data simultaneously"
    ],
    "benefits": [
     "Enables business users to perform advanced analysis without SQL expertise",
@@ -276,7 +276,7 @@
    ],
    "costTier": [
     "Essential, Business, Enterprise (subscription-based)",
-    "Best suited for medium to large cloud-first organizations",
+    "Best suited for medium to large cloud-first organisations",
     "Enterprise capabilities available in higher licensing tiers",
     "Pricing scales based on users and enterprise requirements",
     "Cloud-native licensing with enterprise scalability"

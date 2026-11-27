@@ -63,7 +63,7 @@
         container: main, rail: document.getElementById('pb-rail'), toc: document.getElementById('pb-toc'), overlay: document.getElementById('pb-overlay'),
         model: d[0], deck: { profiles: d[1], matrix: d[2], migration: d[3], reference: d[4] }, config: cfg, onTab: function (id) { setActive(id, routing); }
       });
-      function route() { var id = location.hash.replace('#/', ''); routing = true; try { if (ctl.knows(id)) ctl.go(id); else setActive(ctl.tab, true); } finally { routing = false; } }   // pages only (the earlier four-page ids land on the matching section): the questions are never a web address
+      function route() { var id = location.hash.replace('#/', ''); if (ctl.overlayOpen()) ctl.closeDiscovery(); routing = true; try { if (ctl.knows(id)) ctl.go(id); else setActive(ctl.tab, true); } finally { routing = false; } }   // pages only (the earlier four-page ids land on the matching section): the questions are never a web address
       window.addEventListener('hashchange', route);
       route();
       document.getElementById('pb-toc').addEventListener('click', function (e) {

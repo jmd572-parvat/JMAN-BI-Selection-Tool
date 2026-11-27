@@ -110,7 +110,7 @@
    * 'Q06:ai_governance_concerns' means that one answer of Q06 only (any other answer to Q06 says nothing about AI).
    */
   var CRITERION_QS = [
-    ['Ease of Adoption', ['Q10', 'Q11', 'Q12']], ['Self-Service Analytics', ['Q01', 'Q11']], ['Visualization', ['Q21', 'Q17']],
+    ['Ease of Adoption', ['Q10', 'Q11', 'Q12']], ['Self-Service Analytics', ['Q01', 'Q11']], ['Visualisation', ['Q21', 'Q17']],
     ['AI-Assisted', ['Q22', 'Q06:ai_governance_concerns']], ['Predictive', ['Q01']], ['Governance & Security', ['Q03', 'Q05', 'Q06', 'Q08', 'Q26']],
     ['Semantic Layer', ['Q07']], ['Scalability', ['Q16', 'Q18', 'Q25']], ['Technology Ecosystem', ['Q04']], ['Cloud Data Platform', ['Q04', 'Q16']],
     ['Embedded', ['Q19']], ['Licensing', ['Q23']], ['Business Value', ['Q01']], ['Community', ['Q24']]
@@ -884,10 +884,10 @@
 
     function scoringHtml() {
       return '<div class="pb-prose">' +
-        '<p>Each answer a client can give is rated for every tool, from 1 (possible but not ideal) to 4 (strong fit). Most of the ratings come from our experts. The ones for polish, AI, cost, users and talent were taken from our comparison table, and three answers are our own proposals. An expert still has to confirm all of those.</p>' +
+        '<p>Each answer a client can give is rated for every tool, from 1 (possible but not ideal) to 4 (strong fit). Most of the ratings come from our experts. The ones for polish, AI, cost, users and talent were taken from our comparison table, and three answers started as our own proposals. The experts have approved all of them.</p>' +
         '<p>We don’t simply add the ratings up. Some tools score well on almost everything, so a plain total would pick the same tool whatever the client said. Instead we compare each tool with how it normally scores, and only the difference this client’s answers make counts. Questions that matter more count for more, and a client who tells us nothing gets a tie.</p>' +
         '<p>When two tools finish level, we look at the answers about ecosystem first, then security and governance, then delivery risk and cost. If that doesn’t separate them, we call it a tie. One answer can rule a tool out outright: a client who can’t use a vendor-hosted tool rules out Sigma.</p>' +
-        '<p>Until most questions are answered, treat the order as provisional. Either way it is a starting point for your own judgement, not a verdict. The ratings and weights may change once the experts finish reviewing them.</p></div>';
+        '<p>Until most questions are answered, treat the order as provisional. Either way it is a starting point for your own judgement, not a verdict.</p></div>';
     }
 
     // ------------------------------------------------------------------ pages, navigation, rail

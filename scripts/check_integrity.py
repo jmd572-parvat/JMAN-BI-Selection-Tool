@@ -267,8 +267,8 @@ def section_bc():
                     if now != int(g.group(3)):
                         probs.append(f"{qid}/{oid}: the note says {g.group(1)} {g.group(2)}->{g.group(3)} but the mark is {now}")
     check("C4", "every 'Adjusted' note in the workbook matches the mark it describes", not probs, "; ".join(probs))
-    drafts = [k for k, v in notes.items() if "DRAFT" in v["basis"] and "SME to confirm" in v["basis"]]
-    check("C5", "answers still marked 'DRAFT: SME to confirm' in the workbook (the scoring text says they await confirmation)", not drafts,
+    drafts = [k for k, v in notes.items() if re.search(r"awaiting SME|SME to confirm", v["basis"])]
+    check("C5", "answers whose notes say an expert still has to confirm them (the scoring text says they await confirmation)", not drafts,
           f"{len(drafts)} answers: " + ", ".join(f"{a}/{b}" for a, b in sorted(drafts)), warn=True)
     # the workbook and the JSON agree on every mark
     probs = []

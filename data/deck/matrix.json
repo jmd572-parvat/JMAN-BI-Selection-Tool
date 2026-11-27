@@ -77,11 +77,11 @@
      }
     },
     {
-     "name": "Visualization & Storytelling",
+     "name": "Visualisation & Storytelling",
      "slide": 7,
      "cells": {
       "powerbi": {
-       "headline": "Needs DAX to customize",
+       "headline": "Needs DAX to customise",
        "detail": "pairs best with a skilled team",
        "leads": false
       },
@@ -235,12 +235,12 @@
      "slide": 7,
      "cells": {
       "powerbi": {
-       "headline": "Centralized metrics",
+       "headline": "Centralised metrics",
        "detail": "DAX measures reused across reports",
        "leads": false
       },
       "tableau": {
-       "headline": "Less centralized",
+       "headline": "Less centralised",
        "detail": "than a dedicated modelling layer",
        "leads": false
       },
@@ -287,7 +287,7 @@
       },
       "thoughtspot": {
        "headline": "Built for high concurrency",
-       "detail": "optimized for cloud warehouses",
+       "detail": "optimised for cloud warehouses",
        "leads": false
       },
       "qlik": {
@@ -313,7 +313,7 @@
      "cells": {
       "powerbi": {
        "headline": "Best for Microsoft shops",
-       "detail": "maximizes existing 365/Azure investment",
+       "detail": "maximises existing 365/Azure investment",
        "leads": true
       },
       "tableau": {
@@ -323,7 +323,7 @@
       },
       "looker": {
        "headline": "Best for Google Cloud shops",
-       "detail": "optimized for BigQuery",
+       "detail": "optimised for BigQuery",
        "leads": true
       },
       "thoughtspot": {
@@ -349,7 +349,7 @@
      "cells": {
       "powerbi": {
        "headline": "Deepest with Azure data",
-       "detail": "optimized for fast queries",
+       "detail": "optimised for fast queries",
        "leads": false
       },
       "tableau": {

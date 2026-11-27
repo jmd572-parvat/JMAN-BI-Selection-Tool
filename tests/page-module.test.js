@@ -1047,7 +1047,7 @@ test('content audit: the matrix correction applies to the original text only, an
   assert.ok(!/Ask Sigma covers the basics/.test(m));
   const sc = sec(h, 'scoring');
   assert.match(sc, /Most of the ratings come from our experts/);
-  assert.match(sc, /were taken from our comparison table, and three answers are our own proposals\. An expert still has to confirm all of those/);
+  assert.match(sc, /were taken from our comparison table, and three answers started as our own proposals\. The experts have approved all of them/);
   assert.ok(!/For every answer, subject-matter experts/.test(sc));
 });
 
@@ -1227,4 +1227,10 @@ test('the comparison matrix has no description under its heading: the tool picke
   const m = sec(h, 'matrix');
   assert.match(m, /<h2>Comparison matrix<\/h2><div class="pb-picker"/);
   assert.ok(!/side by side|head to head/.test(m));
+});
+
+test('a table wrapper is its own positioning box, so the visually hidden text inside a table cannot widen the page on a phone', () => {
+  const css = read('src/page/styles.css');
+  assert.match(css, /\.pb-tablewrap \{ position: relative; overflow-x: auto;/);
+  assert.match(read('src/page/index.html'), /if \(ctl\.overlayOpen\(\)\) ctl\.closeDiscovery\(\); routing = true;/, 'Back or Forward closes the questions first');
 });
