@@ -258,7 +258,7 @@ def validate(data, errors, warnings):
                     errors.append(f"{q['id']}: Show if references unknown option {cl['q']}={opt!r}")
 
 
-def build_output(data, source, with_rationale, exclude_draft=False):
+def build_output(data, source, with_rationale, exclude_draft=False, with_basis=True):
     tools = sorted(({"id": t["id"], "name": t["name"]} for t in data["tools"]), key=lambda x: x["name"].lower())
     tool_ids = [t["id"] for t in tools]
     questions = []
@@ -283,7 +283,7 @@ def build_output(data, source, with_rationale, exclude_draft=False):
         for o in q["options"]:
             od = {"id": o["id"], "label": o["label"], "unknown": o["unknown"],
                   "excludes": o["excludes"], "scores": o["scores"]}
-            if o["scoreBasis"]:
+            if o["scoreBasis"] and with_basis:
                 od["scoreBasis"] = o["scoreBasis"]
             if with_rationale:
                 od["rationale"] = o["rationale"]
@@ -325,6 +325,8 @@ def main():
     ap.add_argument("--no-rationale", action="store_true", help="omit rationale text (smaller file)")
     ap.add_argument("--exclude-draft", action="store_true",
                     help="leave out questions with Status=draft (use for the production build)")
+    ap.add_argument("--no-score-basis", action="store_true",
+                    help="leave out the reviewer notes (Score basis); the production build uses this, so they are not in the published data")
     args = ap.parse_args()
 
     errors, warnings = [], []
@@ -338,7 +340,7 @@ def main():
             print(f"ERROR {e}", file=sys.stderr)
         print(f"\n{len(errors)} error(s), {len(warnings)} warning(s) - nothing written.", file=sys.stderr)
         return 1
-    out = build_output(data, Path(args.workbook).name, not args.no_rationale, args.exclude_draft)
+    out = build_output(data, Path(args.workbook).name, not args.no_rationale, args.exclude_draft, not args.no_score_basis)
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

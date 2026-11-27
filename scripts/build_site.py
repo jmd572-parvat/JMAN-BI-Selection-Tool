@@ -6,7 +6,7 @@ Assemble the static site into site/ (no bundler, no dependencies; every file is 
     python scripts/build_site.py --production    # draft questions excluded, no toggle, no preview notes
     python scripts/build_site.py --production --with-font   # as above, keeping the M PLUS 1 font link (for hosting the page on its own, e.g. GitHub Pages)
 
-Inputs: src/engine/*.js, src/page/*, data/questions.json (rebuilt with --exclude-draft for production), data/deck/*.json.
+Inputs: src/engine/*.js, src/page/*, data/questions.json (rebuilt with --exclude-draft --no-score-basis for production: no draft questions and no reviewer notes), data/deck/*.json.
 The marketplace shell is assumed to provide the hero, tabs and feedback (docs/page-design.md A1); src/page/index.html is only a stand-in.
 """
 import argparse
@@ -47,7 +47,7 @@ def main():
             sys.exit(f"{p} is missing: run scripts/extract_deck_content.py first")
         shutil.copy(p, out / "data" / "deck" / p.name)
     if a.production:
-        r = subprocess.run([sys.executable, "scripts/excel_to_json.py", "--exclude-draft", "--out", str(out / "data" / "questions.json")],
+        r = subprocess.run([sys.executable, "scripts/excel_to_json.py", "--exclude-draft", "--no-score-basis", "--out", str(out / "data" / "questions.json")],
                            capture_output=True, text=True)
         if r.returncode:
             sys.exit(r.stderr)

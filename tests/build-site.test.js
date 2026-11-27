@@ -46,6 +46,10 @@ test('production build: no draft questions, no reviewer strip, no preview config
   assert.equal(q.meta.draftsIncluded, false);
   assert.ok(q.questions.every((x) => x.status !== 'draft'), 'no draft question ships');
   assert.equal(q.questions.length, 25, 'with no drafts the production build holds every question');
+  const raw = read(out, 'data/questions.json');
+  assert.ok(!raw.includes('scoreBasis') && !/DRAFT: SME|owner's review|awaiting SME/.test(raw), 'the reviewer notes are not in the published data');
+  const preview = read(build([]), 'data/questions.json');
+  assert.ok(preview.includes('scoreBasis'), 'the preview build keeps them for reviewers');
 });
 
 test('both builds contain every file the page loads, and nothing refers to a missing file', () => {

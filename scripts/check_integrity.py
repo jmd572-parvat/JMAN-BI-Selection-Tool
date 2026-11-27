@@ -89,7 +89,11 @@ def section_a():
         sq = json.loads((site / "data/questions.json").read_text(encoding="utf-8"))
         a, b = json.loads(json.dumps(q)), json.loads(json.dumps(sq))
         a["meta"].pop("draftsIncluded", None); b["meta"].pop("draftsIncluded", None)
-        check("A4", "the hosted question data equals data/questions.json (apart from the drafts flag)", a == b)
+        for qq in a["questions"]:
+            for oo in qq["options"]:
+                oo.pop("scoreBasis", None)          # reviewer notes are not published
+        has_notes = any("scoreBasis" in oo for qq in b["questions"] for oo in qq["options"])
+        check("A4", "the hosted question data equals data/questions.json (apart from the drafts flag), and carries no reviewer notes", a == b and not has_notes)
         same = all((ROOT / "data/deck" / f).read_bytes() == (site / "data/deck" / f).read_bytes() for f in ["matrix.json", "migration.json", "profiles.json", "reference.json"])
         check("A5", "the hosted deck data equals data/deck", same)
         html = (site / "index.html").read_text(encoding="utf-8")

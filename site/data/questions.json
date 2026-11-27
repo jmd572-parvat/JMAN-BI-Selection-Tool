@@ -269,7 +269,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Adjusted 2026-11-21 in the owner's review (Tableau 1->2, Sigma 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Good fit: Power BI, Sigma, Qlik. Suitable: Tableau, ThoughtSpot. Possible but not ideal: Looker. Why the leaders: Power BI: What-if parameters and Excel-linked analysis cover scenario review. Native approval and write-back workflows are limited. Sigma: Input Tables and spreadsheet interactions let teams enter assumptions next to governed warehouse actuals. Qlik: Qlik supports forecast-versus-actual analysis, scenario dashboards and workflow orchestration through automation and extensions. Data entry, write-back, approvals and dependency logic are not a complete native planning process, so they must be designed and governed.",
             "tools": {
@@ -940,7 +939,6 @@
             "sigma": 3,
             "qlik": 2
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Visualization & Storytelling' (matrix text slide 7); full row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. CAUTION: Sigma's 4 reflects 'easiest to self-edit', not bespoke presentation quality; SME to confirm. Adjusted 2026-11-21 in the owner's review (Sigma 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Tableau. Good fit: Sigma. Suitable: Power BI, Looker, Qlik. Possible but not ideal: ThoughtSpot. Why the leaders: Tableau: Most flexible visuals; best with a dedicated analyst team.",
             "tools": {
@@ -966,7 +964,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Visualization & Storytelling' (matrix text slide 7); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. CAUTION: Sigma's 4 reflects 'easiest to self-edit', not bespoke presentation quality; SME to confirm. Adjusted 2026-11-21 in the owner's review (Sigma 3->2); awaiting SME confirmation.",
           "rationale": {
             "summary": "Good fit: Tableau. Suitable: Power BI, Looker, Sigma, Qlik. Possible but not ideal: ThoughtSpot. Why the leaders: Tableau: Most flexible visuals; best with a dedicated analyst team.",
             "tools": {
@@ -992,7 +989,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1048,7 +1044,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'AI-Assisted & Conversational' (matrix text slide 7); full row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. Adjusted 2026-11-21 in the owner's review (Looker 2->3, Sigma 2->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Power BI, ThoughtSpot. Good fit: Looker, Tableau, Sigma, Qlik. Why the leaders: Power BI: Most integrated AI: Copilot gives natural-language Q&A and DAX help. ThoughtSpot: AI is the core product: Spotter offers the deepest search of the six.",
             "tools": {
@@ -1074,7 +1069,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'AI-Assisted & Conversational' (matrix text slide 7); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. Adjusted 2026-11-21 in the owner's review (Looker 2->3, Sigma 2->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "All six platforms fit this answer alike, so it does not change the ranking.",
             "tools": {
@@ -1100,7 +1094,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1156,7 +1149,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Moved unchanged from Q20 'Tight budget' (SME-scored; no score or rationale change). Matches deck heatmap row 'Licensing & TCO' except Looker 1 vs 2. Adjusted 2026-11-21 in the owner's review (ThoughtSpot 1->2); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Power BI. Good fit: Sigma, Qlik. Suitable: Tableau, ThoughtSpot. Possible but not ideal: Looker. Why the leaders: Power BI: Existing Microsoft licences and a broad talent pool may keep costs down; verify capacity and per-user entitlements.",
             "tools": {
@@ -1182,7 +1174,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Licensing & TCO' (matrix text slide 9); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm. Adjusted 2026-11-21 in the owner's review (ThoughtSpot 1->2); awaiting SME confirmation.",
           "rationale": {
             "summary": "Good fit: Power BI, Sigma, Qlik. Suitable: Looker, Tableau, ThoughtSpot. Why the leaders: Power BI: Lowest entry cost; best TCO inside Microsoft estates. Sigma: Minimal infrastructure overhead; no separate BI server to run. Qlik: Flexible licensing that scales cost with usage.",
             "tools": {
@@ -1208,7 +1199,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1264,7 +1254,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral by design: with a small user base scale is not a differentiator, and licensing cost is already captured by Q23 (avoids counting one cost fact twice). All 2, flagged Unknown.",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1290,7 +1279,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral by design: with a small user base scale is not a differentiator, and licensing cost is already captured by Q23 (avoids counting one cost fact twice). All 2, flagged Unknown.",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1316,7 +1304,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Scalability & Performance' (matrix text slide 9); 'Scalability & Performance' row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
           "rationale": {
             "summary": "Good fit: Looker, ThoughtSpot, Qlik, Sigma. Suitable: Power BI, Tableau. Why the leaders (and 1 more): Looker: Scales with your warehouse; no caching layer to manage. ThoughtSpot: Built for high concurrency; optimised for cloud warehouses. Qlik: Enterprise-grade scaling; hybrid and multi-cloud ready.",
             "tools": {
@@ -1342,7 +1329,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Scalability & Performance' (matrix text slide 9); large user base: 'Scalability & Performance' row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
           "rationale": {
             "summary": "Strong fit: Looker. Good fit: ThoughtSpot, Qlik, Sigma. Suitable: Power BI, Tableau. Why the leaders: Looker: Scales with your warehouse; no caching layer to manage.",
             "tools": {
@@ -1368,7 +1354,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1604,7 +1589,6 @@
             "sigma": 3,
             "qlik": 4
           },
-          "scoreBasis": "Proposed 2026-11-18, awaiting SME review. From the deck's data residency row (slide 22): Power BI regional Azure data centers; Tableau choose region or self-host; Looker tied to Google Cloud region; ThoughtSpot limited region choice; Qlik full control if on-prem/hybrid; Sigma tied to warehouse region.",
           "rationale": {
             "summary": "Strong fit: Tableau, Qlik. Good fit: Power BI, Sigma. Suitable: Looker, ThoughtSpot. Why the leaders: Tableau: The region can be chosen, or the platform can be self-hosted with Tableau Server, so it can follow most residency rules. Qlik: Full control when run on-premises or hybrid, which is why it suits regulated clients with strict residency rules.",
             "tools": {
@@ -1630,7 +1614,6 @@
             "sigma": 2,
             "qlik": 4
           },
-          "scoreBasis": "Merged 2026-11-21 from the former Q09 'AI governance concerns: Yes'; scores unchanged. Q05 'Yes' and Q09 'Yes' had identical scores.",
           "rationale": {
             "summary": "Strong fit: Power BI, Looker, Qlik. Good fit: Tableau. Suitable: ThoughtSpot, Sigma. Why the leaders: Power BI: Tenant policies, semantic-model security and Copilot access governance help contain AI answers; validate feature entitlements. Looker: Governed LookML fields and model permissions can limit AI-assisted answers; review what Gemini can access. Qlik: Enterprise controls can govern AI use, if model access and generated outputs are included in the risk review.",
             "tools": {
@@ -1711,7 +1694,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -1739,7 +1721,6 @@
             "sigma": 2,
             "qlik": 4
           },
-          "scoreBasis": "Moved unchanged from Q20 'On-premises / residency constraint' (SME-scored). Excludes=sigma: cloud SaaS only (deck slide 22; help.sigmacomputing.com). Looker (original) and ThoughtSpot Software have customer-hosted editions, so they stay scored (2), not excluded. Power BI 4 is under review (Report Server is feature-limited). Adjusted 2026-11-21 in the owner's review (Power BI 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Tableau, Qlik. Good fit: Power BI. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Tableau: Tableau Server supports on-premises deployment; validate all extracts, support services and exports against policy. Qlik: On-premises deployment options can help meet location policy; confirm every app, reload and support data path.",
             "tools": {
@@ -1765,7 +1746,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -2144,7 +2124,6 @@
             "sigma": 4,
             "qlik": 2
           },
-          "scoreBasis": "Adjusted 2026-11-21 in the owner's review (Tableau 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: ThoughtSpot, Sigma. Good fit: Power BI, Tableau. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: ThoughtSpot: Search is easy for beginners to consume; preparing searchable datasets still needs specialist skills. Sigma: Spreadsheet-style exploration suits beginners when the warehouse model is already clean and governed.",
             "tools": {
@@ -2283,7 +2262,6 @@
             "sigma": 4,
             "qlik": 2
           },
-          "scoreBasis": "Proposed 2026-11-18, awaiting SME review. Placed between 'Can upskill' and 'No training required', using the deck's ease-of-adoption row (slide 7).",
           "rationale": {
             "summary": "Strong fit: Power BI, ThoughtSpot, Sigma. Good fit: Tableau. Suitable: Looker, Qlik. Why the leaders: Power BI: Familiar Microsoft and Excel habits keep the learning load light; advanced DAX still needs someone with time to learn it. ThoughtSpot: Natural-language search has a low learning curve for business users; whoever maintains the model still needs some training. Sigma: A spreadsheet-style interface is quick to pick up; warehouse governance needs a little training.",
             "tools": {
@@ -2334,7 +2312,6 @@
             "sigma": 4,
             "qlik": 2
           },
-          "scoreBasis": "Adjusted 2026-11-21 in the owner's review (Tableau 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: ThoughtSpot, Sigma. Good fit: Power BI, Tableau. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: ThoughtSpot: Users can use search without formal training if JMAN or a data team curates the model. Sigma: Spreadsheet familiarity eases onboarding for end users; warehouse administration still needs capable owners.",
             "tools": {
@@ -2360,7 +2337,6 @@
             "sigma": 4,
             "qlik": 2
           },
-          "scoreBasis": "Proposed 2026-11-18, awaiting SME review. Stricter than 'No training required': the client cannot absorb a new way of working at all. Based on the deck's ease-of-adoption row (slide 7).",
           "rationale": {
             "summary": "Strong fit: Sigma. Good fit: Power BI, Tableau, ThoughtSpot. Suitable: Qlik. Possible but not ideal: Looker. Why the leaders: Sigma: The closest to a spreadsheet, so the smallest change in how people already work.",
             "tools": {
@@ -2416,7 +2392,6 @@
             "sigma": 1,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Community & Partner Support' (matrix text slide 9); full row; rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
           "rationale": {
             "summary": "Strong fit: Power BI. Good fit: Tableau, Qlik. Suitable: Looker, ThoughtSpot. Possible but not ideal: Sigma. Why the leaders: Power BI: Largest talent pool; easiest to staff and support.",
             "tools": {
@@ -2442,7 +2417,6 @@
             "sigma": 1,
             "qlik": 3
           },
-          "scoreBasis": "Deck heatmap (slide 8), row 'Community & Partner Support' (matrix text slide 9); full row compressed one step (4->3); rule 5->4, 4->3, 3->2, 2->1, 1->1. DRAFT: SME to confirm.",
           "rationale": {
             "summary": "Good fit: Power BI, Tableau, Qlik. Suitable: Looker, ThoughtSpot. Possible but not ideal: Sigma. Why the leaders: Power BI: Largest talent pool; easiest to staff and support. Tableau: Mature global community with strong enterprise partner support. Qlik: Established global ecosystem with a solid enterprise support network.",
             "tools": {
@@ -2468,7 +2442,6 @@
             "sigma": 2,
             "qlik": 2
           },
-          "scoreBasis": "Neutral: this answer expresses no preference between platforms (all 2, flagged Unknown).",
           "rationale": {
             "summary": "This answer does not favour any platform; it is recorded but not scored.",
             "tools": {
@@ -2980,7 +2953,6 @@
             "sigma": 2,
             "qlik": 4
           },
-          "scoreBasis": "Adjusted 2026-11-21 in the owner's review (Power BI 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Tableau, Qlik. Good fit: Power BI. Suitable: Looker, ThoughtSpot, Sigma. Why the leaders: Tableau: Tableau Server and live connectors can run closer to on-premises data, so a cloud migration isn't forced. Qlik: Cloud and on-premises deployment choices suit mixed legacy and modern Qlik data estates.",
             "tools": {
@@ -3404,7 +3376,6 @@
             "sigma": 3,
             "qlik": 3
           },
-          "scoreBasis": "Adjusted 2026-11-21 in the owner's review (Sigma 2->3, Tableau 4->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Power BI. Good fit: Tableau, Sigma, Qlik. Suitable: Looker, ThoughtSpot. Why the leaders: Power BI: Paginated reports and scheduled subscriptions fit fixed-layout statements and repeatable PDF or email delivery.",
             "tools": {
@@ -3518,7 +3489,6 @@
             "sigma": 4,
             "qlik": 4
           },
-          "scoreBasis": "Adjusted 2026-11-21 in the owner's review (Looker 2->3, ThoughtSpot 2->3); awaiting SME confirmation.",
           "rationale": {
             "summary": "Strong fit: Power BI, Tableau, Sigma, Qlik. Good fit: Looker, ThoughtSpot. Why the leaders (and 1 more): Power BI: Parallel reports can run against shared sources and reconcile KPIs before cutover; keep model versions controlled. Tableau: Publish Tableau dashboards in parallel and reconcile metrics and visuals against the incumbent before retiring it. Sigma: Warehouse-backed workbooks can coexist with legacy reports while measures and user workflows are checked.",
             "tools": {

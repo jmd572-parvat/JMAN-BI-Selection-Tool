@@ -4,6 +4,8 @@ A playbook page that helps choose and justify a BI tool (Looker, Power BI, Qlik,
 
 The recommendation comes only from the client's answers. No platform is favoured: scores are compared against a neutral starting point, tool order never matters, and ties are shown as ties. See `docs/scoring-method.md`.
 
+For the marketplace team taking this over, start with `docs/handoff.md`.
+
 ## Where things are
 | Path | What |
 |---|---|
