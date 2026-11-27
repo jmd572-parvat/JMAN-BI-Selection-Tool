@@ -1,3 +1,8 @@
 __pycache__/
 *.pyc
 node_modules/
+
+# internal source files and backups never go into the repository
+dumps/
+*.bak-*
+*.stripped.xlsx

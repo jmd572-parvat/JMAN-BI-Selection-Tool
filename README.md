@@ -27,10 +27,10 @@ python scripts/check_docs.py                 # keep the docs tied to the data an
 python scripts/check_integrity.py            # workbook, JSON, hosted page, fixtures, deck data and tracked files agree (add --links to open every web address)
 python scripts/calibrate_thresholds.py       # re-derive confidence thresholds after any weight change
 python scripts/platform_reach.py             # how often each platform is recommended (docs/platform-reach.md)
-python scripts/prepare_logos.py              # tool logos from the dumps folder into src/page/assets/logos
+python scripts/prepare_logos.py <folder>     # tool logos from the original files into src/page/assets/logos
 ```
 
 After changing the workbook: `python scripts/excel_to_json.py`, then `npm run parity:update`, then the checks above.
 
 ## Status
-A working preview exists. It is not ready to ship: twelve answers still wait for an expert to confirm their scores, weights are provisional, the repository holds internal files and names that must not stay public, and the marketplace shell is stood in for. The open items are in `docs/page-design.md`, sections 11, 12 and 22.
+A working preview exists. It is not ready to ship: twelve answers still wait for an expert to confirm their scores, weights are provisional, the history of the repository still holds internal files and names removed from the current version (section 25), and the marketplace shell is stood in for. The open items are in `docs/page-design.md`, sections 11, 12, 22 and 25.

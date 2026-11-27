@@ -452,7 +452,8 @@ def section_f():
                         for mail in re.findall(r"[\w.+-]+@[\w-]+\.[\w.]+", x):
                             people.setdefault(f, set()).add(mail)
                         for who in re.findall(r'displayName="([^"]*)"', x) + re.findall(r"<dc:creator>([^<]+)</dc:creator>", x) + re.findall(r"<cp:lastModifiedBy>([^<]+)</cp:lastModifiedBy>", x):
-                            people.setdefault(f, set()).add(who)
+                            if who != "JMAN" and not who.startswith("Reviewer"):        # the neutral labels left by scripts/_strip_workbook_names.py
+                                people.setdefault(f, set()).add(who)
             except zipfile.BadZipFile:
                 pass
         elif f.endswith((".md", ".json", ".js", ".py", ".html", ".csv")) and p.exists():

@@ -7,7 +7,7 @@ mark) and SigmaComputing.jpeg. PNGs are trimmed to their visible pixels (white c
 scaled to 192 px. The Sigma file is a JPEG with a solid black square, which cannot be trimmed without an imaging library, so it is
 copied as it is and the page rounds its corners.
 
-    python scripts/prepare_logos.py [folder with the files, default: dumps]
+    python scripts/prepare_logos.py <folder with the original logo files>
 """
 import struct
 import sys
@@ -127,7 +127,9 @@ def process(png):
 
 
 def main():
-    src = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("dumps")
+    if len(sys.argv) < 2:
+        sys.exit("usage: python scripts/prepare_logos.py <folder with the original logo files> (they are not kept in the repository)")
+    src = Path(sys.argv[1])
     OUT.mkdir(parents=True, exist_ok=True)
     for tool, name in SOURCES.items():
         data = process((src / name).read_bytes())

@@ -253,7 +253,9 @@ def reference(d):
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else "dumps/BI Tools Comparison VS v(5).pptx"
+    if len(sys.argv) < 2:
+        sys.exit("usage: python scripts/extract_deck_content.py <path to the comparison deck .pptx> (the deck is not kept in the repository)")
+    path = sys.argv[1]
     d = Deck(path)
     OUT.mkdir(parents=True, exist_ok=True)
     result = {"profiles": profiles(d), "matrix": matrix(d), "migration": migration(d), "reference": reference(d)}
